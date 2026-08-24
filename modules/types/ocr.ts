@@ -1,0 +1,20 @@
+export type IdentityVisitorPayload = {
+  document_type: string;
+  full_name?: string;
+  id_number?: string;
+  name: string;
+  passport_number: string;
+  birth_date?: string;
+  expiry_date?: string;
+  address?: string;
+  front_image?: string;
+  back_image?: string;
+  license_image?: string;
+  passport_image?: string;
+  nationality?: string;
+  date_of_issue?: string;
+  license_type?: string;
+  job_title?: string;
+  department?: string;
+  unit?: string;
+};

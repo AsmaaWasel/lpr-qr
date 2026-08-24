@@ -1,0 +1,636 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* =========================================================
+   THEME MAPPING (Tailwind v4)
+========================================================= */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-heading: var(--font-sans);
+
+  /* VOOM brand */
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-strong: var(--brand-strong);
+  --color-ink: var(--ink);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* =========================================================
+   LIGHT
+========================================================= */
+
+:root {
+  /* --- surfaces --- */
+  --background: #edf2f8;
+  --foreground: #0f2438;
+
+  --card: #ffffff;
+  --card-foreground: #0f2438;
+
+  --popover: #ffffff;
+  --popover-foreground: #0f2438;
+
+  --surface-soft: #f1f5fa; /* search inputs, quiet fills */
+  --surface-hover: #e8eef6;
+
+  /* --- brand --- */
+  --brand: #0fa5ee;
+  --brand-strong: #0b8ed4;
+  --brand-soft: #e2f2fd;
+  --brand-gradient: linear-gradient(135deg, #3ec6f5 0%, #0b93e0 100%);
+
+  /* --- ink (dark navy accents: active tab, hero stat card) --- */
+  --ink: #16283f;
+  --ink-gradient: linear-gradient(150deg, #1b3c5b 0%, #0e263e 100%);
+
+  /* --- semantic --- */
+  --primary: #0fa5ee;
+  --primary-foreground: #ffffff;
+
+  --secondary: #f1f5fa;
+  --secondary-foreground: #16283f;
+
+  --muted: #f1f5fa;
+  --muted-foreground: #8fa3b8;
+
+  --accent: #e2f2fd;
+  --accent-foreground: #0b8ed4;
+
+  --ok: #10b981;
+  --ok-soft: #e6f8f1;
+  --warn: #f59e0b;
+  --warn-soft: #fdf3e3;
+  --danger: #f43f5e;
+  --danger-soft: #fff0f3;
+  --destructive: #f43f5e;
+
+  --border: #eef2f7;
+  --input: #eef2f7;
+  --ring: rgba(15, 165, 238, 0.35);
+
+  --chart-1: #0fa5ee;
+  --chart-2: #10b981;
+  --chart-3: #f59e0b;
+  --chart-4: #f43f5e;
+  --chart-5: #16283f;
+
+  --radius: 0.875rem;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f2438;
+  --sidebar-primary: #0fa5ee;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e2f2fd;
+  --sidebar-accent-foreground: #0b8ed4;
+  --sidebar-border: #eef2f7;
+  --sidebar-ring: rgba(15, 165, 238, 0.35);
+
+  --shadow-card: 0 1px 2px rgba(15, 36, 56, 0.04),
+    0 8px 24px -12px rgba(15, 36, 56, 0.12);
+}
+
+/* =========================================================
+   DARK (navy, not neutral gray)
+========================================================= */
+
+.dark {
+  --background: #0b1727;
+  --foreground: #e6eef7;
+
+  --card: #0f2035;
+  --card-foreground: #e6eef7;
+
+  --popover: #0f2035;
+  --popover-foreground: #e6eef7;
+
+  --surface-soft: #16293f;
+  --surface-hover: #1c3350;
+
+  --brand: #38bdf8;
+  --brand-strong: #0ea5e9;
+  --brand-soft: rgba(56, 189, 248, 0.14);
+  --brand-gradient: linear-gradient(135deg, #4cc9f8 0%, #0e9ae0 100%);
+
+  --ink: #16293f;
+  --ink-gradient: linear-gradient(150deg, #16324e 0%, #0d1e33 100%);
+
+  --primary: #38bdf8;
+  --primary-foreground: #06202f;
+
+  --secondary: #16293f;
+  --secondary-foreground: #e6eef7;
+
+  --muted: #16293f;
+  --muted-foreground: #7e94ac;
+
+  --accent: rgba(56, 189, 248, 0.14);
+  --accent-foreground: #7dd3fc;
+
+  --ok: #34d399;
+  --ok-soft: rgba(52, 211, 153, 0.14);
+  --warn: #fbbf24;
+  --warn-soft: rgba(251, 191, 36, 0.14);
+  --danger: #fb7185;
+  --danger-soft: rgba(251, 113, 133, 0.14);
+  --destructive: #fb7185;
+
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: rgba(56, 189, 248, 0.4);
+
+  --chart-1: #38bdf8;
+  --chart-2: #34d399;
+  --chart-3: #fbbf24;
+  --chart-4: #fb7185;
+  --chart-5: #94a3b8;
+
+  --sidebar: #0f2035;
+  --sidebar-foreground: #e6eef7;
+  --sidebar-primary: #38bdf8;
+  --sidebar-primary-foreground: #06202f;
+  --sidebar-accent: rgba(56, 189, 248, 0.14);
+  --sidebar-accent-foreground: #7dd3fc;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: rgba(56, 189, 248, 0.4);
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* =========================================================
+   BASE
+========================================================= */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    font-family: var(--font-sans), var(--font-arabic), ui-sans-serif, system-ui,
+      sans-serif;
+    font-size: 16px;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Numbers align in tables/stats */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* =========================================================
+   VOOM COMPONENTS
+   Plain CSS on top of the tokens above, so dark mode is
+   automatic and pages migrate by swapping classNames.
+========================================================= */
+
+@layer components {
+  /* ---------- SURFACES ---------- */
+
+  .voom-card {
+    border-radius: 24px;
+    background: var(--card);
+    box-shadow: var(--shadow-card);
+  }
+
+  .voom-card-flush {
+    border-radius: 24px;
+    background: var(--card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+  }
+
+  /* ---------- STAT CARDS ---------- */
+
+  .voom-stat {
+    min-height: 105px;
+    border-radius: 22px;
+    padding: 1.25rem 1.5rem;
+    background: var(--card);
+    box-shadow: var(--shadow-card);
+    transition: transform 0.18s ease;
+  }
+
+  .voom-stat:hover {
+    transform: translateY(-2px);
+  }
+
+  .voom-stat--hero {
+    background: var(--ink-gradient);
+    color: #fff;
+    box-shadow: 0 12px 28px -14px rgba(14, 38, 62, 0.6);
+  }
+
+  .voom-stat-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted-foreground);
+  }
+
+  .voom-stat--hero .voom-stat-label {
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  .voom-stat-value {
+    margin-top: 0.5rem;
+    font-size: 2rem;
+    line-height: 1;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- PILL TABS ---------- */
+
+  .voom-tab {
+    flex-shrink: 0;
+    border-radius: 9999px;
+    padding: 0.65rem 1.35rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    background: var(--card);
+    color: var(--muted-foreground);
+    box-shadow: var(--shadow-card);
+    transition: all 0.18s ease;
+  }
+
+  .voom-tab:hover {
+    color: var(--foreground);
+  }
+
+  .voom-tab--active {
+    background: var(--ink);
+    color: #fff;
+  }
+
+  .dark .voom-tab--active {
+    background: var(--brand);
+    color: var(--primary-foreground);
+  }
+
+  /* ---------- INPUTS ---------- */
+
+  .voom-input {
+    height: 2.9rem;
+    width: 100%;
+    border: 0;
+    border-radius: 14px;
+    background: var(--surface-soft);
+    padding: 0 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--foreground);
+    outline: none;
+    transition: box-shadow 0.15s ease;
+  }
+
+  .voom-input::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  .voom-input:focus {
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+
+  .voom-input--search {
+    padding-left: 2.75rem;
+  }
+
+  /* ---------- BUTTONS ---------- */
+
+  .voom-btn {
+    display: inline-flex;
+    height: 2.9rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 14px;
+    padding: 0 1.15rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+  }
+
+  .voom-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .voom-btn--primary {
+    background: var(--brand-gradient);
+    color: var(--primary-foreground);
+    box-shadow: 0 8px 18px -10px var(--brand);
+  }
+
+  .voom-btn--primary:hover:not(:disabled) {
+    filter: brightness(1.06);
+  }
+
+  .voom-btn--ghost {
+    background: var(--card);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+  }
+
+  .voom-btn--ghost:hover:not(:disabled) {
+    background: var(--surface-hover);
+  }
+
+  .voom-btn--danger {
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+
+  .voom-btn--danger:hover:not(:disabled) {
+    filter: brightness(0.97);
+  }
+
+  /* ---------- TABLE ---------- */
+
+  .voom-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .voom-table thead th,
+  .voom-th {
+    padding: 1rem 1.5rem;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted-foreground);
+    background: var(--surface-soft);
+    white-space: nowrap;
+  }
+
+  .voom-table tbody td,
+  .voom-td {
+    padding: 1.15rem 1.5rem;
+    font-size: 0.9rem;
+    border-top: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  .voom-table tbody tr {
+    transition: background 0.14s ease;
+  }
+
+  .voom-table tbody tr:hover {
+    background: var(--surface-soft);
+  }
+
+  .voom-table tbody tr[data-selected="true"] {
+    background: var(--brand-soft);
+  }
+
+  .voom-cell-title {
+    font-weight: 700;
+    color: var(--foreground);
+  }
+
+  .voom-cell-sub {
+    margin-top: 0.15rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--muted-foreground);
+  }
+
+  /* monospace technical values: IPs, URLs, ports, timestamps */
+  .voom-mono {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.85rem;
+    letter-spacing: -0.01em;
+  }
+
+  .voom-mono-link {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.85rem;
+    color: var(--brand);
+  }
+
+  .voom-mono-link:hover {
+    text-decoration: underline;
+  }
+
+  /* ---------- CHIPS / BADGES ---------- */
+
+  .voom-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 10px;
+    padding: 0.3rem 0.7rem;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .voom-chip--brand {
+    background: var(--brand-soft);
+    color: var(--brand-strong);
+  }
+
+  .dark .voom-chip--brand {
+    color: var(--brand);
+  }
+
+  .voom-chip--ink {
+    background: var(--ink);
+    color: #fff;
+  }
+
+  .voom-chip--ok {
+    background: var(--ok-soft);
+    color: var(--ok);
+  }
+
+  .voom-chip--warn {
+    background: var(--warn-soft);
+    color: var(--warn);
+  }
+
+  .voom-chip--danger {
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+
+  .voom-chip--muted {
+    background: var(--surface-soft);
+    color: var(--muted-foreground);
+  }
+
+  /* plate number chip (Arabic plates keep sans, digits mono) */
+  .voom-plate {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface-soft);
+    padding: 0.35rem 0.7rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  /* ---------- PILLS IN HEADER ---------- */
+
+  .voom-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: var(--surface-soft);
+    color: var(--muted-foreground);
+  }
+
+  .voom-pill--danger {
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+
+  .voom-pill--time {
+    font-family: var(--font-mono), ui-monospace, monospace;
+  }
+
+  .voom-dot {
+    height: 0.5rem;
+    width: 0.5rem;
+    border-radius: 9999px;
+    background: currentColor;
+  }
+
+  /* ---------- PAGINATION ---------- */
+
+  .voom-pagination {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .voom-pagination {
+      flex-direction: row;
+    }
+  }
+
+  .voom-pagination-info {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.8rem;
+    color: var(--muted-foreground);
+  }
+
+  .voom-page-btn {
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    padding: 0.5rem 1.1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--foreground);
+    transition: background 0.15s ease;
+  }
+
+  .voom-page-btn:hover:not(:disabled) {
+    background: var(--surface-hover);
+  }
+
+  .voom-page-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    color: var(--muted-foreground);
+  }
+
+  /* ---------- MISC ---------- */
+
+  .voom-section-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--foreground);
+  }
+
+  .voom-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--foreground);
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
