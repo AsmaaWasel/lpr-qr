@@ -13,16 +13,29 @@ type Props = {
 
 export default function GateForm({ editing, onClose, onSubmit }: Props) {
   const [name, setName] = useState(editing?.name ?? "");
+
   const [type, setType] = useState<"ENTRY" | "EXIT">(editing?.type ?? "ENTRY");
+
   const [desc, setDesc] = useState(editing?.desc ?? "");
+
   const [ip, setIp] = useState(editing?.ip ?? "");
 
   const handleSave = async () => {
+    if (!name.trim()) {
+      alert("Please enter gate name");
+      return;
+    }
+
+    if (!ip.trim()) {
+      alert("Please enter IP address");
+      return;
+    }
+
     await onSubmit({
-      name,
+      name: name.trim(),
       type,
-      desc,
-      ip,
+      desc: desc.trim(),
+      ip: ip.trim(),
     });
   };
 
@@ -78,9 +91,8 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
         "
         onMouseDown={(e) => e.stopPropagation()}
       >
-        {/* =========================
-            HEADER
-        ========================= */}
+        {/* HEADER */}
+
         <div className="mb-6 flex items-start justify-between">
           <div>
             <h2 className="text-2xl font-bold text-foreground">
@@ -113,11 +125,11 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
           </button>
         </div>
 
-        {/* =========================
-            FORM
-        ========================= */}
+        {/* FORM */}
+
         <div className="space-y-4">
           {/* Gate Name */}
+
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
               Gate Name
@@ -134,6 +146,7 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
           </div>
 
           {/* Type */}
+
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
               Type
@@ -150,6 +163,7 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
           </div>
 
           {/* IP Address */}
+
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
               IP Address
@@ -166,6 +180,7 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
           </div>
 
           {/* Description */}
+
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
               Description
@@ -186,9 +201,8 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
           </div>
         </div>
 
-        {/* =========================
-            ACTIONS
-        ========================= */}
+        {/* ACTIONS */}
+
         <div className="mt-7 flex justify-end gap-3 border-t border-border pt-5">
           <button
             type="button"

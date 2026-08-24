@@ -1,4 +1,3 @@
-// modules/sharedComponents/residents/ResidentCRUD.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,8 +5,6 @@ import { useEffect, useState } from "react";
 import ResidentTable from "./ResidentTable";
 import ResidentForm from "./ResidentForm";
 import CredentialsForm from "./CredentialsForm";
-import DonutChart from "./DonutChart";
-
 import { useToast } from "@/shared/hooks/use-toast";
 import { Resident } from "@/modules/types/resident";
 
@@ -18,6 +15,8 @@ import {
   updateResident,
   addCredentials,
 } from "@/services/resident";
+
+import { CrudShell } from "@/shared/ui/voom";
 
 type ResidentFormData = {
   full_name: string;
@@ -36,26 +35,35 @@ type CredentialsFormData = {
 };
 
 export default function ResidentCRUD() {
+  // =========================
+  // DATA STATES
+  // =========================
+
   const [residents, setResidents] = useState<Resident[]>([]);
   const [open, setOpen] = useState(false);
   const [openCredentials, setOpenCredentials] = useState(false);
   const [editing, setEditing] = useState<Resident | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  // =========================
+  // UI STATES
+  // =========================
+
   const [loading, setLoading] = useState(true);
   const [credentialsLoading, setCredentialsLoading] = useState(false);
-
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
   const pageSize = 10;
-
   const toast = useToast();
 
-  const selectedResident = residents.find((r) => r.id === selectedId) || null;
+  const selectedResident =
+    residents.find((resident) => resident.id === selectedId) || null;
 
   // =========================
   // LOAD RESIDENTS
   // =========================
+
   const loadResidents = async () => {
     try {
       setLoading(true);
@@ -65,9 +73,7 @@ export default function ResidentCRUD() {
       setResidents(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed loading residents:", error);
-
       toast.error("Failed to load residents");
-
       setResidents([]);
     } finally {
       setLoading(false);
@@ -75,11 +81,7 @@ export default function ResidentCRUD() {
   };
 
   useEffect(() => {
-    const fetchResidents = async () => {
-      await loadResidents();
-    };
-
-    fetchResidents();
+    loadResidents();
   }, []);
 
   // =========================
@@ -89,17 +91,21 @@ export default function ResidentCRUD() {
   const filteredResidents = residents.filter((resident) => {
     if (!resident) return false;
 
-    const searchLower = search.toLowerCase();
+    const query = search.toLowerCase();
 
     return (
-      resident.full_name?.toLowerCase().includes(searchLower) ||
+      resident.full_name?.toLowerCase().includes(query) ||
       resident.phone_number?.includes(search) ||
       resident.national_id?.toString().includes(search) ||
-      resident.type?.toLowerCase().includes(searchLower) ||
-      resident.status?.toLowerCase().includes(searchLower) ||
-      resident.notes?.toLowerCase().includes(searchLower)
+      resident.type?.toLowerCase().includes(query) ||
+      resident.status?.toLowerCase().includes(query) ||
+      resident.notes?.toLowerCase().includes(query)
     );
   });
+
+  // =========================
+  // PAGINATION
+  // =========================
 
   const totalPages = Math.ceil(filteredResidents.length / pageSize) || 1;
 
@@ -109,20 +115,6 @@ export default function ResidentCRUD() {
   );
 
   // =========================
-  // STATS
-  // =========================
-
-  const total = residents.length;
-
-  const allowedResidents = residents.filter(
-    (resident) => resident.status?.toLowerCase() === "allowed",
-  ).length;
-
-  const blockedResidents = residents.filter(
-    (resident) => resident.status?.toLowerCase() === "notallowed",
-  ).length;
-
-  // =========================
   // CREATE / UPDATE
   // =========================
 
@@ -130,11 +122,9 @@ export default function ResidentCRUD() {
     try {
       if (editing) {
         await updateResident(editing.id, data);
-
         toast.success("Resident updated successfully");
       } else {
         await createResident(data);
-
         toast.success("Resident created successfully");
       }
 
@@ -145,10 +135,10 @@ export default function ResidentCRUD() {
       setSelectedId(null);
     } catch (error) {
       console.error("Submit error:", error);
-
       toast.error("Something went wrong");
     }
   };
+
   // =========================
   // DELETE
   // =========================
@@ -166,7 +156,6 @@ export default function ResidentCRUD() {
       setSelectedId(null);
     } catch (error) {
       console.error("Delete error:", error);
-
       toast.error("Failed to delete resident");
     }
   };
@@ -189,7 +178,6 @@ export default function ResidentCRUD() {
       setOpenCredentials(false);
     } catch (error) {
       console.error("Credentials error:", error);
-
       toast.error("Failed to add credentials");
     } finally {
       setCredentialsLoading(false);
@@ -197,8 +185,9 @@ export default function ResidentCRUD() {
   };
 
   // =========================
-  // ✅ HANDLE STATUS CHANGE
+  // STATUS CHANGE
   // =========================
+
   const handleStatusChange = (
     residentId: number,
     newStatus: Resident["status"],
@@ -215,178 +204,93 @@ export default function ResidentCRUD() {
     );
   };
 
+  // =========================
+  // LOADING
+  // =========================
+
   if (loading) {
-    return <div className="text-foreground p-6">Loading residents...</div>;
+    return (
+      <div className="flex min-h-[300px] items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand border-t-transparent" />
+      </div>
+    );
   }
 
+  // =========================
+  // RENDER
+  // =========================
+
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <div className="lg:col-span-2">
-          <DonutChart
-            allowed={allowedResidents}
-            notAllowed={blockedResidents}
-            total={total}
-          />
-        </div>
+    <>
+      <div className="space-y-4">
+        {/* =========================
+            RESIDENT CRUD CARD
+        ========================= */}
 
-        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center justify-center">
-            <p className="text-muted-foreground text-sm">Total Residents</p>
-            <h2 className="text-xl text-foreground font-bold mt-1">{total}</h2>
-          </div>
-
-          <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center justify-center">
-            <p className="text-muted-foreground text-sm">Allowed</p>
-            <h2 className="text-xl text-green-400 font-bold mt-1">
-              {allowedResidents}
-            </h2>
-          </div>
-
-          <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center justify-center">
-            <p className="text-muted-foreground text-sm">Not Allowed</p>
-            <h2 className="text-xl text-danger font-bold mt-1">
-              {blockedResidents}
-            </h2>
-          </div>
-        </div>
-      </div>
-
-      {/* SEARCH + BUTTONS */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <input
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
+        <CrudShell
+          search={search}
+          onSearchChange={(value) => {
+            setSearch(value);
             setCurrentPage(1);
           }}
-          placeholder="Search residents..."
-          className="
-          flex-1
-          h-11
-          px-4
-          rounded-xl
-          bg-card
-          border
-          border-border
-          text-foreground
-          text-lg
-          "
-        />
-
-        <button
-          onClick={() => {
+          searchPlaceholder="Search by name, phone, national ID or notes..."
+          addLabel="Add Resident"
+          onAdd={() => {
             setEditing(null);
             setOpen(true);
           }}
-          className="
-          bg-brand
-          text-foreground
-          px-5
-          rounded-xl
-          "
-        >
-          Add Resident
-        </button>
+          onEdit={() => {
+            if (!selectedResident) return;
 
-        <button
-          disabled={!selectedResident}
-          onClick={() => {
-            if (selectedResident) {
-              setOpenCredentials(true);
-            }
+            setEditing(selectedResident);
+            setOpen(true);
           }}
-          className="
-          bg-purple-500
-          text-foreground
-          px-5
-          rounded-xl
-          disabled:opacity-40
-          hover:bg-purple-600
-          transition-colors
-          "
+          onDelete={handleDelete}
+          hasSelected={!!selectedResident}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filteredResidents.length}
+          itemLabel="residents"
+          onPrevious={() => setCurrentPage((page) => Math.max(1, page - 1))}
+          onNext={() =>
+            setCurrentPage((page) => Math.min(totalPages || 1, page + 1))
+          }
+          extraActions={
+            <button
+              type="button"
+              disabled={!selectedResident}
+              onClick={() => {
+                if (selectedResident) {
+                  setOpenCredentials(true);
+                }
+              }}
+              className="
+        voom-btn
+        bg-[#6e757f]
+        text-[##132f49]
+        disabled:cursor-not-allowed
+        disabled:opacity-40
+      "
+            >
+              Add Credentials
+            </button>
+          }
         >
-          Add Credentials
-        </button>
-
-        <button
-          disabled={!selectedResident}
-          onClick={() => {
-            if (selectedResident) {
-              setEditing(selectedResident);
-              setOpen(true);
+          <ResidentTable
+            data={paginatedResidents}
+            selectedId={selectedId}
+            onSelect={(id) =>
+              setSelectedId((prev) => (prev === id ? null : id))
             }
-          }}
-          className="
-          bg-secondary
-          text-foreground
-          px-5
-          rounded-xl
-          disabled:opacity-40
-          text-lg
-          "
-        >
-          Edit
-        </button>
-
-        <button
-          disabled={!selectedResident}
-          onClick={handleDelete}
-          className="
-          bg-danger-soft
-          text-danger
-          px-5
-          rounded-xl
-          disabled:opacity-40
-          text-lg
-          "
-        >
-          Delete
-        </button>
+            onStatusChange={handleStatusChange}
+          />
+        </CrudShell>
       </div>
 
-      {/* TABLE */}
-      {residents.length === 0 ? (
-        <div className="text-center text-muted-foreground py-10 border border-border rounded-xl">
-          No residents found
-        </div>
-      ) : (
-        <ResidentTable
-          data={paginatedResidents}
-          selectedId={selectedId}
-          onSelect={(id) => setSelectedId((prev) => (prev === id ? null : id))}
-          onStatusChange={handleStatusChange}
-        />
-      )}
+      {/* =========================
+          RESIDENT FORM
+      ========================= */}
 
-      {/* PAGINATION */}
-      {residents.length > 0 && (
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">
-            Page {currentPage} / {totalPages}
-          </span>
-
-          <div className="flex gap-2">
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => p - 1)}
-              className="px-4 py-2 bg-secondary text-foreground rounded-lg text-lg"
-            >
-              Prev
-            </button>
-
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((p) => p + 1)}
-              className="px-4 py-2 bg-secondary text-foreground rounded-lg text-lg"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* FORM */}
       {open && (
         <ResidentForm
           editing={editing}
@@ -398,7 +302,10 @@ export default function ResidentCRUD() {
         />
       )}
 
-      {/* CREDENTIALS FORM */}
+      {/* =========================
+          CREDENTIALS FORM
+      ========================= */}
+
       {openCredentials && selectedResident && (
         <CredentialsForm
           residentId={selectedResident.id}
@@ -408,6 +315,6 @@ export default function ResidentCRUD() {
           loading={credentialsLoading}
         />
       )}
-    </div>
+    </>
   );
 }

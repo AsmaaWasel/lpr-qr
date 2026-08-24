@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { useToast } from "@/shared/hooks/use-toast";
-import { User } from "@/modules/types/user";
+import { User, UserFormData } from "@/modules/types/user";
 import { createUser, deleteUser, getUsers, updateUser } from "@/services/user";
 import UserTable from "./UserTable";
 import { CrudShell } from "@/shared/ui/voom";
@@ -130,12 +130,6 @@ export default function UserCRUD() {
   return (
     <>
       <CrudShell
-        stats={[
-          { label: "Total Users", value: total },
-          { label: "Admins", value: adminUsers },
-          { label: "Security", value: securityUsers },
-          { label: "Managers", value: managerUsers },
-        ]}
         search={search}
         onSearchChange={(value) => {
           setSearch(value);

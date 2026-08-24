@@ -1,15 +1,17 @@
-// modules/types/user.ts
-
-type User = {
+export type User = {
   id: number;
+  username: string;
   email: string;
   role: string;
+  department_id: number;
+  phone?: string;
+  is_active: number;
 };
-// نوع البيانات المرسلة في الطلبات (POST/PATCH)
+
 export type UserFormData = {
   username: string;
   email: string;
   role: string;
-  // ملاحظة: status و is_active قد تكون اختيارية في الإرسال
-  // حسب ما يتوقعه الـ API
+  department_id: number;
+  phone: string;
 };

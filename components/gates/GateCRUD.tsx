@@ -85,20 +85,6 @@ export default function GateCRUD() {
   );
 
   // =========================
-  // STATS
-  // =========================
-
-  const totalGates = gates.length;
-
-  const entryGates = gates.filter(
-    (gate) => gate.type?.toLowerCase() === "entry",
-  ).length;
-
-  const exitGates = gates.filter(
-    (gate) => gate.type?.toLowerCase() === "exit",
-  ).length;
-
-  // =========================
   // SUBMIT
   // =========================
 
@@ -161,7 +147,6 @@ export default function GateCRUD() {
   return (
     <>
       <div className="space-y-4">
-       
         {/* =========================
             GATE CRUD
         ========================= */}
@@ -207,7 +192,6 @@ export default function GateCRUD() {
       {/* =========================
           GATE FORM
       ========================= */}
-
       {open && (
         <GateForm
           editing={editing}
