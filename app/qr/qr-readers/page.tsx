@@ -1,6 +1,6 @@
 "use client";
 
-import CameraCRUD from "@/components/cameras/ReaderCRUD";
+import CameraCRUD from "@/components/readers/ReaderCRUD";
 
 export default function CamerasPage() {
   return (

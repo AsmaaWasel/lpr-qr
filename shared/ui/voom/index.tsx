@@ -455,8 +455,8 @@ export const LPR_TABS: PillTab[] = [
 ];
 
 export const QR_TABS: PillTab[] = [
-  { label: "QR Generator", href: "/dashboard/qr/qr" },
-  { label: "QR Readers", href: "/dashboard/qr/cameras" },
+  { label: "QR Generator", href: "/dashboard/qr/qr-generator" },
+  { label: "QR Readers", href: "/dashboard/qr/qr-readers" },
 ];
 
 export const REPORT_TABS: PillTab[] = [

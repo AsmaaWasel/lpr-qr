@@ -1,8 +1,10 @@
 "use client";
 
-import { CameraFormData } from "@/modules/types/camera";
-import { getGates } from "@/services/gate";
 import { useEffect, useState } from "react";
+import { X } from "lucide-react";
+
+import { ReaderFormData } from "@/modules/types/camera";
+import { getGates } from "@/services/gate";
 
 type Gate = {
   id: number;
@@ -10,23 +12,23 @@ type Gate = {
 };
 
 type Props = {
-  editing?: Partial<CameraFormData> | null;
+  editing?: Partial<ReaderFormData> | null;
   onClose: () => void;
-  onSubmit: (data: CameraFormData) => void | Promise<void>;
+  onSubmit: (data: ReaderFormData) => void | Promise<void>;
 };
 
-export default function CameraForm({ editing, onClose, onSubmit }: Props) {
+export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
   const [gates, setGates] = useState<Gate[]>([]);
 
-  const [form, setForm] = useState<CameraFormData>({
+  const [form, setForm] = useState<ReaderFormData>({
     gate_id: editing?.gate_id ?? 0,
     location: editing?.location ?? "",
     username: editing?.username ?? "",
     password: editing?.password ?? "",
     ip_address: editing?.ip_address ?? "",
-    port: editing?.port != null ? Number(editing.port) : 0,
+    port: Number(editing?.port ?? 0),
     notes: editing?.notes ?? "",
-    reader_type: editing?.reader_type ?? "CAMERA",
+    reader_type: editing?.reader_type ?? "",
     add_string_to_url: editing?.add_string_to_url ?? "",
   });
 
@@ -51,9 +53,9 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
   // HANDLE CHANGE
   // =========================
 
-  const handleChange = <K extends keyof CameraFormData>(
+  const handleChange = <K extends keyof ReaderFormData>(
     key: K,
-    value: CameraFormData[K],
+    value: ReaderFormData[K],
   ) => {
     setForm((prev) => ({
       ...prev,
@@ -78,30 +80,13 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
   };
 
   // =========================
-  // SAVE
+  // READER TYPE
   // =========================
 
-  const handleSave = async () => {
-    const selectedGate = gates.find((gate) => gate.id === form.gate_id);
-
-    if (!selectedGate) {
-      alert("Please select a gate");
-      return;
-    }
-
-    await onSubmit({
-      ...form,
-
-      gate_id: selectedGate.id,
-      location: selectedGate.name,
-
-      // ✅ تأكيد أن port رقم
-      port: Number(form.port),
-    });
-  };
+  const isCamera = form.reader_type === "CAMERA";
 
   // =========================
-  // INPUT STYLE
+  // INPUT CLASS
   // =========================
 
   const inputClassName = `
@@ -125,6 +110,26 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
     dark:focus:ring-white/10
     dark:focus:border-white/30
   `;
+
+  // =========================
+  // SAVE
+  // =========================
+
+  const handleSave = async () => {
+    const selectedGate = gates.find((gate) => gate.id === form.gate_id);
+
+    if (!selectedGate) {
+      alert("Please select a gate");
+      return;
+    }
+
+    await onSubmit({
+      ...form,
+      gate_id: selectedGate.id,
+      location: selectedGate.name,
+      port: Number(form.port),
+    });
+  };
 
   return (
     <div
@@ -163,13 +168,13 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
         <div className="mb-6 flex items-start justify-between">
           <div>
             <h2 className="text-2xl font-bold text-foreground">
-              {editing ? "Edit Camera" : "Add Camera"}
+              {editing ? "Edit Reader" : "Add Reader"}
             </h2>
 
             <p className="mt-1 text-sm font-medium text-muted-foreground">
               {editing
-                ? "Update camera connection details"
-                : "Add a new camera and configure its connection"}
+                ? "Update reader information"
+                : "Add a new camera or QR reader"}
             </p>
           </div>
 
@@ -190,7 +195,7 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
               hover:text-foreground
             "
           >
-            ✕
+            <X size={18} />
           </button>
         </div>
 
@@ -199,7 +204,9 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
         ========================= */}
 
         <div className="space-y-4">
-          {/* Gate */}
+          {/* =========================
+              GATE
+          ========================= */}
 
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
@@ -211,8 +218,6 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
               onChange={handleGateChange}
               className={inputClassName}
             >
-              <option value="">Select Gate</option>
-
               {gates.map((gate) => (
                 <option key={gate.id} value={gate.id}>
                   {gate.name}
@@ -221,39 +226,69 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
             </select>
           </div>
 
-          {/* Username */}
+          {/* =========================
+              READER TYPE
+          ========================= */}
 
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
-              Username
+              Reader Type
             </label>
 
-            <input
-              type="text"
-              placeholder="Enter username"
-              value={form.username ?? ""}
-              onChange={(e) => handleChange("username", e.target.value)}
+            <select
+              value={form.reader_type}
+              onChange={(e) => handleChange("reader_type", e.target.value)}
               className={inputClassName}
-            />
+            >
+              <option value="CAMERA">Camera</option>
+
+              <option value="QRREADER">QR Reader</option>
+            </select>
           </div>
 
-          {/* Password */}
+          {/* =========================
+              CAMERA CREDENTIALS
+          ========================= */}
 
-          <div className="space-y-1.5">
-            <label className="block text-base font-semibold text-foreground">
-              Password
-            </label>
+          {isCamera && (
+            <>
+              {/* Username */}
 
-            <input
-              type="password"
-              placeholder="Enter password"
-              value={form.password ?? ""}
-              onChange={(e) => handleChange("password", e.target.value)}
-              className={inputClassName}
-            />
-          </div>
+              <div className="space-y-1.5">
+                <label className="block text-base font-semibold text-foreground">
+                  Username
+                </label>
 
-          {/* IP Address */}
+                <input
+                  type="text"
+                  placeholder="Enter camera username"
+                  value={form.username}
+                  onChange={(e) => handleChange("username", e.target.value)}
+                  className={inputClassName}
+                />
+              </div>
+
+              {/* Password */}
+
+              <div className="space-y-1.5">
+                <label className="block text-base font-semibold text-foreground">
+                  Password
+                </label>
+
+                <input
+                  type="password"
+                  placeholder="Enter camera password"
+                  value={form.password}
+                  onChange={(e) => handleChange("password", e.target.value)}
+                  className={inputClassName}
+                />
+              </div>
+            </>
+          )}
+
+          {/* =========================
+              IP ADDRESS
+          ========================= */}
 
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
@@ -262,14 +297,16 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
 
             <input
               type="text"
-              placeholder="Enter IP address (e.g., 192.168.1.100)"
-              value={form.ip_address ?? ""}
+              value={form.ip_address}
               onChange={(e) => handleChange("ip_address", e.target.value)}
+              placeholder="Enter IP address (e.g., 10.20.1.11)"
               className={inputClassName}
             />
           </div>
 
-          {/* Port */}
+          {/* =========================
+              PORT
+          ========================= */}
 
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
@@ -278,19 +315,16 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
 
             <input
               type="number"
-              placeholder="Enter port number (e.g., 8080)"
               value={form.port || ""}
-              onChange={(e) =>
-                handleChange(
-                  "port",
-                  e.target.value === "" ? 0 : Number(e.target.value),
-                )
-              }
+              onChange={(e) => handleChange("port", Number(e.target.value))}
+              placeholder="Enter port number (e.g., 8080)"
               className={inputClassName}
             />
           </div>
 
-          {/* Add SubURL */}
+          {/* =========================
+              ADD SUB URL
+          ========================= */}
 
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
@@ -299,16 +333,18 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
 
             <input
               type="text"
-              placeholder="Enter string to append to URL (e.g., /stream)"
-              value={form.add_string_to_url ?? ""}
+              value={form.add_string_to_url}
               onChange={(e) =>
                 handleChange("add_string_to_url", e.target.value)
               }
+              placeholder="Enter string to append to URL (e.g., /stream)"
               className={inputClassName}
             />
           </div>
 
-          {/* Notes */}
+          {/* =========================
+              NOTES
+          ========================= */}
 
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
@@ -316,9 +352,9 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
             </label>
 
             <textarea
-              placeholder="Enter notes"
-              value={form.notes ?? ""}
+              value={form.notes}
               onChange={(e) => handleChange("notes", e.target.value)}
+              placeholder="Add notes about this reader"
               rows={3}
               className={`
                 ${inputClassName}
@@ -370,7 +406,7 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
               active:scale-[0.98]
             "
           >
-            {editing ? "Update Camera" : "Save Camera"}
+            {editing ? "Update Reader" : "Save Reader"}
           </button>
         </div>
       </div>

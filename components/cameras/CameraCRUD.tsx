@@ -184,14 +184,7 @@ export default function CameraCRUD() {
 
       {open && (
         <CameraForm
-          editing={
-            editing
-              ? {
-                  ...editing,
-                  port: String(editing.port),
-                }
-              : null
-          }
+          editing={editing}
           onClose={() => {
             setOpen(false);
             setEditing(null);
