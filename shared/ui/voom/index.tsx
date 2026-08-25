@@ -339,7 +339,7 @@ export function Pagination({
 }) {
   return (
     <div className="voom-pagination">
-      <p className="voom-pagination-info text-lg">
+      <p className="voom-pagination-info text-[16px] font-[500] text-[#7C93B4]">
         Page {currentPage} of {totalPages} · {totalItems} {itemLabel}
       </p>
 
@@ -348,7 +348,7 @@ export function Pagination({
           type="button"
           onClick={onPrevious}
           disabled={currentPage <= 1}
-          className="voom-page-btn text-lg"
+          className="voom-page-btn text-[16px] font-[600] bg-[#F2F6FB] text-[#7C93B4]"
         >
           Prev
         </button>
@@ -357,7 +357,8 @@ export function Pagination({
           type="button"
           onClick={onNext}
           disabled={currentPage >= totalPages}
-          className="voom-page-btn text-lg"
+          className="voom-page-btn text-[16px] font-[600] bg-[#F2F6FB] text-[#3B5473
+]"
         >
           Next
         </button>

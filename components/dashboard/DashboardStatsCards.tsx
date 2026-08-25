@@ -23,7 +23,7 @@ export default function DashboardStatsCards() {
           shadow-sm
         "
         style={{
-          background: "linear-gradient(165deg, #315EDB, #102A67)",
+          background: "linear-gradient(165deg, #16324F, #0B1B30)",
         }}
       >
         {/* Left Icon */}

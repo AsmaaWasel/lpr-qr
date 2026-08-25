@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
-
 import { Gate, GateFormData } from "@/modules/types/gate";
 
 type Props = {
@@ -13,11 +12,8 @@ type Props = {
 
 export default function GateForm({ editing, onClose, onSubmit }: Props) {
   const [name, setName] = useState(editing?.name ?? "");
-
   const [type, setType] = useState<"ENTRY" | "EXIT">(editing?.type ?? "ENTRY");
-
   const [desc, setDesc] = useState(editing?.desc ?? "");
-
   const [ip, setIp] = useState(editing?.ip ?? "");
 
   const handleSave = async () => {
@@ -72,6 +68,7 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
         justify-center
         bg-black/50
         p-4
+        md:p-8
         backdrop-blur-sm
       "
       onMouseDown={onClose}
@@ -79,27 +76,27 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
       <div
         className="
           w-full
-          max-w-[560px]
-          max-h-[90vh]
+          max-w-[850px]
+          max-h-[92vh]
           overflow-y-auto
-          rounded-2xl
+          rounded-3xl
           border
           border-border
           bg-card
-          p-6
+          p-7
+          md:p-9
           shadow-2xl
         "
         onMouseDown={(e) => e.stopPropagation()}
       >
         {/* HEADER */}
-
-        <div className="mb-6 flex items-start justify-between">
+        <div className="mb-8 flex items-start justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">
               {editing ? "Edit Gate" : "Add Gate"}
             </h2>
 
-            <p className="mt-1 text-sm font-medium text-muted-foreground">
+            <p className="mt-2 text-sm md:text-base font-medium text-muted-foreground">
               {editing ? "Update gate information" : "Add a new system gate"}
             </p>
           </div>
@@ -109,8 +106,9 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
             onClick={onClose}
             className="
               flex
-              h-9
-              w-9
+              h-10
+              w-10
+              shrink-0
               items-center
               justify-center
               rounded-xl
@@ -121,50 +119,49 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
               hover:text-foreground
             "
           >
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
 
         {/* FORM */}
+        <div className="space-y-6">
+          {/* Gate Name + Type */}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_220px] gap-5">
+            {/* Gate Name */}
+            <div className="space-y-2">
+              <label className="block text-base font-semibold text-foreground">
+                Gate Name
+              </label>
 
-        <div className="space-y-4">
-          {/* Gate Name */}
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Gate-5 - Main Entrance"
+                required
+                className={inputClassName}
+              />
+            </div>
 
-          <div className="space-y-1.5">
-            <label className="block text-base font-semibold text-foreground">
-              Gate Name
-            </label>
+            {/* Type */}
+            <div className="space-y-2">
+              <label className="block text-base font-semibold text-foreground">
+                Type
+              </label>
 
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Gate-5 - Main Entrance"
-              required
-              className={inputClassName}
-            />
-          </div>
-
-          {/* Type */}
-
-          <div className="space-y-1.5">
-            <label className="block text-base font-semibold text-foreground">
-              Type
-            </label>
-
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value as "ENTRY" | "EXIT")}
-              className={inputClassName}
-            >
-              <option value="ENTRY">ENTRY</option>
-              <option value="EXIT">EXIT</option>
-            </select>
+              <select
+                value={type}
+                onChange={(e) => setType(e.target.value as "ENTRY" | "EXIT")}
+                className={inputClassName}
+              >
+                <option value="ENTRY">ENTRY</option>
+                <option value="EXIT">EXIT</option>
+              </select>
+            </div>
           </div>
 
           {/* IP Address */}
-
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <label className="block text-base font-semibold text-foreground">
               IP Address
             </label>
@@ -180,8 +177,7 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
           </div>
 
           {/* Description */}
-
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <label className="block text-base font-semibold text-foreground">
               Description
             </label>
@@ -190,10 +186,11 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
               placeholder="Primary residents entry"
-              rows={3}
+              rows={4}
               className={`
                 ${inputClassName}
                 h-auto
+                min-h-[120px]
                 resize-none
                 py-3
               `}
@@ -202,15 +199,14 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
         </div>
 
         {/* ACTIONS */}
-
-        <div className="mt-7 flex justify-end gap-3 border-t border-border pt-5">
+        <div className="mt-8 flex justify-end gap-3 border-t border-border pt-6">
           <button
             type="button"
             onClick={onClose}
             className="
               rounded-xl
-              px-5
-              py-2.5
+              px-6
+              py-3
               text-base
               font-semibold
               text-muted-foreground
@@ -228,8 +224,8 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
             className="
               rounded-xl
               bg-[#132f49]
-              px-6
-              py-2.5
+              px-7
+              py-3
               text-base
               font-semibold
               text-white

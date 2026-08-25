@@ -1,17 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Activity,
-  Users,
-  Camera,
-  ShieldCheck,
-  ArrowUpRight,
-  Radio,
-  TrendingUp,
-  Clock,
-  AlertTriangle,
-} from "lucide-react";
+import Link from "next/link";
+import { Camera, ArrowUpRight } from "lucide-react";
 
 import {
   XAxis,
@@ -22,6 +13,7 @@ import {
   Area,
   CartesianGrid,
 } from "recharts";
+
 import DashboardStatsCards from "@/components/dashboard/DashboardStatsCards";
 
 export default function DashboardHome() {
@@ -41,6 +33,7 @@ export default function DashboardHome() {
   useEffect(() => {
     const interval = setInterval(() => {
       setEntrances((prev) => prev + Math.floor(Math.random() * 2));
+
       if (Math.random() > 0.7) {
         setPeakHourTraffic((prev) => prev + 1);
       }
@@ -50,47 +43,61 @@ export default function DashboardHome() {
   }, []);
 
   return (
-    <div className="relative w-full min-h-screen text-foreground p-6 md:p-10 overflow-hidden ">
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-sky-500/10 blur-[150px] rounded-full -translate-y-1/3 translate-x-1/3" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-600/5 blur-[120px] rounded-full" />
-
-      <div className="relative z-10 max-w-7xl mx-auto space-y-8">
+    <div className="relative w-full min-h-screen bg-transparent text-foreground px-4 py-6 md:px-6 md:py-8 overflow-hidden">
+      <div className="relative z-10 w-full space-y-8">
+        {/* Stats */}
         <DashboardStatsCards />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 rounded-2xl border border-border bg-white/[0.03] p-6 backdrop-blur-md">
-            <div className="flex justify-between items-center mb-6">
+        {/* Main Grid */}
+        <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Traffic Chart */}
+          <div className="lg:col-span-2 rounded-2xl border border-border bg-white p-6">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="font-bold text-lg">
+                <h3 className="font-[700] text-[20px]">
                   Traffic Distribution Velocity
                 </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
+
+                <p className="text-[16px] font-[500] text-[#7C93B4] mt-0.5">
                   Analysis of patterns between general vehicle entries and
                   residents.
                 </p>
               </div>
-              <div className="flex items-center gap-4 text-xs">
+
+              {/* Legend */}
+              <div className="flex items-center gap-4 text-[16px]">
                 <div className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-brand" /> Cars
+                  <span className="h-2 w-2 rounded-full bg-brand" />
+                  Cars
                 </div>
+
                 <div className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-indigo-500" />{" "}
+                  <span className="h-2 w-2 rounded-full bg-indigo-500" />
                   Residents
                 </div>
               </div>
             </div>
 
+            {/* Chart */}
             <div className="h-[260px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={hourlyTrafficData}
-                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                  margin={{
+                    top: 10,
+                    right: 10,
+                    left: -20,
+                    bottom: 0,
+                  }}
                 >
                   <defs>
                     <linearGradient id="colorCars" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#38bdf8" stopOpacity={0.2} />
+
                       <stop offset="95%" stopColor="#38bdf8" stopOpacity={0} />
                     </linearGradient>
+
                     <linearGradient
                       id="colorResidents"
                       x1="0"
@@ -99,21 +106,32 @@ export default function DashboardHome() {
                       y2="1"
                     >
                       <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} />
+
                       <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
                     </linearGradient>
                   </defs>
+
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="#ffffff/5"
+                    stroke="#e2e8f0"
                     vertical={false}
                   />
+
                   <XAxis
                     dataKey="time"
                     stroke="#64748b"
                     fontSize={11}
                     tickLine={false}
+                    axisLine={false}
                   />
-                  <YAxis stroke="#64748b" fontSize={11} tickLine={false} />
+
+                  <YAxis
+                    stroke="#64748b"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "#0b1329",
@@ -122,6 +140,7 @@ export default function DashboardHome() {
                       color: "#fff",
                     }}
                   />
+
                   <Area
                     type="monotone"
                     dataKey="Cars"
@@ -130,6 +149,7 @@ export default function DashboardHome() {
                     fillOpacity={1}
                     fill="url(#colorCars)"
                   />
+
                   <Area
                     type="monotone"
                     dataKey="Residents"
@@ -143,38 +163,103 @@ export default function DashboardHome() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-gradient-to-b from-white/[0.04] to-transparent p-6 flex flex-col justify-between">
+          {/* AI Vision Card */}
+          <div
+            className="flex flex-col justify-between rounded-2xl border border-border p-6"
+            style={{
+              background: "linear-gradient(165deg, #16324F, #0B1B30)",
+            }}
+          >
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <Camera className="text-brand h-7 w-7" />
-                <span className="px-2 py-0.5 rounded-md bg-sky-500/10 border border-sky-500/20 text-[9px] text-brand font-bold tracking-widest uppercase">
+              {/* Header */}
+              <div className="mb-4 flex items-center justify-between">
+                <Camera className="h-7 w-7 text-brand" />
+
+                <span className="rounded-md border border-sky-500/20 bg-sky-500/10 px-2 py-0.5 text-[14px] font-bold tracking-widest text-brand uppercase">
                   HEURISTIC FEED
                 </span>
               </div>
-              <h3 className="text-lg font-bold">Live AI Gateway Stream</h3>
-              <p className="text-muted-foreground text-xs mt-2 leading-relaxed">
+
+              {/* Title */}
+              <h3 className="text-[20px] font-[700] text-white">
+                Live AI Gateway Stream
+              </h3>
+
+              <p className="mt-2 text-xs leading-relaxed text-slate-400">
                 Our vision node processes license plates and human verification
                 layers in less than <b>180ms</b>. Everything is archived
                 securely inside the system.
               </p>
+
+              {/* Live Camera Preview */}
+              <div className="mt-5 overflow-hidden rounded-xl border border-white/10 bg-black/20">
+                {/* Camera Header */}
+                <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    {/* Red Live Indicator */}
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+
+                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+                    </span>
+
+                    <span className="text-[11px] font-bold tracking-wider text-white">
+                      CAM-01 · LIVE
+                    </span>
+                  </div>
+
+                  <span className="text-[9px] tracking-widest text-slate-400 uppercase">
+                    AI VISION
+                  </span>
+                </div>
+
+                {/* Camera View */}
+                <div className="relative flex h-[120px] items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 to-slate-950">
+                  {/* Scan Lines */}
+                  <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_50%,rgba(255,255,255,0.15)_50%)] bg-[length:100%_4px] opacity-10" />
+
+                  {/* Detection Box */}
+                  <div className="relative rounded-md border border-cyan-400/60 px-6 py-3">
+                    <div className="absolute -top-1 -left-1 h-2 w-2 border-t-2 border-l-2 border-cyan-400" />
+
+                    <div className="absolute -top-1 -right-1 h-2 w-2 border-t-2 border-r-2 border-cyan-400" />
+
+                    <div className="absolute -bottom-1 -left-1 h-2 w-2 border-b-2 border-l-2 border-cyan-400" />
+
+                    <div className="absolute -bottom-1 -right-1 h-2 w-2 border-b-2 border-r-2 border-cyan-400" />
+
+                    <span className="text-[15px] font-bold tracking-[0.25em] text-white">
+                      ا ب خ 12398
+                    </span>
+                  </div>
+
+                  {/* Scanning Line */}
+                  <div className="absolute top-1/2 right-0 left-0 h-px bg-cyan-400/60 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+                </div>
+
+                {/* Camera Status */}
+                <div className="flex items-center justify-between px-4 py-2.5">
+                  <span className="text-[9px] text-slate-400">
+                    LICENSE PLATE DETECTED
+                  </span>
+
+                  <span className="text-[9px] font-bold text-emerald-400">
+                    180ms
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <button className="w-full mt-6 flex items-center justify-center gap-2 rounded-xl bg-brand-strong hover:bg-brand text-foreground font-bold py-3.5 text-xs uppercase tracking-wider transition-all shadow-lg shadow-sky-600/10">
-              Launch Live Vision View <ArrowUpRight className="h-4 w-4" />
-            </button>
+            {/* Launch Button */}
+            <Link
+              href="/dashboard/live-vision"
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-strong py-3.5 text-xs font-bold tracking-wider text-foreground uppercase shadow-lg shadow-sky-600/10 transition-all hover:bg-brand"
+            >
+              Launch Live Vision View
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
-
-        <footer className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-border bg-white/[0.01] px-6 py-4 text-xs text-muted-foreground">
-          <p>
-            © 2026 SmartGate Systems Platform • Enterprise Grade Infrastructure
-            Security
-          </p>
-          <div className="flex items-center gap-2 text-sky-400/80">
-            <Radio className="h-4 w-4 animate-pulse" />
-            <span>All nodes reporting nominal operation states</span>
-          </div>
-        </footer>
       </div>
     </div>
   );
