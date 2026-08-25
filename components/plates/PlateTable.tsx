@@ -9,48 +9,34 @@ type Props = {
   onSelect: (id: number) => void;
 };
 
-export default function PlateTable({
-  data,
-  selectedId,
-  onSelect,
-}: Props) {
+export default function PlateTable({ data, selectedId, onSelect }: Props) {
   const router = useRouter();
 
   // =========================
   // FORMAT PLATE NUMBER
   // =========================
-
   const formatPlateNumber = (plate: string) => {
     if (!plate) return "";
 
-    // Remove spaces
     const clean = plate.replace(/\s/g, "");
 
-    // Extract numbers
     const numbers = clean.match(/\d+/g)?.join("") || "";
-
-    // Extract Arabic / non-numeric letters
     const letters = clean.match(/[^\d]+/g)?.join("") || "";
 
-    // Add spaces between letters
     const spacedLetters = letters.split("").join(" ");
 
-    // Example: 123ابث
     if (numbers && letters && /^\d/.test(clean)) {
       return `${numbers} ${spacedLetters}`;
     }
 
-    // Example: ابث123
     if (letters && numbers && /^[^\d]/.test(clean)) {
       return `${spacedLetters} ${numbers}`;
     }
 
-    // Letters only
     if (!numbers && letters) {
       return spacedLetters;
     }
 
-    // Numbers only
     if (numbers && !letters) {
       return numbers;
     }
@@ -61,42 +47,29 @@ export default function PlateTable({
   // =========================
   // OPEN DETAILS
   // =========================
-
   const handleOpenDetails = (plateId: number) => {
     router.push("/dashboard/residents");
   };
 
   return (
-    <div
-      className="
-        overflow-hidden
-        rounded-[24px]
-        bg-card
-        shadow-sm
-      "
-    >
-      {/* =========================
-          TABLE
-      ========================= */}
-
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[700px]">
+    <div className="w-full bg-card shadow-sm">
+      {/* Table */}
+      <div className="w-full overflow-x-auto">
+        <table className="w-full min-w-[700px] border-collapse">
           {/* =========================
               THEAD
           ========================= */}
-
           <thead>
             <tr
               className="
                 border-b
                 border-border
-                bg-slate-50/70
+                bg-[#F2F6FB]
                 text-left
                 dark:bg-slate-800/40
               "
             >
               {/* Plate Number */}
-
               <th
                 className="
                   px-6
@@ -112,7 +85,6 @@ export default function PlateTable({
               </th>
 
               {/* Resident */}
-
               <th
                 className="
                   px-6
@@ -128,7 +100,6 @@ export default function PlateTable({
               </th>
 
               {/* Actions */}
-
               <th
                 className="
                   px-6
@@ -148,7 +119,6 @@ export default function PlateTable({
           {/* =========================
               TBODY
           ========================= */}
-
           <tbody>
             {data.length === 0 ? (
               <tr>
@@ -158,7 +128,7 @@ export default function PlateTable({
                     px-6
                     py-12
                     text-center
-                    text-sm
+                    text-lg
                     text-muted-foreground
                   "
                 >
@@ -178,7 +148,6 @@ export default function PlateTable({
                       border-b
                       border-border
                       transition
-                      last:border-b-0
 
                       ${
                         isSelected
@@ -190,11 +159,9 @@ export default function PlateTable({
                     {/* =========================
                         PLATE NUMBER
                     ========================= */}
-
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         {/* ID */}
-
                         <div
                           className="
                             flex
@@ -214,19 +181,16 @@ export default function PlateTable({
                         </div>
 
                         {/* Plate */}
-
                         <div>
                           <p
                             className="
-                              text-sm
+                              text-[16px]
                               font-bold
                               text-foreground
                               dark:text-white
                             "
                           >
-                            {formatPlateNumber(
-                              plate.plate_number_full,
-                            )}
+                            {formatPlateNumber(plate.plate_number_full)}
                           </p>
 
                           <p
@@ -245,13 +209,12 @@ export default function PlateTable({
                     {/* =========================
                         RESIDENT
                     ========================= */}
-
                     <td className="px-6 py-4">
                       {plate.resident ? (
                         <div>
                           <p
                             className="
-                              text-sm
+                              text-[16px]
                               font-bold
                               text-foreground
                               dark:text-white
@@ -293,7 +256,6 @@ export default function PlateTable({
                     {/* =========================
                         ACTIONS
                     ========================= */}
-
                     <td className="px-6 py-4">
                       <button
                         type="button"
