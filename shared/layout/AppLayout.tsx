@@ -1,6 +1,6 @@
 "use client";
 
-import Sidebar from "./Sidebar";
+import Sidebar from "../../components/Sidebar";
 import Topbar from "./Topbar";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {

@@ -1,11 +1,45 @@
-// app/dashboard/gate-entries/page.tsx
+"use client";
 
-import GateEntriesManager from "@/modules/sharedComponents/gate-entries/GateEntriesManager";
+import GateEntriesTable from "@/components/reports.tsx/GateEntriesLPRTable";
 
-export default function GateEntriesPage() {
+import ReportFilters, {
+  ReportFilterData,
+} from "@/components/reports.tsx/ReportLPRFilters";
+import { PillTabs, REPORT_TABS } from "@/shared/ui/voom";
+
+import { useForm } from "react-hook-form";
+
+export default function ReportsPage() {
+  const { handleSubmit } = useForm<ReportFilterData>();
+
+  const onSubmit = (data: ReportFilterData) => {
+    console.log("Form data:", data);
+  };
+
   return (
-    <div className="p-6">
-      <GateEntriesManager />
+    <div className="space-y-6">
+      {/* =========================
+                LPR TABS
+            ========================= */}
+
+      <PillTabs tabs={REPORT_TABS} activeValue="/dashboard/reports/lpr" />
+
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <ReportFilters onApply={onSubmit} onExport={onSubmit} />
+      </form>
+
+      <div className="mt-6">
+        <GateEntriesTable
+          data={[]}
+          selectedId={null}
+          onSelect={function (id: number): void {
+            throw new Error("Function not implemented.");
+          }}
+          onImageClick={function (url: string): void {
+            throw new Error("Function not implemented.");
+          }}
+        />
+      </div>
     </div>
   );
 }

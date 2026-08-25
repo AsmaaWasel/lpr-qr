@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Filter, Download } from "lucide-react";
+import { FilterField } from "./FilterFunction";
 
 export type ReportFilterData = {
   gateType: string;
@@ -28,7 +29,7 @@ const initialFilters: ReportFilterData = {
   toDate: "",
 };
 
-export default function ReportLPRFilters({
+export default function ReportFilters({
   onApply,
   onExport,
 }: ReportFiltersProps) {
@@ -50,37 +51,15 @@ export default function ReportLPRFilters({
   };
 
   return (
-    <div
-      className="
-        w-full
-        rounded-[24px]
-        bg-card
-        p-5
-        shadow-sm
-        md:p-6
-      "
-    >
-      {/* =========================
-          HEADER
-      ========================== */}
+    <div className="w-full rounded-[24px] bg-card p-5 shadow-sm md:p-6">
+      {/* HEADER */}
       <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Filter size={20} strokeWidth={2} className="text-brand-strong" />
-
-          <h2
-            className="
-              text-lg
-              font-bold
-              text-foreground
-            "
-          >
-            Filters
-          </h2>
+          <h2 className="text-lg font-bold text-foreground">Filters</h2>
         </div>
 
-        {/* =========================
-            ACTIONS
-        ========================== */}
+        {/* ACTIONS */}
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -131,9 +110,7 @@ export default function ReportLPRFilters({
         </div>
       </div>
 
-      {/* =========================
-          FILTERS
-      ========================== */}
+      {/* FILTERS */}
       <div
         className="
           grid
@@ -150,7 +127,33 @@ export default function ReportLPRFilters({
           <select
             value={filters.gateType}
             onChange={(e) => updateFilter("gateType", e.target.value)}
-            className="report-filter-input"
+            className="
+              w-full 
+              h-[50px] 
+              rounded-xl 
+              border 
+              border-border 
+              bg-[#edf3f9] 
+              px-[14px] 
+              text-sm 
+              font-medium 
+              text-[#466080] 
+              outline-none 
+              transition-all 
+              duration-200 
+              focus:border-[#b8d9f5] 
+              focus:shadow-[0_0_0_2px_rgba(56,189,248,0.08)]
+              dark:bg-[rgba(30,41,59,0.65)]
+              dark:text-[#e2e8f0]
+              dark:border-[rgba(71,85,105,0.7)]
+              [&::placeholder]:text-[#8195b2]
+              [&::placeholder]:font-semibold
+              dark:[&::placeholder]:text-[#94a3b8]
+              [&>option]:bg-white
+              [&>option]:text-[#132f49]
+              dark:[&>option]:bg-[#1e293b]
+              dark:[&>option]:text-[#e2e8f0]
+            "
           >
             <option value="all">All</option>
             <option value="entry">Entry</option>
@@ -163,7 +166,33 @@ export default function ReportLPRFilters({
           <select
             value={filters.passingMethod}
             onChange={(e) => updateFilter("passingMethod", e.target.value)}
-            className="report-filter-input"
+            className="
+              w-full 
+              h-[50px] 
+              rounded-xl 
+              border 
+              border-border 
+              bg-[#edf3f9] 
+              px-[14px] 
+              text-sm 
+              font-medium 
+              text-[#466080] 
+              outline-none 
+              transition-all 
+              duration-200 
+              focus:border-[#b8d9f5] 
+              focus:shadow-[0_0_0_2px_rgba(56,189,248,0.08)]
+              dark:bg-[rgba(30,41,59,0.65)]
+              dark:text-[#e2e8f0]
+              dark:border-[rgba(71,85,105,0.7)]
+              [&::placeholder]:text-[#8195b2]
+              [&::placeholder]:font-semibold
+              dark:[&::placeholder]:text-[#94a3b8]
+              [&>option]:bg-white
+              [&>option]:text-[#132f49]
+              dark:[&>option]:bg-[#1e293b]
+              dark:[&>option]:text-[#e2e8f0]
+            "
           >
             <option value="all">All</option>
             <option value="plate">Plate</option>
@@ -178,7 +207,29 @@ export default function ReportLPRFilters({
             value={filters.plateNumber}
             onChange={(e) => updateFilter("plateNumber", e.target.value)}
             placeholder="Search plate..."
-            className="report-filter-input"
+            className="
+              w-full 
+              h-[50px] 
+              rounded-xl 
+              border 
+              border-border 
+              bg-[#edf3f9] 
+              px-[14px] 
+              text-sm 
+              font-medium 
+              text-[#466080] 
+              outline-none 
+              transition-all 
+              duration-200 
+              placeholder:text-[#8195b2] 
+              placeholder:font-semibold
+              focus:border-[#b8d9f5] 
+              focus:shadow-[0_0_0_2px_rgba(56,189,248,0.08)]
+              dark:bg-[rgba(30,41,59,0.65)]
+              dark:text-[#e2e8f0]
+              dark:border-[rgba(71,85,105,0.7)]
+              dark:placeholder:text-[#94a3b8]
+            "
           />
         </FilterField>
 
@@ -189,7 +240,29 @@ export default function ReportLPRFilters({
             value={filters.residentName}
             onChange={(e) => updateFilter("residentName", e.target.value)}
             placeholder="Search resident name..."
-            className="report-filter-input"
+            className="
+              w-full 
+              h-[50px] 
+              rounded-xl 
+              border 
+              border-border 
+              bg-[#edf3f9] 
+              px-[14px] 
+              text-sm 
+              font-medium 
+              text-[#466080] 
+              outline-none 
+              transition-all 
+              duration-200 
+              placeholder:text-[#8195b2] 
+              placeholder:font-semibold
+              focus:border-[#b8d9f5] 
+              focus:shadow-[0_0_0_2px_rgba(56,189,248,0.08)]
+              dark:bg-[rgba(30,41,59,0.65)]
+              dark:text-[#e2e8f0]
+              dark:border-[rgba(71,85,105,0.7)]
+              dark:placeholder:text-[#94a3b8]
+            "
           />
         </FilterField>
 
@@ -200,7 +273,29 @@ export default function ReportLPRFilters({
             value={filters.gateId}
             onChange={(e) => updateFilter("gateId", e.target.value)}
             placeholder="Gate ID..."
-            className="report-filter-input"
+            className="
+              w-full 
+              h-[50px] 
+              rounded-xl 
+              border 
+              border-border 
+              bg-[#edf3f9] 
+              px-[14px] 
+              text-sm 
+              font-medium 
+              text-[#466080] 
+              outline-none 
+              transition-all 
+              duration-200 
+              placeholder:text-[#8195b2] 
+              placeholder:font-semibold
+              focus:border-[#b8d9f5] 
+              focus:shadow-[0_0_0_2px_rgba(56,189,248,0.08)]
+              dark:bg-[rgba(30,41,59,0.65)]
+              dark:text-[#e2e8f0]
+              dark:border-[rgba(71,85,105,0.7)]
+              dark:placeholder:text-[#94a3b8]
+            "
           />
         </FilterField>
 
@@ -210,7 +305,29 @@ export default function ReportLPRFilters({
             type="datetime-local"
             value={filters.fromDate}
             onChange={(e) => updateFilter("fromDate", e.target.value)}
-            className="report-filter-input"
+            className="
+              w-full 
+              h-[50px] 
+              rounded-xl 
+              border 
+              border-border 
+              bg-[#edf3f9] 
+              px-[14px] 
+              text-sm 
+              font-medium 
+              text-[#466080] 
+              outline-none 
+              transition-all 
+              duration-200 
+              focus:border-[#b8d9f5] 
+              focus:shadow-[0_0_0_2px_rgba(56,189,248,0.08)]
+              dark:bg-[rgba(30,41,59,0.65)]
+              dark:text-[#e2e8f0]
+              dark:border-[rgba(71,85,105,0.7)]
+              [&::placeholder]:text-[#8195b2]
+              [&::placeholder]:font-semibold
+              dark:[&::placeholder]:text-[#94a3b8]
+            "
           />
         </FilterField>
 
@@ -220,90 +337,32 @@ export default function ReportLPRFilters({
             type="datetime-local"
             value={filters.toDate}
             onChange={(e) => updateFilter("toDate", e.target.value)}
-            className="report-filter-input"
+            className="
+              w-full 
+              h-[50px] 
+              rounded-xl 
+              border 
+              border-border 
+              bg-[#edf3f9] 
+              px-[14px] 
+              text-sm 
+              font-medium 
+              text-[#466080] 
+              outline-none 
+              transition-all 
+              duration-200 
+              focus:border-[#b8d9f5] 
+              focus:shadow-[0_0_0_2px_rgba(56,189,248,0.08)]
+              dark:bg-[rgba(30,41,59,0.65)]
+              dark:text-[#e2e8f0]
+              dark:border-[rgba(71,85,105,0.7)]
+              [&::placeholder]:text-[#8195b2]
+              [&::placeholder]:font-semibold
+              dark:[&::placeholder]:text-[#94a3b8]
+            "
           />
         </FilterField>
       </div>
-
-      {/* =========================
-          LOCAL STYLES
-      ========================== */}
-      <style jsx>{`
-        .report-filter-input {
-          width: 100%;
-          height: 50px;
-          border-radius: 12px;
-          border: 1px solid hsl(var(--border));
-          background: #edf3f9;
-          padding: 0 14px;
-          font-size: 14px;
-          font-weight: 500;
-          color: #466080;
-          outline: none;
-          transition: all 0.2s ease;
-        }
-
-        .report-filter-input::placeholder {
-          color: #8195b2;
-          font-weight: 600;
-        }
-
-        .report-filter-input:focus {
-          border-color: #b8d9f5;
-          box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.08);
-        }
-
-        .report-filter-input option {
-          background: white;
-          color: #132f49;
-        }
-
-        @media (prefers-color-scheme: dark) {
-          .report-filter-input {
-            background: rgba(30, 41, 59, 0.65);
-            color: #e2e8f0;
-            border-color: rgba(71, 85, 105, 0.7);
-          }
-
-          .report-filter-input::placeholder {
-            color: #94a3b8;
-          }
-
-          .report-filter-input option {
-            background: #1e293b;
-            color: #e2e8f0;
-          }
-        }
-      `}</style>
-    </div>
-  );
-}
-
-/* =========================================================
-   FILTER FIELD
-========================================================= */
-
-function FilterField({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <label
-        className="
-          text-sm
-          font-bold
-          text-[#3f5c80]
-          dark:text-slate-300
-        "
-      >
-        {label}
-      </label>
-
-      {children}
     </div>
   );
 }

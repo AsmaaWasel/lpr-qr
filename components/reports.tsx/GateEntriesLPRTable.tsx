@@ -38,7 +38,7 @@ type Props = {
   onImageClick: (url: string) => void;
 };
 
-export default function GateEntriesLPRTable({
+export default function GateEntriesTable({
   data,
   selectedId,
   onSelect,
@@ -361,9 +361,9 @@ export default function GateEntriesLPRTable({
                   <div className="flex flex-col items-center gap-3">
                     <DoorOpen className="h-10 w-10 text-muted-foreground" />
 
-                    <p className="text-sm font-medium">No gate entries found</p>
+                    <p className="text-lg font-medium">No gate entries found</p>
 
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-lg text-muted-foreground">
                       Try adjusting your filters
                     </p>
                   </div>

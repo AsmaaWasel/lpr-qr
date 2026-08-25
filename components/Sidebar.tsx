@@ -14,17 +14,15 @@ import {
   Home,
   BarChart3,
   Folder,
-  DoorOpen,
 } from "lucide-react";
 
 const normalize = (p: string) => p.split("?")[0].replace(/\/$/, "");
 
 export default function Sidebar() {
   const { user } = useAuth();
-
   const pathname = usePathname();
-  const current = normalize(pathname);
 
+  const current = normalize(pathname);
   const role = user?.role;
 
   // =========================================================
@@ -171,20 +169,14 @@ export default function Sidebar() {
         top-4
         bottom-4
         z-50
-
         hidden
         w-[112px]
-
         flex-col
         items-center
-
-        rounded-[28px]
-
+        rounded-[25px]
         bg-card
         py-5
-
         shadow-sm
-
         lg:flex
       "
     >
@@ -194,7 +186,6 @@ export default function Sidebar() {
 
       <div className="flex flex-col items-center">
         {/* Logo Container */}
-
         <div
           className="
             flex
@@ -202,14 +193,11 @@ export default function Sidebar() {
             w-12
             items-center
             justify-center
-
             overflow-hidden
             rounded-2xl
-
             bg-gradient-to-br
             from-brand
             to-brand-strong
-
             shadow-sm
           "
         >
@@ -227,14 +215,15 @@ export default function Sidebar() {
         </div>
 
         {/* Brand */}
-
         <span
           className="
             mt-2
-            text-[13px]
-            font-bold
+            text-[18px]
+            font-semibold
+            leading-[1.1]
             tracking-[0.14em]
-            text-brand
+            text-[#29C5E8]
+            dark:text-slate-200
           "
         >
           VOOM
@@ -256,13 +245,11 @@ export default function Sidebar() {
           gap-2
           overflow-y-auto
           px-2
-
           scrollbar-none
         "
       >
         {navigation.map((item) => {
           const Icon = item.icon;
-
           const active = isModuleActive(item.id, item.href);
 
           return (
@@ -279,9 +266,8 @@ export default function Sidebar() {
                 items-center
                 justify-center
                 gap-1.5
-                rounded-2xl
+                rounded-lg
                 py-3
-
                 transition-all
                 duration-200
 
@@ -289,41 +275,48 @@ export default function Sidebar() {
                   active
                     ? `
                       bg-accent
-                      text-brand
-
                       dark:bg-cyan-500/15
-
                     `
                     : `
-                      text-muted-foreground
-
                       hover:bg-secondary
-                      hover:text-foreground
-
                       dark:hover:bg-secondary
-                      dark:hover:text-white
                     `
                 }
               `}
             >
+              {/* ICON */}
               <Icon
                 size={22}
                 strokeWidth={active ? 2.2 : 1.8}
-                className="
+                className={`
                   transition-transform
                   duration-200
                   group-hover:scale-105
-                "
+
+                  ${
+                    active
+                      ? "text-[#29C5E8]"
+                      : "text-[#0B1B30] dark:text-slate-200"
+                  }
+                `}
               />
 
+              {/* TEXT */}
               <span
-                className="
+                className={`
                   max-w-[82px]
                   truncate
                   text-center
-                  text-[12px]
+                  text-[13px]
                   font-semibold
-                "
+                  leading-[1.1]
+
+                  ${
+                    active
+                      ? "text-[#29C5E8]"
+                      : "text-[#0B1B30] dark:text-slate-200"
+                  }
+                `}
               >
                 {item.label}
               </span>
@@ -331,6 +324,77 @@ export default function Sidebar() {
           );
         })}
       </nav>
+
+      {/* =====================================================
+          ONLINE GATES STATUS
+      ====================================================== */}
+      <div
+        className="
+          mt-4
+          flex
+          w-[94px]
+          shrink-0
+          flex-col
+          items-center
+          justify-center
+          rounded-2xl
+          bg-[#F2F6FB]
+          py-3
+        "
+      >
+        {/* Status Indicator */}
+        <div className="relative mb-2 flex h-7 w-7 items-center justify-center">
+          {/* Outer pulse */}
+          <span
+            className="
+              absolute
+              h-7
+              w-7
+              animate-ping
+              rounded-full
+              bg-[#2FD3C2]/30
+            "
+          />
+
+          {/* Main circle */}
+          <span
+            className="
+              relative
+              h-3.5
+              w-3.5
+              rounded-full
+              bg-[#2FD3C2]
+              shadow-[0_0_10px_rgba(47,211,194,0.45)]
+            "
+          />
+        </div>
+
+        {/* Gates Count */}
+        <span
+          className="
+            text-[15px]
+            font-bold
+            leading-none
+            text-[#0B1B30]
+          "
+        >
+          3/4
+        </span>
+
+        {/* Label */}
+        <span
+          className="
+            mt-1.5
+            text-center
+            text-[10px]
+            font-medium
+            leading-none
+            text-[#718096]
+          "
+        >
+          Online Gates
+        </span>
+      </div>
     </aside>
   );
 }

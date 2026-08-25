@@ -15,8 +15,9 @@ const PAGE_INFO: Record<
   }
 > = {
   "/dashboard": {
-    title: "Dashboard",
-    description: "Overview of your system",
+    title: "SmartGate statistical dashboard",
+    description:
+      "Real-time behaviour tracking, safety indices and facility load",
   },
 
   "/dashboard/lpr": {
