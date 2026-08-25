@@ -18,7 +18,7 @@ export default function CameraTable({ data, selectedId, onSelect }: Props) {
     <div
       className="
         overflow-hidden
-        rounded-[24px]
+       
         bg-card
         shadow-sm
       "
@@ -31,9 +31,11 @@ export default function CameraTable({ data, selectedId, onSelect }: Props) {
               className="
                 border-b
                 border-border
-                bg-slate-50/70
+                bg-[#F2F6FB]
                 text-left
                 dark:bg-slate-800/40
+                text-[#7C93B4]
+              
               "
             >
               <th
@@ -147,44 +149,16 @@ export default function CameraTable({ data, selectedId, onSelect }: Props) {
                     {/* LOCATION */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div
-                          className="
-                  flex
-                  h-10
-                  w-10
-                  items-center
-                  justify-center
-                  rounded-xl
-                  bg-accent
-                  text-sm
-                  font-bold
-                  text-brand-strong
-                  dark:bg-cyan-500/10
-                "
-                        >
-                          {camera.id}
-                        </div>
-
                         <div>
                           <p
                             className="
-                    text-sm
+                    text-[16px]
                     font-bold
                     text-foreground
                     dark:text-white
                   "
                           >
                             {camera.location}
-                          </p>
-
-                          <p
-                            className="
-                    mt-0.5
-                    text-xs
-                    text-muted-foreground
-                  "
-                          >
-                            Camera #{camera.id}
                           </p>
                         </div>
                       </div>
@@ -194,9 +168,9 @@ export default function CameraTable({ data, selectedId, onSelect }: Props) {
                     <td className="px-6 py-4">
                       <span
                         className="
-                text-sm
-                font-medium
-                text-foreground
+                text-[16px]
+                font-[500]
+                text-[#3B5473]
                 dark:text-white
               "
                       >
@@ -210,14 +184,16 @@ export default function CameraTable({ data, selectedId, onSelect }: Props) {
                         className="
                 inline-flex
                 rounded-full
-                bg-accent
+              
                 px-3
                 py-1
-                text-sm
-                font-semibold
-                text-foreground
-                dark:bg-slate-700
+                 text-[16px]
+                font-[500]
+                text-[#3B5473]
                 dark:text-white
+                dark:bg-slate-700
+                
+                
               "
                       >
                         {camera.port || "-"}
@@ -228,9 +204,9 @@ export default function CameraTable({ data, selectedId, onSelect }: Props) {
                     <td className="px-6 py-4">
                       <span
                         className="
-                text-sm
-                font-medium
-                text-foreground
+                text-[16px]
+                font-[500]
+                text-[#3B5473]
                 dark:text-white
               "
                       >
@@ -245,9 +221,9 @@ export default function CameraTable({ data, selectedId, onSelect }: Props) {
                 block
                 max-w-[280px]
                 truncate
-                text-sm
-                font-medium
-                text-muted-foreground
+                text-[16px]
+                font-[500]
+                text-[#29C5E8]
               "
                         title={camera.url || "-"}
                       >

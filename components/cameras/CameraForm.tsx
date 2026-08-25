@@ -30,10 +30,6 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
     add_string_to_url: editing?.add_string_to_url ?? "",
   });
 
-  // =========================
-  // GET GATES
-  // =========================
-
   useEffect(() => {
     const fetchGates = async () => {
       try {
@@ -47,10 +43,6 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
     fetchGates();
   }, []);
 
-  // =========================
-  // HANDLE CHANGE
-  // =========================
-
   const handleChange = <K extends keyof CameraFormData>(
     key: K,
     value: CameraFormData[K],
@@ -60,10 +52,6 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
       [key]: value,
     }));
   };
-
-  // =========================
-  // GATE CHANGE
-  // =========================
 
   const handleGateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const gateId = Number(e.target.value);
@@ -77,10 +65,6 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
     }));
   };
 
-  // =========================
-  // SAVE
-  // =========================
-
   const handleSave = async () => {
     const selectedGate = gates.find((gate) => gate.id === form.gate_id);
 
@@ -91,18 +75,11 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
 
     await onSubmit({
       ...form,
-
       gate_id: selectedGate.id,
       location: selectedGate.name,
-
-      // ✅ تأكيد أن port رقم
       port: Number(form.port),
     });
   };
-
-  // =========================
-  // INPUT STYLE
-  // =========================
 
   const inputClassName = `
     w-full
@@ -118,7 +95,6 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
     outline-none
     transition
     placeholder:text-muted-foreground
-    focus:outline-none
     focus:ring-2
     focus:ring-[#132f49]/10
     focus:border-[#132f49]
@@ -144,23 +120,20 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
       <div
         className="
           w-full
-          max-w-[560px]
+          max-w-4xl
           max-h-[90vh]
           overflow-y-auto
           rounded-2xl
           border
           border-border
           bg-card
-          p-6
+          p-7
           shadow-2xl
         "
         onMouseDown={(e) => e.stopPropagation()}
       >
-        {/* =========================
-            HEADER
-        ========================= */}
-
-        <div className="mb-6 flex items-start justify-between">
+        {/* HEADER */}
+        <div className="mb-7 flex items-start justify-between">
           <div>
             <h2 className="text-2xl font-bold text-foreground">
               {editing ? "Edit Camera" : "Add Camera"}
@@ -178,12 +151,13 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
             onClick={onClose}
             className="
               flex
-              h-9
-              w-9
+              h-10
+              w-10
               items-center
               justify-center
               rounded-xl
               bg-muted
+              text-lg
               text-muted-foreground
               transition
               hover:bg-secondary
@@ -194,13 +168,9 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
           </button>
         </div>
 
-        {/* =========================
-            FORM
-        ========================= */}
-
-        <div className="space-y-4">
+        {/* FORM */}
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {/* Gate */}
-
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
               Gate
@@ -211,8 +181,6 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
               onChange={handleGateChange}
               className={inputClassName}
             >
-              <option value="">Select Gate</option>
-
               {gates.map((gate) => (
                 <option key={gate.id} value={gate.id}>
                   {gate.name}
@@ -222,7 +190,6 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
           </div>
 
           {/* Username */}
-
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
               Username
@@ -238,7 +205,6 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
           </div>
 
           {/* Password */}
-
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
               Password
@@ -254,7 +220,6 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
           </div>
 
           {/* IP Address */}
-
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
               IP Address
@@ -270,7 +235,6 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
           </div>
 
           {/* Port */}
-
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
               Port
@@ -291,7 +255,6 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
           </div>
 
           {/* Add SubURL */}
-
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
               Add SubURL
@@ -308,9 +271,8 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
             />
           </div>
 
-          {/* Notes */}
-
-          <div className="space-y-1.5">
+          {/* Notes - Full Width */}
+          <div className="space-y-1.5 md:col-span-2">
             <label className="block text-base font-semibold text-foreground">
               Notes
             </label>
@@ -319,7 +281,7 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
               placeholder="Enter notes"
               value={form.notes ?? ""}
               onChange={(e) => handleChange("notes", e.target.value)}
-              rows={3}
+              rows={4}
               className={`
                 ${inputClassName}
                 h-auto
@@ -330,18 +292,15 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
           </div>
         </div>
 
-        {/* =========================
-            ACTIONS
-        ========================= */}
-
+        {/* ACTIONS */}
         <div className="mt-7 flex justify-end gap-3 border-t border-border pt-5">
           <button
             type="button"
             onClick={onClose}
             className="
               rounded-xl
-              px-5
-              py-2.5
+              px-6
+              py-3
               text-base
               font-semibold
               text-muted-foreground
@@ -359,8 +318,8 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
             className="
               rounded-xl
               bg-[#132f49]
-              px-6
-              py-2.5
+              px-7
+              py-3
               text-base
               font-semibold
               text-white
