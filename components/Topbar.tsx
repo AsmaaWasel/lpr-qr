@@ -1,8 +1,11 @@
 "use client";
 
-import { Moon, Sun, Globe2, LogOut } from "lucide-react";
+import { Moon, Sun, Globe2 } from "lucide-react";
+
 import { useTheme } from "next-themes";
+
 import { usePathname, useRouter } from "next/navigation";
+
 import { useAuth } from "@/shared/context/AuthContext";
 
 const normalize = (p: string) => p.split("?")[0].replace(/\/$/, "");
@@ -29,6 +32,7 @@ const PAGE_INFO: Record<
     title: "Real-time gate management",
     description: "Live monitoring and control system",
   },
+
   "/dashboard/lpr/gates": {
     title: "Gates",
     description: "Manage system gates",
@@ -53,6 +57,7 @@ const PAGE_INFO: Record<
     title: "QR access management",
     description: "Generate visitor QR codes",
   },
+
   "/dashboard/qr/qr-readers": {
     title: "QR readers",
     description: "Manage system readers and entry points",
@@ -65,7 +70,7 @@ const PAGE_INFO: Record<
 
   "/dashboard/residents": {
     title: "Residents",
-    description: "Manage residents and access",
+    description: "Manage building residents",
   },
 
   "/dashboard/reports": {
@@ -92,7 +97,6 @@ export default function Header() {
   const router = useRouter();
 
   const current = normalize(pathname);
-
   const isDark = resolvedTheme === "dark";
 
   // =========================
@@ -168,15 +172,15 @@ export default function Header() {
     <header
       className="
         flex
-        min-h-[74px]
+        min-h-[64px]
         items-center
         justify-between
-        rounded-[24px]
+        rounded-[20px]
         bg-card
-        px-5
-        py-4
+        px-4
+        py-3
         shadow-sm
-        md:px-7
+        md:px-5
       "
       suppressHydrationWarning
     >
@@ -185,25 +189,26 @@ export default function Header() {
       <div>
         <h1
           className="
-      text-[26px]
-      font-extrabold
-      leading-tight
-      text-foreground
-      dark:text-white
-      md:text-[28px]
-    "
+            text-[18px]
+            font-[700]
+            leading-tight
+            text-foreground
+            dark:text-white
+            md:text-[25px]
+          "
         >
           {page.title}
         </h1>
 
         <p
           className="
-      mt-1
-      text-lg
-      font-medium
-      leading-relaxed
-      text-muted-foreground
-    "
+            mt-0.5
+            text-[15px]
+            text-[##7C93B4]
+            font-[600]
+            leading-relaxed
+            text-muted-foreground
+          "
         >
           {page.description}
         </p>
@@ -211,14 +216,64 @@ export default function Header() {
 
       {/* ================= RIGHT ACTIONS ================= */}
 
-      <div
-        className="
-          flex
-          items-center
-          gap-2
-          md:gap-3
-        "
-      >
+      <div className="flex items-center gap-2 md:gap-2.5">
+        {/* ================= FAULT ================= */}
+
+        <div
+          className="
+            hidden
+            h-9
+            items-center
+            gap-2
+            rounded-full
+            bg-secondary
+            px-3
+            text-sm
+            font-semibold
+            text-foreground
+            md:flex
+          "
+        >
+          {/* Red blinking light */}
+
+          <span className="relative flex h-2.5 w-2.5">
+            <span
+              className="
+                absolute
+              
+                inline-flex
+                h-full
+                w-full
+                animate-ping
+                rounded-full
+                bg-red-500
+                opacity-75
+               
+              "
+            />
+
+            <span
+              className="
+                relative
+              
+                inline-flex
+                h-2.5
+                w-2.5
+                rounded-full
+                bg-red-500
+                
+              "
+            />
+          </span>
+
+          <span
+            className="text-[14px] font-[600] text-[#D64B68] font-['sans-serif']
+"
+          >
+            Fault
+          </span>
+        </div>
+
         {/* ================= TIME ================= */}
 
         <div
@@ -228,22 +283,41 @@ export default function Header() {
             gap-2
             rounded-full
             bg-secondary
-            px-4
-            py-2
-            text-base
+            px-3
+            py-1.5
+            text-sm
             font-semibold
             text-foreground
             md:flex
           "
         >
-          <span
-            className="
-              h-2
-              w-2
-              rounded-full
-              bg-brand
-            "
-          />
+          {/* Blinking time light */}
+
+          <span className="relative flex h-1.5 w-1.5">
+            <span
+              className="
+                absolute
+                inline-flex
+                h-full
+                w-full
+                animate-ping
+                rounded-full
+                bg-brand
+                opacity-75
+              "
+            />
+
+            <span
+              className="
+                relative
+                inline-flex
+                h-1.5
+                w-1.5
+                rounded-full
+                bg-brand
+              "
+            />
+          </span>
 
           <span>
             {new Date().toLocaleTimeString([], {
@@ -260,12 +334,12 @@ export default function Header() {
           onClick={() => setTheme(isDark ? "light" : "dark")}
           className="
             flex
-            h-10
+            h-9
             items-center
-            gap-2
+            gap-1.5
             rounded-full
             bg-secondary
-            px-3
+            px-2.5
             transition
             hover:bg-secondary
             dark:hover:bg-slate-700
@@ -277,8 +351,8 @@ export default function Header() {
           <div
             className={`
               flex
-              h-7
-              w-7
+              h-6
+              w-6
               items-center
               justify-center
               rounded-full
@@ -290,7 +364,7 @@ export default function Header() {
               }
             `}
           >
-            <Sun size={16} />
+            <Sun size={15} />
           </div>
 
           {/* Moon */}
@@ -298,8 +372,8 @@ export default function Header() {
           <div
             className={`
               flex
-              h-7
-              w-7
+              h-6
+              w-6
               items-center
               justify-center
               rounded-full
@@ -311,7 +385,7 @@ export default function Header() {
               }
             `}
           >
-            <Moon size={15} />
+            <Moon size={14} />
           </div>
         </button>
 
@@ -321,20 +395,20 @@ export default function Header() {
           type="button"
           className="
             hidden
-            h-10
+            h-9
             items-center
-            gap-2
+            gap-1.5
             rounded-full
             bg-secondary
-            px-4
-            text-base
+            px-3
+            text-sm
             font-semibold
             text-foreground
             hover:bg-secondary
             md:flex
           "
         >
-          <Globe2 size={17} />
+          <Globe2 size={16} />
 
           <span>EN / ع</span>
         </button>
@@ -343,23 +417,24 @@ export default function Header() {
 
         <div
           className="
-    flex
-    h-12
-    w-12
-    items-center
-    justify-center
-    rounded-lg
-    bg-ink
-    text-base
-    font-bold
-    text-white
-  "
+            flex
+            h-10
+            w-10
+            items-center
+            justify-center
+            rounded-lg
+            bg-ink
+            text-sm
+            font-bold
+            text-white
+          "
         >
           {initials}
         </div>
 
         {/* ================= LOGOUT ================= */}
 
+        {/* ================= LOGOUT ================= */}
         <button
           type="button"
           onClick={handleLogout}
@@ -367,7 +442,8 @@ export default function Header() {
     hidden
     items-center
     gap-1.5
-    text-lg
+    ml-2
+    text-base
     font-extrabold
     text-danger
     transition
@@ -375,7 +451,7 @@ export default function Header() {
     md:flex
   "
         >
-          <span>Logout</span>
+          <span className="text-[#D64B68] font-[600] text-[15px]">Logout</span>
         </button>
       </div>
     </header>

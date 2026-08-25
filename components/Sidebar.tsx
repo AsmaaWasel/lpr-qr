@@ -218,7 +218,7 @@ export default function Sidebar() {
         <span
           className="
             mt-2
-            text-[18px]
+            text-[14px]
             font-semibold
             leading-[1.1]
             tracking-[0.14em]
