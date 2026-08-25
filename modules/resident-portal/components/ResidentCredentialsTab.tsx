@@ -47,7 +47,9 @@ export default function CredentialsForm({
       <div className="w-full max-w-md rounded-2xl bg-card border border-border p-6 shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-foreground text-xl font-semibold">Add Credentials</h2>
+          <h2 className="text-foreground text-xl font-semibold">
+            Add Credentials
+          </h2>
 
           <button
             type="button"
@@ -118,7 +120,7 @@ export default function CredentialsForm({
                   px-4
                   pr-12
                   rounded-xl
-                  bg-[#020617]
+                  bg-[#939dc9]
                   border
                   border-border
                   text-foreground
@@ -172,12 +174,12 @@ export default function CredentialsForm({
               disabled={loading || !email.trim() || !password.trim()}
               className="
                 flex-1
-                bg-purple-500
+              
                 text-foreground
                 px-4
                 py-2.5
                 rounded-xl
-                hover:bg-purple-600
+              
                 transition-colors
                 disabled:opacity-50
                 disabled:cursor-not-allowed

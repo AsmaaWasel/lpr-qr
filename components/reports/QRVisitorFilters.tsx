@@ -1,36 +1,36 @@
-// components/reports.tsx/QRVisitorFilters.tsx
-
 "use client";
 
 import { useState } from "react";
-import { Download, Filter } from "lucide-react";
+import { Filter, Download } from "lucide-react";
 
-export type QRVisitorFilterData = {
+import { FilterField } from "./FilterFunction";
+
+export type QRReportFilterData = {
   qrCodeId: string;
   residentName: string;
   fromDate: string;
   toDate: string;
 };
 
-type QRVisitorFiltersProps = {
-  onApply?: (filters: QRVisitorFilterData) => void;
-  onExport?: (filters: QRVisitorFilterData) => void;
+type QRReportFiltersProps = {
+  onApply?: (filters: QRReportFilterData) => void;
+  onExport?: (filters: QRReportFilterData) => void;
 };
 
-const initialFilters: QRVisitorFilterData = {
+const initialFilters: QRReportFilterData = {
   qrCodeId: "",
   residentName: "",
   fromDate: "",
   toDate: "",
 };
 
-export default function QRVisitorFilters({
+export default function QRReportFilters({
   onApply,
   onExport,
-}: QRVisitorFiltersProps) {
-  const [filters, setFilters] = useState<QRVisitorFilterData>(initialFilters);
+}: QRReportFiltersProps) {
+  const [filters, setFilters] = useState<QRReportFilterData>(initialFilters);
 
-  const updateFilter = (key: keyof QRVisitorFilterData, value: string) => {
+  const updateFilter = (key: keyof QRReportFilterData, value: string) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
@@ -44,6 +44,30 @@ export default function QRVisitorFilters({
   const handleExport = () => {
     onExport?.(filters);
   };
+
+  const inputClassName = `
+    w-full
+    h-[50px]
+    rounded-xl
+    border
+    border-border
+    bg-[#edf3f9]
+    px-[14px]
+    text-sm
+    font-medium
+    text-[#466080]
+    outline-none
+    transition-all
+    duration-200
+    focus:border-[#b8d9f5]
+    focus:shadow-[0_0_0_2px_rgba(56,189,248,0.08)]
+    dark:bg-[rgba(30,41,59,0.65)]
+    dark:text-[#e2e8f0]
+    dark:border-[rgba(71,85,105,0.7)]
+    [&::placeholder]:text-[#8195b2]
+    [&::placeholder]:font-semibold
+    dark:[&::placeholder]:text-[#94a3b8]
+  `;
 
   return (
     <div className="w-full rounded-[24px] bg-card p-5 shadow-sm md:p-6">
@@ -124,7 +148,7 @@ export default function QRVisitorFilters({
             value={filters.qrCodeId}
             onChange={(e) => updateFilter("qrCodeId", e.target.value)}
             placeholder="Search QR Code ID..."
-            className="report-filter-input"
+            className={inputClassName}
           />
         </FilterField>
 
@@ -135,7 +159,7 @@ export default function QRVisitorFilters({
             value={filters.residentName}
             onChange={(e) => updateFilter("residentName", e.target.value)}
             placeholder="Search resident name..."
-            className="report-filter-input"
+            className={inputClassName}
           />
         </FilterField>
 
@@ -145,7 +169,7 @@ export default function QRVisitorFilters({
             type="datetime-local"
             value={filters.fromDate}
             onChange={(e) => updateFilter("fromDate", e.target.value)}
-            className="report-filter-input"
+            className={inputClassName}
           />
         </FilterField>
 
@@ -155,83 +179,10 @@ export default function QRVisitorFilters({
             type="datetime-local"
             value={filters.toDate}
             onChange={(e) => updateFilter("toDate", e.target.value)}
-            className="report-filter-input"
+            className={inputClassName}
           />
         </FilterField>
       </div>
-
-      <style jsx>{`
-        .report-filter-input {
-          width: 100%;
-          height: 50px;
-          border-radius: 12px;
-          border: 1px solid hsl(var(--border));
-          background: #edf3f9;
-          padding: 0 14px;
-          font-size: 14px;
-          font-weight: 500;
-          color: #466080;
-          outline: none;
-          transition: all 0.2s ease;
-        }
-
-        .report-filter-input::placeholder {
-          color: #8195b2;
-          font-weight: 600;
-        }
-
-        .report-filter-input:focus {
-          border-color: #b8d9f5;
-          box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.08);
-        }
-
-        .report-filter-input option {
-          background: white;
-          color: #132f49;
-        }
-
-        @media (prefers-color-scheme: dark) {
-          .report-filter-input {
-            background: rgba(30, 41, 59, 0.65);
-            color: #e2e8f0;
-            border-color: rgba(71, 85, 105, 0.7);
-          }
-
-          .report-filter-input::placeholder {
-            color: #94a3b8;
-          }
-
-          .report-filter-input option {
-            background: #1e293b;
-            color: #e2e8f0;
-          }
-        }
-      `}</style>
-    </div>
-  );
-}
-
-function FilterField({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <label
-        className="
-          text-sm
-          font-bold
-          text-[#3f5c80]
-          dark:text-slate-300
-        "
-      >
-        {label}
-      </label>
-
-      {children}
     </div>
   );
 }

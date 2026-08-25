@@ -1,10 +1,10 @@
 "use client";
 
-import GateEntriesTable from "@/components/reports.tsx/GateEntriesLPRTable";
+import GateEntriesTable from "@/components/reports/GateEntriesLPRTable";
 
 import ReportFilters, {
   ReportFilterData,
-} from "@/components/reports.tsx/ReportLPRFilters";
+} from "@/components/reports/ReportLPRFilters";
 import { PillTabs, REPORT_TABS } from "@/shared/ui/voom";
 
 import { useForm } from "react-hook-form";

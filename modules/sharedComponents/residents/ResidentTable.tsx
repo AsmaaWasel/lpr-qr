@@ -305,7 +305,6 @@ export default function ResidentTable({
   return (
     <div className="w-full space-y-3">
       {/* ERROR */}
-
       {error && (
         <div
           className="
@@ -328,11 +327,9 @@ export default function ResidentTable({
       )}
 
       {/* TABLE */}
-
       <div
         className="
           overflow-hidden
-          rounded-[24px]
           bg-card
           shadow-sm
         "
@@ -340,17 +337,18 @@ export default function ResidentTable({
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1100px]">
             {/* HEADER */}
-
             <thead>
               <tr
                 className="
                   border-b
                   border-border
-                  bg-slate-50/70
+                  bg-[#F2F6FB]
                   text-left
+                  text-[#7C93B4]
                   dark:bg-slate-800/40
                 "
               >
+                {/* SELECT */}
                 <th
                   className="
                     w-[55px]
@@ -366,6 +364,7 @@ export default function ResidentTable({
                   <span className="sr-only">Select</span>
                 </th>
 
+                {/* FULL NAME */}
                 <th
                   className="
                     px-6
@@ -377,9 +376,10 @@ export default function ResidentTable({
                     text-muted-foreground
                   "
                 >
-                  Full Name
+                  FULL NAME
                 </th>
 
+                {/* PHONE */}
                 <th
                   className="
                     px-6
@@ -391,9 +391,10 @@ export default function ResidentTable({
                     text-muted-foreground
                   "
                 >
-                  Phone
+                  PHONE
                 </th>
 
+                {/* NATIONAL ID */}
                 <th
                   className="
                     px-6
@@ -405,9 +406,10 @@ export default function ResidentTable({
                     text-muted-foreground
                   "
                 >
-                  National ID
+                  NATIONAL ID
                 </th>
 
+                {/* TYPE */}
                 <th
                   className="
                     px-6
@@ -419,9 +421,10 @@ export default function ResidentTable({
                     text-muted-foreground
                   "
                 >
-                  Type
+                  TYPE
                 </th>
 
+                {/* PLATES */}
                 <th
                   className="
                     px-6
@@ -433,9 +436,10 @@ export default function ResidentTable({
                     text-muted-foreground
                   "
                 >
-                  Plate Numbers
+                  PLATE NUMBERS
                 </th>
 
+                {/* STATUS */}
                 <th
                   className="
                     px-6
@@ -447,9 +451,10 @@ export default function ResidentTable({
                     text-muted-foreground
                   "
                 >
-                  Status
+                  STATUS
                 </th>
 
+                {/* ACTIONS */}
                 <th
                   className="
                     w-[70px]
@@ -468,7 +473,6 @@ export default function ResidentTable({
             </thead>
 
             {/* BODY */}
-
             <tbody>
               {data.length === 0 ? (
                 <tr>
@@ -478,7 +482,7 @@ export default function ResidentTable({
                       px-6
                       py-12
                       text-center
-                      text-sm
+                      text-lg
                       text-muted-foreground
                     "
                   >
@@ -500,6 +504,7 @@ export default function ResidentTable({
                   return (
                     <tr
                       key={resident.id}
+                      onClick={() => onSelect(resident.id)}
                       className={`
                         cursor-pointer
                         border-b
@@ -513,10 +518,8 @@ export default function ResidentTable({
                             : "hover:bg-secondary dark:hover:bg-slate-800/50"
                         }
                       `}
-                      onClick={() => onSelect(resident.id)}
                     >
                       {/* SELECT */}
-
                       <td className="px-6 py-4">
                         <button
                           type="button"
@@ -557,7 +560,6 @@ export default function ResidentTable({
                       </td>
 
                       {/* FULL NAME */}
-
                       <td className="px-6 py-4">
                         <button
                           type="button"
@@ -567,8 +569,8 @@ export default function ResidentTable({
                           }}
                           className="
                             text-left
-                            text-sm
-                            font-bold
+                            text-[16px]
+                            font-[600]
                             text-foreground
                             transition-colors
                             hover:text-brand-strong
@@ -581,30 +583,28 @@ export default function ResidentTable({
                       </td>
 
                       {/* PHONE */}
-
-                      <td
-                        className="
-                          px-6
-                          py-4
-                          text-sm
-                          font-medium
-                          text-foreground
-                          dark:text-white
-                        "
-                      >
-                        {formatPhoneNumbers(resident)}
+                      <td className="px-6 py-4">
+                        <span
+                          className="
+                            text-[16px]
+                            font-[500]
+                            text-[#3B5473]
+                            dark:text-white
+                          "
+                        >
+                          {formatPhoneNumbers(resident)}
+                        </span>
                       </td>
 
                       {/* NATIONAL ID */}
-
                       <td className="px-6 py-4">
                         <span
                           className="
                             whitespace-nowrap
                             font-mono
-                            text-sm
-                            font-medium
-                            text-foreground
+                            text-[16px]
+                            font-[500]
+                            text-[#3B5473]
                             dark:text-white
                           "
                         >
@@ -613,7 +613,6 @@ export default function ResidentTable({
                       </td>
 
                       {/* TYPE */}
-
                       <td className="px-6 py-4">
                         <span
                           className={`
@@ -621,9 +620,8 @@ export default function ResidentTable({
                             rounded-full
                             px-3
                             py-1
-                            text-xs
-                            font-bold
-                            uppercase
+                            text-[16px]
+                            font-[500]
                             ${getTypeColor(resident.type)}
                           `}
                         >
@@ -631,8 +629,7 @@ export default function ResidentTable({
                         </span>
                       </td>
 
-                      {/* PLATES */}
-
+                      {/* PLATE NUMBERS */}
                       <td className="px-6 py-4">
                         {plates.length > 0 ? (
                           <div className="flex flex-wrap gap-1.5">
@@ -655,7 +652,7 @@ export default function ResidentTable({
                                     px-3
                                     py-1
                                     font-mono
-                                    text-xs
+                                    text-[14px]
                                     font-semibold
                                     text-ok
                                     transition-all
@@ -688,8 +685,10 @@ export default function ResidentTable({
                         ) : (
                           <span
                             className="
-                              text-sm
-                              text-muted-foreground
+                              text-[16px]
+                              font-[500]
+                              text-[#3B5473]
+                              dark:text-white
                             "
                           >
                             —
@@ -698,7 +697,6 @@ export default function ResidentTable({
                       </td>
 
                       {/* STATUS */}
-
                       <td className="px-6 py-4">
                         <button
                           type="button"
@@ -716,7 +714,7 @@ export default function ResidentTable({
                             rounded-full
                             px-3
                             py-1
-                            text-xs
+                            text-[14px]
                             font-bold
                             transition-all
 
@@ -758,7 +756,6 @@ export default function ResidentTable({
                       </td>
 
                       {/* ACTIONS */}
-
                       <td className="px-6 py-4">
                         <div className="relative">
                           <button
@@ -787,8 +784,7 @@ export default function ResidentTable({
 
                           {isMenuOpen && (
                             <>
-                              {/* Overlay */}
-
+                              {/* OVERLAY */}
                               <div
                                 className="
                                   fixed
@@ -798,8 +794,7 @@ export default function ResidentTable({
                                 onClick={() => setOpenMenuId(null)}
                               />
 
-                              {/* Menu */}
-
+                              {/* MENU */}
                               <div
                                 className="
                                   absolute

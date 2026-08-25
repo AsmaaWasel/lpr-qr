@@ -742,22 +742,22 @@ export default function LiveDemoPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-lg">
+            <table className="w-full min-w-[700px]">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium text-lg uppercase tracking-wider">
+                <tr className="border-b border-border bg-[#F2F6FB] dark:bg-slate-800/40 text-[#7C93B4]">
+                  <th className="px-6 py-4 text-lg font-bold uppercase tracking-wide text-muted-foreground text-left">
                     Gate Name
                   </th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium text-lg uppercase tracking-wider">
+                  <th className="px-6 py-4 text-lg font-bold uppercase tracking-wide text-muted-foreground text-left">
                     Description
                   </th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium text-lg uppercase tracking-wider">
+                  <th className="px-6 py-4 text-lg font-bold uppercase tracking-wide text-muted-foreground text-left">
                     Status
                   </th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium text-lg uppercase tracking-wider">
+                  <th className="px-6 py-4 text-lg font-bold uppercase tracking-wide text-muted-foreground text-left">
                     Entries
                   </th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium text-lg uppercase tracking-wider">
+                  <th className="px-6 py-4 text-lg font-bold uppercase tracking-wide text-muted-foreground text-left">
                     Traffic
                   </th>
                 </tr>
@@ -767,7 +767,7 @@ export default function LiveDemoPage() {
                   <tr>
                     <td
                       colSpan={5}
-                      className="text-center py-8 text-muted-foreground"
+                      className="px-6 py-12 text-center text-lg text-muted-foreground"
                     >
                       No gates available
                     </td>
@@ -777,48 +777,70 @@ export default function LiveDemoPage() {
                     const entryCount = gate.entryCount || 0;
                     const level = getCongestionLevelByEntryCount(entryCount);
                     const isOpen = gate.isOpen || false;
+                    const isSelected = selectedGate?.id === gate.id;
 
                     return (
                       <tr
                         key={gate.id}
-                        className={`border-b border-border hover:bg-card transition-all cursor-grab active:cursor-grabbing ${
-                          selectedGate?.id === gate.id ? "bg-blue-500/10" : ""
-                        }`}
                         onClick={() => handleGateSelect(gate)}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, gate)}
+                        className={`
+                          cursor-pointer
+                          border-b
+                          border-border
+                          transition
+                          last:border-b-0
+                          ${
+                            isSelected
+                              ? "bg-accent dark:bg-cyan-500/10"
+                              : "hover:bg-secondary dark:hover:bg-slate-800/50"
+                          }
+                        `}
                       >
-                        <td className="py-3 px-4">
-                          <span className="font-medium text-foreground">
-                            {gate.name}
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div>
+                              <p className="text-[16px] font-[600] text-foreground dark:text-white">
+                                {gate.name}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-[16px] font-[500] text-[#3B5473] dark:text-white">
+                            {gate.desc || "—"}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-muted-foreground text-lg">
-                          {gate.desc || "—"}
-                        </td>
-                        <td className="py-3 px-4">
+                        <td className="px-6 py-4">
                           <span
-                            className={`text-lg font-medium ${
-                              isOpen ? "text-ok" : "text-muted-foreground"
-                            }`}
+                            className={`
+                            text-[16px] font-[600]
+                            ${
+                              isOpen
+                                ? "text-[#10b981]"
+                                : "text-[#3B5473] dark:text-white"
+                            }
+                          `}
                           >
                             {isOpen ? "OPEN" : "CLOSED"}
                           </span>
                         </td>
-                        <td className="py-3 px-4">
-                          <span className="text-foreground font-medium">
+                        <td className="px-6 py-4">
+                          <span className="text-[16px] font-[500] text-[#3B5473] dark:text-white">
                             {entryCount}
                           </span>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="px-6 py-4">
                           <span
-                            className={`text-lg font-medium ${
+                            className={`
+                            text-[16px] font-[600]
+                            ${
                               level === "heavy"
                                 ? "text-rose-400"
                                 : level === "medium"
                                   ? "text-warn"
                                   : "text-ok"
-                            }`}
+                            }
+                          `}
                           >
                             {level.toUpperCase()}
                           </span>
@@ -1217,33 +1239,35 @@ export default function LiveDemoPage() {
                 disabled={loadingEntries}
                 className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-secondary rounded-lg disabled:opacity-50"
                 aria-label="Refresh logs"
-              ></button>
+              >
+                <HiOutlineRefresh className="w-5 h-5" />
+              </button>
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-lg">
+            <table className="w-full min-w-[700px]">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium text-lg uppercase tracking-wider">
+                <tr className="border-b border-border bg-[#F2F6FB] dark:bg-slate-800/40 text-[#7C93B4]">
+                  <th className="px-6 py-4 text-lg font-bold uppercase tracking-wide text-muted-foreground text-left">
                     Time
                   </th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium text-lg uppercase tracking-wider">
+                  <th className="px-6 py-4 text-lg font-bold uppercase tracking-wide text-muted-foreground text-left">
                     Gate Name
                   </th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium text-lg uppercase tracking-wider">
+                  <th className="px-6 py-4 text-lg font-bold uppercase tracking-wide text-muted-foreground text-left">
                     Gate ID
                   </th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium text-lg uppercase tracking-wider">
+                  <th className="px-6 py-4 text-lg font-bold uppercase tracking-wide text-muted-foreground text-left">
                     Plate
                   </th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium text-lg uppercase tracking-wider">
+                  <th className="px-6 py-4 text-lg font-bold uppercase tracking-wide text-muted-foreground text-left">
                     Entry Type
                   </th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium text-lg uppercase tracking-wider">
+                  <th className="px-6 py-4 text-lg font-bold uppercase tracking-wide text-muted-foreground text-left">
                     Entry By
                   </th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium text-lg uppercase tracking-wider">
+                  <th className="px-6 py-4 text-lg font-bold uppercase tracking-wide text-muted-foreground text-left">
                     Resident
                   </th>
                 </tr>
@@ -1251,10 +1275,10 @@ export default function LiveDemoPage() {
               <tbody>
                 {loadingEntries ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-8">
+                    <td colSpan={7} className="px-6 py-12 text-center">
                       <div className="flex items-center justify-center gap-3">
                         <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin"></div>
-                        <span className="text-muted-foreground">
+                        <span className="text-lg text-muted-foreground">
                           Loading entries from API...
                         </span>
                       </div>
@@ -1264,7 +1288,7 @@ export default function LiveDemoPage() {
                   <tr>
                     <td
                       colSpan={7}
-                      className="text-center py-8 text-muted-foreground"
+                      className="px-6 py-12 text-center text-lg text-muted-foreground"
                     >
                       <HiOutlineXCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
                       {selectedGate
@@ -1283,54 +1307,65 @@ export default function LiveDemoPage() {
                     return (
                       <tr
                         key={entry.id || index}
-                        className="border-b border-border hover:bg-card transition-all"
+                        className="border-b border-border transition last:border-b-0 hover:bg-secondary dark:hover:bg-slate-800/50"
                       >
-                        <td className="py-3 px-4 text-muted-foreground text-xs whitespace-nowrap font-mono">
-                          {entry.created_at
-                            ? new Date(entry.created_at).toLocaleString(
-                                "en-US",
-                                {
-                                  year: "numeric",
-                                  month: "2-digit",
-                                  day: "2-digit",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  second: "2-digit",
-                                  hour12: false,
-                                },
-                              )
-                            : "N/A"}
+                        <td className="px-6 py-4">
+                          <span className="text-[14px] font-mono text-[#3B5473] dark:text-white whitespace-nowrap">
+                            {entry.created_at
+                              ? new Date(entry.created_at).toLocaleString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "2-digit",
+                                    day: "2-digit",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    second: "2-digit",
+                                    hour12: false,
+                                  },
+                                )
+                              : "N/A"}
+                          </span>
                         </td>
-                        <td className="py-3 px-4 text-slate-200 font-medium">
-                          {entry.gate_id ? getGateName(entry.gate_id) : "N/A"}
+                        <td className="px-6 py-4">
+                          <span className="text-[16px] font-[500] text-foreground dark:text-white">
+                            {entry.gate_id ? getGateName(entry.gate_id) : "N/A"}
+                          </span>
                         </td>
-                        <td className="py-3 px-4">
-                          <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-mono bg-slate-800/50 text-muted-foreground border border-border">
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center px-3 py-1 rounded-md text-[14px] font-mono bg-slate-800/50 text-[#3B5473] dark:text-white border border-border">
                             {entry.gate_id !== undefined &&
                             entry.gate_id !== null
                               ? entry.gate_id
                               : "N/A"}
                           </span>
                         </td>
-                        <td className="py-3 px-4">
-                          <span className="font-mono text-lg text-ok">
+                        <td className="px-6 py-4">
+                          <span className="font-mono text-[16px] font-[600] text-[#10b981]">
                             {entry.plate_number || "N/A"}
                           </span>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="px-6 py-4">
                           <span
-                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${getEntryTypeColor(entry.entry_type)}`}
+                            className={`
+                              inline-flex items-center px-3 py-1 rounded-full text-[14px] font-bold border
+                              ${getEntryTypeColor(entry.entry_type)}
+                            `}
                           >
                             {entry.entry_type
                               ? entry.entry_type.toUpperCase()
                               : "UNKNOWN"}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-muted-foreground">
-                          {entry.entry_by || "N/A"}
+                        <td className="px-6 py-4">
+                          <span className="text-[16px] font-[500] text-[#3B5473] dark:text-white">
+                            {entry.entry_by || "N/A"}
+                          </span>
                         </td>
-                        <td className="py-3 px-4 text-muted-foreground">
-                          {residentId}
+                        <td className="px-6 py-4">
+                          <span className="text-[16px] font-[500] text-[#3B5473] dark:text-white">
+                            {residentId}
+                          </span>
                         </td>
                       </tr>
                     );
@@ -1340,7 +1375,7 @@ export default function LiveDemoPage() {
             </table>
           </div>
 
-          <div className="mt-4 flex items-center justify-between text-lg text-muted-foreground text-lg">
+          <div className="mt-4 flex items-center justify-between text-lg text-muted-foreground">
             <span>
               {selectedGate
                 ? `Showing ${filteredEntries.length} entries for ${selectedGate.name}`

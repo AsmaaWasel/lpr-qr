@@ -1,180 +1,243 @@
 "use client";
 
 import { useState } from "react";
+import { X } from "lucide-react";
 
-type CredentialsFormProps = {
-  residentId: number;
-  residentName: string;
-  onClose: () => void;
-  onSubmit: (data: {
-    resident_id: number;
-    email: string;
-    password: string;
-  }) => Promise<void>;
-  loading: boolean;
+type CredentialsFormData = {
+  username: string;
+  password: string;
+  notes: string;
 };
 
-export default function CredentialsForm({
-  residentId,
-  residentName,
-  onClose,
-  onSubmit,
-  loading,
-}: CredentialsFormProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+type Props = {
+  onSubmit: (data: CredentialsFormData) => Promise<void>;
+  editing?: {
+    id?: number;
+    username?: string;
+    password?: string;
+    notes?: string;
+  } | null;
+  onClose: () => void;
+};
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+export default function CredentialsForm({ onSubmit, editing, onClose }: Props) {
+  const [form, setForm] = useState<CredentialsFormData>({
+    username: editing?.username ?? "",
+    password: editing?.password ?? "",
+    notes: editing?.notes ?? "",
+  });
 
-    if (!email.trim() || !password.trim()) {
-      return;
-    }
-
-    await onSubmit({
-      resident_id: residentId,
-      email: email.trim(),
-      password: password.trim(),
-    });
-
-    setEmail("");
-    setPassword("");
+  const handleChange = <K extends keyof CredentialsFormData>(
+    key: K,
+    value: CredentialsFormData[K],
+  ) => {
+    setForm((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
   };
 
+  const handleSubmit = async () => {
+    if (!form.username.trim()) return;
+    if (!form.password.trim()) return;
+
+    await onSubmit({
+      username: form.username.trim(),
+      password: form.password,
+      notes: form.notes.trim(),
+    });
+  };
+
+  const inputClassName = `
+    w-full
+    h-12
+    rounded-xl
+    border
+    border-border
+    bg-background
+    px-4
+    text-base
+    font-medium
+    text-foreground
+    outline-none
+    transition
+    placeholder:text-muted-foreground
+    focus:ring-2
+    focus:ring-[#132f49]/10
+    focus:border-[#132f49]
+    dark:focus:ring-white/10
+    dark:focus:border-white/30
+  `;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-card border border-border p-6 shadow-xl">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-foreground text-xl font-semibold">Add Credentials</h2>
+    <div
+      className="
+        fixed
+        inset-0
+        z-50
+        flex
+        items-center
+        justify-center
+        bg-black/50
+        p-4
+        backdrop-blur-sm
+      "
+      onMouseDown={onClose}
+    >
+      <div
+        className="
+          w-full
+          max-w-4xl
+          max-h-[90vh]
+          overflow-y-auto
+          rounded-2xl
+          border
+          border-border
+          bg-card
+          p-7
+          shadow-2xl
+        "
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        {/* ================= HEADER ================= */}
+        <div className="mb-7 flex items-start justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">
+              {editing ? "Edit Credentials" : "Add Credentials"}
+            </h2>
+
+            <p className="mt-1 text-sm font-medium text-muted-foreground">
+              {editing
+                ? "Update credentials information"
+                : "Add new credentials"}
+            </p>
+          </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground text-sm"
+            className="
+              flex
+              h-10
+              w-10
+              items-center
+              justify-center
+              rounded-xl
+              bg-muted
+              text-lg
+              text-muted-foreground
+              transition
+              hover:bg-secondary
+              hover:text-foreground
+            "
           >
-            ✕
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        <p className="text-muted-foreground text-sm mb-6">
-          Adding credentials for:{" "}
-          <span className="text-foreground font-medium">{residentName}</span>
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Email */}
-          <div>
-            <label className="block text-muted-foreground text-sm font-semibold mb-2">
-              Email
+        {/* ================= FORM ================= */}
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          {/* USERNAME */}
+          <div className="space-y-1.5">
+            <label className="block text-base font-semibold text-foreground">
+              Username
             </label>
 
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter email address"
-              className="
-                w-full
-                h-11
-                px-4
-                rounded-xl
-                bg-card
-                border
-                border-border
-                text-foreground
-                placeholder:text-muted-foreground
-                focus:outline-none
-                focus:border-brand
-              "
-              required
+              type="text"
+              placeholder="Enter username"
+              value={form.username}
+              onChange={(e) => handleChange("username", e.target.value)}
+              className={inputClassName}
             />
           </div>
 
-          {/* Password */}
-          <div>
-            <label className="block text-muted-foreground text-sm font-semibold mb-2">
+          {/* PASSWORD */}
+          <div className="space-y-1.5">
+            <label className="block text-base font-semibold text-foreground">
               Password
             </label>
 
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
-                className="
-                  w-full
-                  h-11
-                  px-4
-                  pr-12
-                  rounded-xl
-                  bg-card
-                  border
-                  border-border
-                  text-foreground
-                  placeholder:text-muted-foreground
-                  focus:outline-none
-                  focus:border-brand
-                "
-                required
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="
-                  absolute
-                  right-3
-                  top-1/2
-                  -translate-y-1/2
-                  text-muted-foreground
-                  hover:text-foreground
-                "
-              >
-                {showPassword ? "👁️" : "👁️‍🗨️"}
-              </button>
-            </div>
+            <input
+              type="password"
+              placeholder="Enter password"
+              value={form.password}
+              onChange={(e) => handleChange("password", e.target.value)}
+              className={inputClassName}
+            />
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="
-                flex-1
-                bg-secondary
-                text-foreground
-                px-4
-                py-2.5
-                rounded-xl
-                hover:bg-secondary
-              "
-            >
-              Cancel
-            </button>
+          {/* NOTES */}
+          <div className="space-y-1.5 md:col-span-2">
+            <label className="block text-base font-semibold text-foreground">
+              Notes
+            </label>
 
-            <button
-              type="submit"
-              disabled={loading || !email.trim() || !password.trim()}
-              className="
-                flex-1
-                bg-purple-500
-                text-foreground
-                px-4
-                py-2.5
-                rounded-xl
-                hover:bg-purple-600
-                disabled:opacity-50
-                disabled:cursor-not-allowed
-              "
-            >
-              {loading ? "Adding..." : "Add Credentials"}
-            </button>
+            <textarea
+              placeholder="Enter notes"
+              value={form.notes}
+              onChange={(e) => handleChange("notes", e.target.value)}
+              rows={4}
+              className={`
+                ${inputClassName}
+                h-auto
+                resize-none
+                py-3
+              `}
+            />
           </div>
-        </form>
+        </div>
+
+        {/* ================= ACTIONS ================= */}
+        <div
+          className="
+            mt-7
+            flex
+            justify-end
+            gap-3
+            border-t
+            border-border
+            pt-5
+          "
+        >
+          <button
+            type="button"
+            onClick={onClose}
+            className="
+              rounded-xl
+              px-6
+              py-3
+              text-base
+              font-semibold
+              text-muted-foreground
+              transition
+              hover:bg-muted
+              hover:text-foreground
+            "
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="
+              rounded-xl
+              bg-[#132f49]
+              px-7
+              py-3
+              text-base
+              font-semibold
+              text-white
+              shadow-sm
+              transition
+              hover:bg-[#0b1f33]
+              active:scale-[0.98]
+            "
+          >
+            {editing ? "Update Credentials" : "Save Credentials"}
+          </button>
+        </div>
       </div>
     </div>
   );

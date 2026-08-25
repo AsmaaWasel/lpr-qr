@@ -1,45 +1,49 @@
-// app/dashboard/visitor-logs/page.tsx
-
 "use client";
-
-import { useState } from "react";
 
 import { PillTabs, REPORT_TABS } from "@/shared/ui/voom";
 
-import QRVisitorFilters, {
-  QRVisitorFilterData,
-} from "@/components/reports.tsx/QRVisitorFilters";
+import { useForm } from "react-hook-form";
+import QRVisitorLogsTable from "@/components/reports/QRVisitorLogsTable";
+import QRReportFilters, {
+  QRReportFilterData,
+} from "@/components/reports/QRVisitorFilters";
 
-import QRVisitorLogsTable from "@/components/reports.tsx/QRVisitorLogsTable";
+export default function QRReportsPage() {
+  const { handleSubmit } = useForm<QRReportFilterData>();
 
-export default function VisitorLogsPage() {
-  const [filters, setFilters] = useState<QRVisitorFilterData>({
-    qrCodeId: "",
-    residentName: "",
-    fromDate: "",
-    toDate: "",
-  });
-
-  const handleApply = (newFilters: QRVisitorFilterData) => {
-    setFilters(newFilters);
-
-    console.log("Applied QR visitor filters:", newFilters);
-  };
-
-  const handleExport = (currentFilters: QRVisitorFilterData) => {
-    console.log("Export QR visitor logs:", currentFilters);
+  const onSubmit = (data: QRReportFilterData) => {
+    console.log("QR Report filters:", data);
   };
 
   return (
-    <div className="space-y-6 p-6">
-      {/* REPORT TABS */}
+    <div className="space-y-6">
+      {/* =========================
+                  QR TABS
+          ========================= */}
       <PillTabs tabs={REPORT_TABS} activeValue="/dashboard/reports/qr" />
 
-      {/* FILTERS */}
-      <QRVisitorFilters onApply={handleApply} onExport={handleExport} />
+      {/* =========================
+                  FILTERS
+          ========================= */}
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <QRReportFilters onApply={onSubmit} onExport={onSubmit} />
+      </form>
 
-      {/* TABLE */}
-      <QRVisitorLogsTable />
+      {/* =========================
+                   TABLE
+          ========================= */}
+      <div className="mt-6">
+        <QRVisitorLogsTable
+          data={[]}
+          selectedId={null}
+          onSelect={(id: number) => {
+            console.log("Selected QR:", id);
+          }}
+          onImageClick={function (url: string): void {
+            throw new Error("Function not implemented.");
+          }}
+        />
+      </div>
     </div>
   );
 }

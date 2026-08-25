@@ -66,9 +66,8 @@ export default function ResidentForm({ onSubmit, editing, onClose }: Props) {
     ) {
       initialPhoneNumbers = editing.phone_numbers
         .filter((p) => p !== null && p !== undefined)
-        .map((p) => extractPhoneNumber(p));
-
-      initialPhoneNumbers = initialPhoneNumbers.filter((p) => p !== "");
+        .map((p) => extractPhoneNumber(p))
+        .filter((p) => p !== "");
 
       if (initialPhoneNumbers.length === 0) {
         initialPhoneNumbers = [""];
@@ -79,17 +78,11 @@ export default function ResidentForm({ onSubmit, editing, onClose }: Props) {
 
     return {
       full_name: editing?.full_name ?? "",
-
       phone_numbers: initialPhoneNumbers,
-
       type: editing?.type ?? "owner",
-
       owner_id: editing?.owner_id?.toString() ?? "",
-
       notes: editing?.notes ?? "",
-
       national_id: editing?.national_id?.toString() ?? "",
-
       building_number: editing?.building_number?.toString() ?? "",
     };
   });
@@ -176,174 +169,222 @@ export default function ResidentForm({ onSubmit, editing, onClose }: Props) {
 
   const showOwnerId = form.type !== "owner";
 
+  const inputClassName = `
+    w-full
+    h-12
+    rounded-xl
+    border
+    border-border
+    bg-background
+    px-4
+    text-base
+    font-medium
+    text-foreground
+    outline-none
+    transition
+    placeholder:text-muted-foreground
+    focus:ring-2
+    focus:ring-[#132f49]/10
+    focus:border-[#132f49]
+    dark:focus:ring-white/10
+    dark:focus:border-white/30
+  `;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-card border border-border p-6 shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-foreground text-xl font-semibold">
-            {editing ? "Edit Resident" : "Add Resident"}
-          </h2>
+    <div
+      className="
+        fixed
+        inset-0
+        z-50
+        flex
+        items-center
+        justify-center
+        bg-black/50
+        p-4
+        backdrop-blur-sm
+      "
+      onMouseDown={onClose}
+    >
+      <div
+        className="
+          w-full
+          max-w-4xl
+          max-h-[90vh]
+          overflow-y-auto
+          rounded-2xl
+          border
+          border-border
+          bg-card
+          p-7
+          shadow-2xl
+        "
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        {/* ================= HEADER ================= */}
+
+        <div className="mb-7 flex items-start justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">
+              {editing ? "Edit Resident" : "Add Resident"}
+            </h2>
+
+            <p className="mt-1 text-sm font-medium text-muted-foreground">
+              {editing
+                ? "Update resident information"
+                : "Add a new resident and manage their information"}
+            </p>
+          </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground text-sm"
+            className="
+              flex
+              h-10
+              w-10
+              items-center
+              justify-center
+              rounded-xl
+              bg-muted
+              text-lg
+              text-muted-foreground
+              transition
+              hover:bg-secondary
+              hover:text-foreground
+            "
           >
-            ✕
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        <p className="text-muted-foreground text-sm mb-5">
-          Manage resident information
-        </p>
+        {/* ================= FORM ================= */}
 
-        <div className="space-y-4">
-          {/* Full Name */}
-          <div>
-            <label className="block text-foreground text-sm font-medium mb-2">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          {/* FULL NAME */}
+
+          <div className="space-y-1.5">
+            <label className="block text-base font-semibold text-foreground">
               Full Name
             </label>
 
             <input
+              type="text"
+              placeholder="Enter full name"
               value={form.full_name}
               onChange={(e) => handleChange("full_name", e.target.value)}
-              placeholder="Full Name"
-              className="
-                w-full
-                bg-card
-                border
-                border-border
-                rounded-xl
-                px-4
-                py-3
-                text-foreground
-                focus:outline-none
-                focus:border-brand
-              "
+              className={inputClassName}
             />
           </div>
 
-          {/* Phone Numbers */}
-          <div>
-            <label className="block text-foreground text-sm font-medium mb-2">
-              Phone Numbers
-            </label>
+          {/* NATIONAL ID */}
 
-            {form.phone_numbers.map((phone, index) => (
-              <div key={index} className="flex gap-2 mb-2">
-                <input
-                  value={phone || ""}
-                  onChange={(e) => handlePhoneChange(index, e.target.value)}
-                  placeholder={`Phone Number ${index + 1}`}
-                  className="
-                      flex-1
-                      bg-card
-                      border
-                      border-border
-                      rounded-xl
-                      px-4
-                      py-3
-                      text-foreground
-                      focus:outline-none
-                      focus:border-brand
-                    "
-                />
-
-                {form.phone_numbers.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removePhoneField(index)}
-                    className="
-                        px-3
-                        py-3
-                        rounded-xl
-                        bg-danger-soft
-                        text-danger
-                        hover:bg-danger-soft
-                        transition-colors
-                      "
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                )}
-
-                {index === form.phone_numbers.length - 1 && (
-                  <button
-                    type="button"
-                    onClick={addPhoneField}
-                    className="
-                        px-3
-                        py-3
-                        rounded-xl
-                        bg-sky-500/20
-                        text-brand
-                        hover:bg-sky-500/30
-                        transition-colors
-                      "
-                  >
-                    <Plus className="h-5 w-5" />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* National ID */}
-          <div>
-            <label className="block text-foreground text-sm font-medium mb-2">
+          <div className="space-y-1.5">
+            <label className="block text-base font-semibold text-foreground">
               National ID
             </label>
 
             <input
-              value={form.national_id}
-              onChange={(e) => handleChange("national_id", e.target.value)}
+              type="text"
               inputMode="numeric"
               pattern="[0-9]*"
-              placeholder="National ID"
-              className="
-                w-full
-                bg-card
-                border
-                border-border
-                rounded-xl
-                px-4
-                py-3
-                text-foreground
-                focus:outline-none
-                focus:border-brand
-              "
+              placeholder="Enter national ID"
+              value={form.national_id}
+              onChange={(e) => handleChange("national_id", e.target.value)}
+              className={inputClassName}
             />
           </div>
 
-          {/* Building Number */}
-          <div>
-            <label className="block text-foreground text-sm font-medium mb-2">
+          {/* PHONE NUMBERS */}
+
+          <div className="space-y-1.5">
+            <label className="block text-base font-semibold text-foreground">
+              Phone Numbers
+            </label>
+
+            <div className="space-y-2">
+              {form.phone_numbers.map((phone, index) => (
+                <div key={index} className="flex gap-2">
+                  <input
+                    type="text"
+                    inputMode="tel"
+                    placeholder={`Phone Number ${index + 1}`}
+                    value={phone || ""}
+                    onChange={(e) => handlePhoneChange(index, e.target.value)}
+                    className={inputClassName}
+                  />
+
+                  {/* REMOVE */}
+
+                  {form.phone_numbers.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removePhoneField(index)}
+                      className="
+                        flex
+                        h-12
+                        w-12
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-xl
+                        bg-danger-soft
+                        text-danger
+                        transition
+                        hover:bg-red-500/10
+                      "
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  )}
+
+                  {/* ADD */}
+
+                  {index === form.phone_numbers.length - 1 && (
+                    <button
+                      type="button"
+                      onClick={addPhoneField}
+                      className="
+                        flex
+                        h-12
+                        w-12
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-xl
+                        bg-sky-500/20
+                        text-brand
+                        transition
+                        hover:bg-sky-500/30
+                      "
+                    >
+                      <Plus className="h-5 w-5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* BUILDING NUMBER */}
+
+          <div className="space-y-1.5">
+            <label className="block text-base font-semibold text-foreground">
               Building Number
             </label>
 
             <input
+              type="text"
+              placeholder="Enter building number"
               value={form.building_number}
               onChange={(e) => handleChange("building_number", e.target.value)}
-              placeholder="Building Number"
-              className="
-                w-full
-                bg-card
-                border
-                border-border
-                rounded-xl
-                px-4
-                py-3
-                text-foreground
-                focus:outline-none
-                focus:border-brand
-              "
+              className={inputClassName}
             />
           </div>
 
-          {/* Type */}
-          <div>
-            <label className="block text-foreground text-sm font-medium mb-2">
+          {/* TYPE */}
+
+          <div className="space-y-1.5">
+            <label className="block text-base font-semibold text-foreground">
               Type
             </label>
 
@@ -356,96 +397,80 @@ export default function ResidentForm({ onSubmit, editing, onClose }: Props) {
                   handleChange("owner_id", "");
                 }
               }}
-              className="
-                w-full
-                bg-card
-                border
-                border-border
-                rounded-xl
-                px-4
-                py-3
-                text-foreground
-                focus:outline-none
-                focus:border-brand
-                text-lg
-              "
+              className={`${inputClassName} cursor-pointer`}
             >
               <option value="owner">Owner</option>
-
               <option value="relative">Relative</option>
-
               <option value="staff">Staff</option>
             </select>
           </div>
 
-          {/* Owner ID */}
+          {/* OWNER ID */}
+
           {showOwnerId && (
-            <div>
-              <label className="block text-foreground text-sm font-medium mb-2">
+            <div className="space-y-1.5">
+              <label className="block text-base font-semibold text-foreground">
                 Owner ID
               </label>
 
               <input
+                type="number"
+                placeholder="Enter owner ID"
                 value={form.owner_id}
                 onChange={(e) => handleChange("owner_id", e.target.value)}
-                type="number"
-                placeholder="Owner ID"
-                className="
-                  w-full
-                  bg-card
-                  border
-                  border-border
-                  rounded-xl
-                  px-4
-                  py-3
-                  text-foreground
-                  focus:outline-none
-                  focus:border-brand
-                "
+                className={inputClassName}
               />
             </div>
           )}
 
-          {/* Notes */}
-          <div>
-            <label className="block text-foreground text-sm font-medium mb-2">
+          {/* NOTES */}
+
+          <div className="space-y-1.5 md:col-span-2">
+            <label className="block text-base font-semibold text-foreground">
               Notes
             </label>
 
             <textarea
+              placeholder="Enter notes"
               value={form.notes}
               onChange={(e) => handleChange("notes", e.target.value)}
-              placeholder="Notes"
-              rows={3}
-              className="
-                w-full
-                bg-card
-                border
-                border-border
-                rounded-xl
-                px-4
+              rows={4}
+              className={`
+                ${inputClassName}
+                h-auto
+                resize-none
                 py-3
-                text-foreground
-                focus:outline-none
-                focus:border-brand
-              "
+              `}
             />
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex justify-end gap-3 mt-5">
+        {/* ================= ACTIONS ================= */}
+
+        <div
+          className="
+            mt-7
+            flex
+            justify-end
+            gap-3
+            border-t
+            border-border
+            pt-5
+          "
+        >
           <button
             type="button"
             onClick={onClose}
             className="
-              px-4
-              py-2
               rounded-xl
-              bg-card
+              px-6
+              py-3
+              text-base
+              font-semibold
               text-muted-foreground
-              hover:bg-secondary
-              text-lg
+              transition
+              hover:bg-muted
+              hover:text-foreground
             "
           >
             Cancel
@@ -455,16 +480,20 @@ export default function ResidentForm({ onSubmit, editing, onClose }: Props) {
             type="button"
             onClick={handleSubmit}
             className="
-              px-4
-              py-2
               rounded-xl
-              bg-brand
-              text-foreground
-              hover:bg-brand-strong
-              text-lg
+              bg-[#132f49]
+              px-7
+              py-3
+              text-base
+              font-semibold
+              text-white
+              shadow-sm
+              transition
+              hover:bg-[#0b1f33]
+              active:scale-[0.98]
             "
           >
-            Save
+            {editing ? "Update Resident" : "Save Resident"}
           </button>
         </div>
       </div>

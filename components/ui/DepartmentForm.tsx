@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
-
 import { Department, DepartmentFormData } from "@/modules/types/department";
 
 type Props = {
@@ -16,10 +15,6 @@ export default function DepartmentForm({ editing, onClose, onSubmit }: Props) {
   const [description, setDescription] = useState(editing?.description ?? "");
   const [isActive, setIsActive] = useState(editing?.is_active ?? true);
 
-  // =========================
-  // SAVE
-  // =========================
-
   const handleSave = async () => {
     if (!name.trim()) {
       alert("Please enter department name");
@@ -32,10 +27,6 @@ export default function DepartmentForm({ editing, onClose, onSubmit }: Props) {
       is_active: isActive,
     });
   };
-
-  // =========================
-  // INPUT STYLE
-  // =========================
 
   const inputClassName = `
     w-full
@@ -77,23 +68,20 @@ export default function DepartmentForm({ editing, onClose, onSubmit }: Props) {
       <div
         className="
           w-full
-          max-w-[560px]
+          max-w-4xl
           max-h-[90vh]
           overflow-y-auto
           rounded-2xl
           border
           border-border
           bg-card
-          p-6
+          p-7
           shadow-2xl
         "
         onMouseDown={(e) => e.stopPropagation()}
       >
-        {/* =========================
-            HEADER
-        ========================== */}
-
-        <div className="mb-6 flex items-start justify-between">
+        {/* ================= HEADER ================= */}
+        <div className="mb-7 flex items-start justify-between">
           <div>
             <h2 className="text-2xl font-bold text-foreground">
               {editing ? "Edit Department" : "Add Department"}
@@ -111,8 +99,8 @@ export default function DepartmentForm({ editing, onClose, onSubmit }: Props) {
             onClick={onClose}
             className="
               flex
-              h-9
-              w-9
+              h-10
+              w-10
               items-center
               justify-center
               rounded-xl
@@ -123,19 +111,13 @@ export default function DepartmentForm({ editing, onClose, onSubmit }: Props) {
               hover:text-foreground
             "
           >
-            <X size={18} />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* =========================
-            FORM
-        ========================== */}
-
-        <div className="space-y-4">
-          {/* =========================
-              NAME
-          ========================== */}
-
+        {/* ================= FORM ================= */}
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          {/* DEPARTMENT NAME */}
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
               Department Name
@@ -151,46 +133,45 @@ export default function DepartmentForm({ editing, onClose, onSubmit }: Props) {
             />
           </div>
 
-          {/* =========================
-              DESCRIPTION
-          ========================== */}
-
+          {/* DESCRIPTION */}
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
               Description
             </label>
 
-            <textarea
+            <input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter department description"
-              rows={3}
               className={`
                 ${inputClassName}
-                h-auto
+                h-12
                 resize-none
                 py-3
               `}
             />
           </div>
-
-          {/* =========================
-              ACTIVE STATUS
-          ========================== */}
         </div>
 
-        {/* =========================
-            ACTIONS
-        ========================== */}
-
-        <div className="mt-7 flex justify-end gap-3 border-t border-border pt-5">
+        {/* ================= ACTIONS ================= */}
+        <div
+          className="
+            mt-7
+            flex
+            justify-end
+            gap-3
+            border-t
+            border-border
+            pt-5
+          "
+        >
           <button
             type="button"
             onClick={onClose}
             className="
               rounded-xl
-              px-5
-              py-2.5
+              px-6
+              py-3
               text-base
               font-semibold
               text-muted-foreground
@@ -208,8 +189,8 @@ export default function DepartmentForm({ editing, onClose, onSubmit }: Props) {
             className="
               rounded-xl
               bg-[#132f49]
-              px-6
-              py-2.5
+              px-7
+              py-3
               text-base
               font-semibold
               text-white

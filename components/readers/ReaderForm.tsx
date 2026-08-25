@@ -35,7 +35,6 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
   // =========================
   // GET GATES
   // =========================
-
   useEffect(() => {
     const fetchGates = async () => {
       try {
@@ -52,7 +51,6 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
   // =========================
   // HANDLE CHANGE
   // =========================
-
   const handleChange = <K extends keyof ReaderFormData>(
     key: K,
     value: ReaderFormData[K],
@@ -66,10 +64,8 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
   // =========================
   // GATE CHANGE
   // =========================
-
   const handleGateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const gateId = Number(e.target.value);
-
     const selectedGate = gates.find((gate) => gate.id === gateId);
 
     setForm((prev) => ({
@@ -82,13 +78,11 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
   // =========================
   // READER TYPE
   // =========================
-
   const isCamera = form.reader_type === "CAMERA";
 
   // =========================
-  // INPUT CLASS
+  // INPUT STYLE
   // =========================
-
   const inputClassName = `
     w-full
     h-12
@@ -112,9 +106,18 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
   `;
 
   // =========================
+  // LABEL STYLE
+  // =========================
+  const labelClassName = `
+    block
+    text-sm
+    font-semibold
+    text-foreground
+  `;
+
+  // =========================
   // SAVE
   // =========================
-
   const handleSave = async () => {
     const selectedGate = gates.find((gate) => gate.id === form.gate_id);
 
@@ -149,7 +152,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
       <div
         className="
           w-full
-          max-w-[560px]
+          max-w-[900px]
           max-h-[90vh]
           overflow-y-auto
           rounded-2xl
@@ -163,8 +166,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
       >
         {/* =========================
             HEADER
-        ========================= */}
-
+        ========================== */}
         <div className="mb-6 flex items-start justify-between">
           <div>
             <h2 className="text-2xl font-bold text-foreground">
@@ -201,23 +203,29 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
 
         {/* =========================
             FORM
-        ========================= */}
-
-        <div className="space-y-4">
+        ========================== */}
+        <div
+          className="
+            grid
+            grid-cols-1
+            gap-x-5
+            gap-y-5
+            md:grid-cols-2
+          "
+        >
           {/* =========================
               GATE
-          ========================= */}
-
+          ========================== */}
           <div className="space-y-1.5">
-            <label className="block text-base font-semibold text-foreground">
-              Gate
-            </label>
+            <label className={labelClassName}>Gate</label>
 
             <select
               value={form.gate_id || ""}
               onChange={handleGateChange}
               className={inputClassName}
             >
+              <option value="">Select gate</option>
+
               {gates.map((gate) => (
                 <option key={gate.id} value={gate.id}>
                   {gate.name}
@@ -228,72 +236,60 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
 
           {/* =========================
               READER TYPE
-          ========================= */}
-
+          ========================== */}
           <div className="space-y-1.5">
-            <label className="block text-base font-semibold text-foreground">
-              Reader Type
-            </label>
+            <label className={labelClassName}>Reader Type</label>
 
             <select
               value={form.reader_type}
               onChange={(e) => handleChange("reader_type", e.target.value)}
               className={inputClassName}
             >
+              <option value="">Select reader type</option>
               <option value="CAMERA">Camera</option>
-
               <option value="QRREADER">QR Reader</option>
             </select>
           </div>
 
           {/* =========================
-              CAMERA CREDENTIALS
-          ========================= */}
-
+              USERNAME
+          ========================== */}
           {isCamera && (
-            <>
-              {/* Username */}
+            <div className="space-y-1.5">
+              <label className={labelClassName}>Username</label>
 
-              <div className="space-y-1.5">
-                <label className="block text-base font-semibold text-foreground">
-                  Username
-                </label>
+              <input
+                type="text"
+                placeholder="Enter camera username"
+                value={form.username}
+                onChange={(e) => handleChange("username", e.target.value)}
+                className={inputClassName}
+              />
+            </div>
+          )}
 
-                <input
-                  type="text"
-                  placeholder="Enter camera username"
-                  value={form.username}
-                  onChange={(e) => handleChange("username", e.target.value)}
-                  className={inputClassName}
-                />
-              </div>
+          {/* =========================
+              PASSWORD
+          ========================== */}
+          {isCamera && (
+            <div className="space-y-1.5">
+              <label className={labelClassName}>Password</label>
 
-              {/* Password */}
-
-              <div className="space-y-1.5">
-                <label className="block text-base font-semibold text-foreground">
-                  Password
-                </label>
-
-                <input
-                  type="password"
-                  placeholder="Enter camera password"
-                  value={form.password}
-                  onChange={(e) => handleChange("password", e.target.value)}
-                  className={inputClassName}
-                />
-              </div>
-            </>
+              <input
+                type="password"
+                placeholder="Enter camera password"
+                value={form.password}
+                onChange={(e) => handleChange("password", e.target.value)}
+                className={inputClassName}
+              />
+            </div>
           )}
 
           {/* =========================
               IP ADDRESS
-          ========================= */}
-
+          ========================== */}
           <div className="space-y-1.5">
-            <label className="block text-base font-semibold text-foreground">
-              IP Address
-            </label>
+            <label className={labelClassName}>IP Address</label>
 
             <input
               type="text"
@@ -306,12 +302,9 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
 
           {/* =========================
               PORT
-          ========================= */}
-
+          ========================== */}
           <div className="space-y-1.5">
-            <label className="block text-base font-semibold text-foreground">
-              Port
-            </label>
+            <label className={labelClassName}>Port</label>
 
             <input
               type="number"
@@ -324,12 +317,9 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
 
           {/* =========================
               ADD SUB URL
-          ========================= */}
-
+          ========================== */}
           <div className="space-y-1.5">
-            <label className="block text-base font-semibold text-foreground">
-              Add SubURL
-            </label>
+            <label className={labelClassName}>Add SubURL</label>
 
             <input
               type="text"
@@ -344,12 +334,9 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
 
           {/* =========================
               NOTES
-          ========================= */}
-
-          <div className="space-y-1.5">
-            <label className="block text-base font-semibold text-foreground">
-              Notes
-            </label>
+          ========================== */}
+          <div className="space-y-1.5 md:col-span-2">
+            <label className={labelClassName}>Notes</label>
 
             <textarea
               value={form.notes}
@@ -368,9 +355,18 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
 
         {/* =========================
             ACTIONS
-        ========================= */}
-
-        <div className="mt-7 flex justify-end gap-3 border-t border-border pt-5">
+        ========================== */}
+        <div
+          className="
+            mt-7
+            flex
+            justify-end
+            gap-3
+            border-t
+            border-border
+            pt-5
+          "
+        >
           <button
             type="button"
             onClick={onClose}

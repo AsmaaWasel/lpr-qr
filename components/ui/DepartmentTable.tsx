@@ -13,7 +13,6 @@ export default function DepartmentTable({ data, selectedId, onSelect }: Props) {
     <div
       className="
         overflow-hidden
-        rounded-[24px]
         bg-card
         shadow-sm
       "
@@ -21,26 +20,18 @@ export default function DepartmentTable({ data, selectedId, onSelect }: Props) {
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full min-w-[700px]">
-          {/* ================= HEADER ================= */}
-
           <thead>
             <tr
               className="
                 border-b
                 border-border
-                bg-slate-50/70
+                bg-[#F2F6FB]
                 text-left
                 dark:bg-slate-800/40
+                text-[#7C93B4]
               "
             >
-              {/* Select */}
-
-              <th className="w-[70px] px-6 py-4">
-                <span className="sr-only">Select</span>
-              </th>
-
-              {/* Department Name */}
-
+              {/* DEPARTMENT NAME */}
               <th
                 className="
                   px-6
@@ -52,11 +43,10 @@ export default function DepartmentTable({ data, selectedId, onSelect }: Props) {
                   text-muted-foreground
                 "
               >
-                Department Name
+                DEPARTMENT NAME
               </th>
 
-              {/* Description */}
-
+              {/* DESCRIPTION */}
               <th
                 className="
                   px-6
@@ -68,12 +58,25 @@ export default function DepartmentTable({ data, selectedId, onSelect }: Props) {
                   text-muted-foreground
                 "
               >
-                Description
+                DESCRIPTION
+              </th>
+
+              {/* DEPARTMENT ID */}
+              <th
+                className="
+                  px-6
+                  py-4
+                  text-lg
+                  font-bold
+                  uppercase
+                  tracking-wide
+                  text-muted-foreground
+                "
+              >
+                DEPARTMENT ID
               </th>
             </tr>
           </thead>
-
-          {/* ================= BODY ================= */}
 
           <tbody>
             {data.length === 0 ? (
@@ -84,7 +87,7 @@ export default function DepartmentTable({ data, selectedId, onSelect }: Props) {
                     px-6
                     py-12
                     text-center
-                    text-sm
+                    text-lg
                     text-muted-foreground
                   "
                 >
@@ -112,89 +115,53 @@ export default function DepartmentTable({ data, selectedId, onSelect }: Props) {
                       }
                     `}
                   >
-                    {/* ================= SELECT ================= */}
-
-                    <td className="px-6 py-4">
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        readOnly
-                        className="
-                          h-4
-                          w-4
-                          cursor-pointer
-                          rounded
-                          border-border
-                          accent-cyan-500
-                        "
-                      />
-                    </td>
-
-                    {/* ================= DEPARTMENT ================= */}
-
+                    {/* DEPARTMENT NAME */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        {/* ID */}
-
-                        <div
-                          className="
-                            flex
-                            h-10
-                            w-10
-                            items-center
-                            justify-center
-                            rounded-xl
-                            bg-accent
-                            text-sm
-                            font-bold
-                            text-brand-strong
-                            dark:bg-cyan-500/10
-                          "
-                        >
-                          {department.id}
-                        </div>
-
-                        {/* Name */}
-
                         <div>
                           <p
                             className="
-                              text-sm
-                              font-bold
+                              text-[16px]
+                              font-[600]
                               text-foreground
                               dark:text-white
                             "
                           >
                             {department.name}
                           </p>
-
-                          <p
-                            className="
-                              mt-0.5
-                              text-xs
-                              text-muted-foreground
-                            "
-                          >
-                            Department #{department.id}
-                          </p>
                         </div>
                       </div>
                     </td>
 
-                    {/* ================= DESCRIPTION ================= */}
-
+                    {/* DESCRIPTION */}
                     <td className="px-6 py-4">
                       <span
                         className="
                           block
-                          max-w-md
+                          max-w-[400px]
                           truncate
-                          text-sm
-                          text-muted-foreground
+                          text-[16px]
+                          font-[500]
+                          text-[#3B5473]
+                          dark:text-white
                         "
                         title={department.description || "-"}
                       >
                         {department.description || "-"}
+                      </span>
+                    </td>
+
+                    {/* DEPARTMENT ID */}
+                    <td className="px-6 py-4">
+                      <span
+                        className="
+                          text-[16px]
+                          font-[500]
+                          text-[#3B5473]
+                          dark:text-white
+                        "
+                      >
+                        {department.id}
                       </span>
                     </td>
                   </tr>
