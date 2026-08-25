@@ -153,7 +153,7 @@ export default function CameraTable({ data, selectedId, onSelect }: Props) {
                           <p
                             className="
                     text-[16px]
-                    font-bold
+                    font-[600]
                     text-foreground
                     dark:text-white
                   "

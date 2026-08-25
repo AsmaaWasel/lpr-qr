@@ -19,65 +19,71 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
               className="
                 border-b
                 border-border
-                bg-slate-50/70
+                bg-[#F2F6FB]
                 text-left
                 dark:bg-slate-800/40
+                text-[#7C93B4]
               "
             >
+              {/* Gate Name */}
               <th
                 className="
                   px-6
                   py-4
-                  text-[18px]
-                  font-[700]
+                  text-lg
+                  font-bold
                   uppercase
                   tracking-wide
                   text-muted-foreground
                 "
               >
-                Gate Name
+                GATE NAME
               </th>
 
+              {/* Type */}
               <th
                 className="
                   px-6
                   py-4
-                  text-[18px]
-                  font-[700]
+                  text-lg
+                  font-bold
                   uppercase
                   tracking-wide
                   text-muted-foreground
                 "
               >
-                Type
+                TYPE
               </th>
 
+              {/* IP */}
               <th
                 className="
                   px-6
                   py-4
-                  text-[18px]
-                  font-[700]
+                 text-lg
+                  font-bold
                   uppercase
                   tracking-wide
-                  text-muted-foreground
+                   text-muted-foreground
+                 
                 "
               >
-                IP Address
+                IP
               </th>
 
+              {/* Description */}
               <th
                 className="
                   px-6
                   py-4
-                  text-[18px]
-                  font-[700]
+                 text-lg
+                  font-bold
                   uppercase
                   tracking-wide
-                  text-muted-foreground
+                   text-muted-foreground
                 "
               >
-                Description
+                DESCRIPTION
               </th>
             </tr>
           </thead>
@@ -91,7 +97,7 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                     px-6
                     py-12
                     text-center
-                    text-sm
+                    text-lg
                     text-muted-foreground
                   "
                 >
@@ -118,13 +124,13 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                       }
                     `}
                   >
-                    {/* Gate Name */}
+                    {/* GATE NAME */}
                     <td className="px-6 py-4">
                       <p
                         className="
                           text-[16px]
-                          font-[600]
-                          text-[#0E2038]
+                          font-bold
+                          text-foreground
                           dark:text-white
                         "
                       >
@@ -132,7 +138,7 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                       </p>
                     </td>
 
-                    {/* Type */}
+                    {/* TYPE */}
                     <td className="px-6 py-4">
                       <span
                         className={`
@@ -140,8 +146,8 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                           rounded-full
                           px-3
                           py-1
-                          text-xs
-                          font-bold
+                          text-[16px]
+                          font-[500]
                           ${
                             gate.type === "ENTRY"
                               ? "bg-emerald-50 text-ok dark:bg-emerald-500/10 dark:text-emerald-400"
@@ -157,23 +163,29 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                     <td className="px-6 py-4">
                       <span
                         className="
-                          text-sm
-                          font-medium
-                          text-foreground
+                          text-[16px]
+                          font-[500]
+                          text-[#29C5E8]
                           dark:text-white
                         "
                       >
-                        {gate.ip}
+                        {gate.ip || "-"}
                       </span>
                     </td>
 
-                    {/* Description */}
+                    {/* DESCRIPTION */}
                     <td className="px-6 py-4">
                       <span
                         className="
-                          text-sm
-                          text-muted-foreground
+                          block
+                          max-w-[350px]
+                          truncate
+                          text-[16px]
+                          font-[500]
+                          text-[#3B5473]
+                          dark:text-white
                         "
+                        title={gate.desc || "-"}
                       >
                         {gate.desc || "-"}
                       </span>
