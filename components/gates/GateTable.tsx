@@ -26,17 +26,23 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
               className="
                 border-b
                 border-border
+                 text-[18px]
+                  font-[700]
                 bg-slate-50/70
                 text-left
                 dark:bg-slate-800/40
+                px-6
+                  py-4
+                  uppercase
+                  tracking-wide
+                  text-muted-foreground
               "
             >
               <th
                 className="
                   px-6
                   py-4
-                  text-lg
-                  font-bold
+                  
                   uppercase
                   tracking-wide
                   text-muted-foreground
@@ -49,8 +55,6 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                 className="
                   px-6
                   py-4
-                  text-lg
-                  font-bold
                   uppercase
                   tracking-wide
                   text-muted-foreground
@@ -129,44 +133,16 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                     {/* Gate */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div
-                          className="
-                            flex
-                            h-10
-                            w-10
-                            items-center
-                            justify-center
-                            rounded-xl
-                            bg-accent
-                            text-sm
-                            font-bold
-                            text-brand-strong
-                            dark:bg-cyan-500/10
-                          "
-                        >
-                          {gate.id}
-                        </div>
-
                         <div>
                           <p
                             className="
-                              text-sm
-                              font-bold
-                              text-foreground
+                              text-[16px]
+                              font-[600]
+                              text-[#0E2038]
                               dark:text-white
                             "
                           >
                             {gate.name}
-                          </p>
-
-                          <p
-                            className="
-                              mt-0.5
-                              text-xs
-                              text-muted-foreground
-                            "
-                          >
-                            Gate #{gate.id}
                           </p>
                         </div>
                       </div>

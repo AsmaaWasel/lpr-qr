@@ -22,6 +22,7 @@ import {
   Area,
   CartesianGrid,
 } from "recharts";
+import DashboardStatsCards from "@/components/dashboard/DashboardStatsCards";
 
 export default function DashboardHome() {
   const [entrances, setEntrances] = useState(1284);
@@ -49,84 +50,12 @@ export default function DashboardHome() {
   }, []);
 
   return (
-    <div className="relative w-full min-h-screen bg-background text-foreground p-6 md:p-10 overflow-hidden">
+    <div className="relative w-full min-h-screen text-foreground p-6 md:p-10 overflow-hidden ">
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-sky-500/10 blur-[150px] rounded-full -translate-y-1/3 translate-x-1/3" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-600/5 blur-[120px] rounded-full" />
 
       <div className="relative z-10 max-w-7xl mx-auto space-y-8">
-        {/* الهيدر الرئيسي */}
-        <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-border pb-6">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            </div>
-            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight">
-              SmartGate{" "}
-              <span className="text-brand">Statistical Dashboard</span>
-            </h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Real-time behavior tracking, safety indices, and facility load
-              management.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-4 bg-card border border-border px-4 py-2 rounded-2xl backdrop-blur-md">
-            <Clock className="h-5 w-5 text-brand animate-spin-slow" />
-            <div className="text-right">
-              <div className="text-sm font-mono font-bold">LIVE TELEMETRY</div>
-              <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                SYSTEM SYNCHRONIZED
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="rounded-2xl border border-border bg-white/[0.03] p-5 backdrop-blur-md">
-            <div className="flex justify-between items-start text-muted-foreground mb-3">
-              <Users className="h-5 w-5 text-brand" />
-              <span className="text-xs font-medium text-ok flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                <TrendingUp className="h-3 w-3" /> +12%
-              </span>
-            </div>
-            <div className="text-sm font-bold tracking-tight font-mono">
-              {entrances}
-            </div>
-            <p className="text-xs text-muted-foreground font-medium mt-1 uppercase tracking-wider">
-              Total Daily Accesses
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-border bg-white/[0.03] p-5 backdrop-blur-md">
-            <div className="flex justify-between items-start text-muted-foreground mb-3">
-              <Activity className="h-5 w-5 text-orange-400" />
-              <span className="text-[10px] text-muted-foreground bg-card px-2 py-0.5 rounded-full">
-                Cars / Hr
-              </span>
-            </div>
-            <div className="text-sm font-bold tracking-tight font-mono">
-              {peakHourTraffic}
-            </div>
-            <p className="text-xs text-muted-foreground font-medium mt-1 uppercase tracking-wider">
-              Peak Traffic Load
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-border bg-white/[0.03] p-5 backdrop-blur-md">
-            <div className="flex justify-between items-start text-muted-foreground mb-3">
-              <ShieldCheck className="h-5 w-5 text-ok" />
-              <span className="text-[10px] font-bold text-ok bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                OPTIMAL
-              </span>
-            </div>
-            <div className="text-sm font-bold tracking-tight font-mono">
-              99.4%
-            </div>
-            <p className="text-xs text-muted-foreground font-medium mt-1 uppercase tracking-wider">
-              AI Recognition Accuracy
-            </p>
-          </div>
-        </div>
+        <DashboardStatsCards />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 rounded-2xl border border-border bg-white/[0.03] p-6 backdrop-blur-md">

@@ -90,13 +90,12 @@ export function PillTabs({
 
         const className = `
           voom-tab
-          text-lg
-          font-semibold
-          px-6
-          py-3
+          text-[15px]
+          font-[600]
+          px-5
+          py-2.5
           rounded-xl
-            ${active ? "voom-tab--active text-white" : "text-[#132f49]"}
-
+          ${active ? "bg-[#16324F] text-white" : "bg-white text-[#16324F]"}
         `;
 
         if (tab.href) {
@@ -183,12 +182,18 @@ export function Toolbar({
             type="button"
             onClick={onAdd}
             className="
-              voom-btn
-              voom-btn--primary
-              text-[#0b1f33]
-              text-lg
-              font-semibold
-            "
+  rounded-xl
+  px-5
+  py-2.5
+  text-[16px]
+  font-[600]
+  text-[##0B1B30]
+  transition-all
+  hover:opacity-90
+  bg-gradient-to-br
+  from-[#38bdf8]
+  to-[#3b82f6]
+"
           >
             {addLabel ?? "Add"}
           </button>
@@ -201,7 +206,7 @@ export function Toolbar({
             type="button"
             onClick={onEdit}
             disabled={!hasSelected}
-            className="voom-btn voom-btn--ghost text-[#a0acbd] text-lg"
+            className="voom-btn voom-btn--ghost text-[600] text-[16px] text-[#3B5473] bg-[#F2F6FB]"
           >
             Edit
           </button>
@@ -212,7 +217,7 @@ export function Toolbar({
             type="button"
             onClick={onDelete}
             disabled={!hasSelected}
-            className="voom-btn voom-btn--danger text-lg"
+            className="voom-btn voom-btn--danger text-[600] text-[16px] text-[#D64B68] bg-[##FCEDF0]"
           >
             Delete
           </button>

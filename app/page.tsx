@@ -36,12 +36,12 @@ export default function LoginPage() {
       const userRole = localStorage.getItem("userRole");
 
       // Check if user is admin based on role
-      const isAdmin = userRole === "admin" || userRole === "super_admin";
+      const isAdmin = userRole === "admin" || userRole === "superAdmin";
 
       if (isAdmin) {
-        router.push("/dashboard");
-      } else {
         router.push("/dashboard/qr/qr");
+      } else {
+        router.push("/dashboard");
       }
     } catch (err) {
       console.error("Login Error:", err);
