@@ -109,18 +109,21 @@ ${imageUrl}`;
   return (
     <div
       className="
-        bg-[#132f49]
-        border
-        border-border
-        rounded-2xl
-        p-3
-        flex
-        items-center
-        justify-center
-        min-h-[80px]
-        max-h-[350px]
-        
-      "
+    bg-[#132f49]
+   
+    border
+    border-border
+    rounded-2xl
+    p-3
+    flex
+    items-center
+    justify-center
+    w-full
+    
+    mx-auto
+    min-h-[300px]
+    max-h-[350px]
+  "
     >
       {!qrData ? (
         <div className="flex flex-col items-center justify-center py-4">
@@ -135,11 +138,11 @@ ${imageUrl}`;
           ) : (
             <>
               <QrCode size={32} className="text-white/50 mb-2" />
-              <h2 className="text-white text-sm font-semibold">
+              <h2 className="text-white text-[20px] font-[700]">
                 No QR Generated
               </h2>
-              <p className="text-white/50 text-xs mt-1 text-center max-w-[150px]">
-                Fill information & generate
+              <p className="text-white/50 text-[18px] text-center mt-1 ">
+                Fill the information above and generate a QR code
               </p>
             </>
           )}
@@ -151,7 +154,7 @@ ${imageUrl}`;
             <img
               src={getQrImageUrl()}
               alt="QR"
-              className="w-[80px] h-[80px] object-contain"
+              className="w-[700px] h-[700px] object-contain"
             />
           </div>
 

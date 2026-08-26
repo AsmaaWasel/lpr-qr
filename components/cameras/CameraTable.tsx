@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { Camera } from "@/modules/types/camera";
-import { Check } from "lucide-react";
+import { Check, ExternalLink } from "lucide-react";
 
 type Props = {
   data: Camera[];
@@ -13,15 +14,9 @@ export default function CameraTable({ data, selectedId, onSelect }: Props) {
   return (
     <div className="w-full">
       {/* ================= TABLE ================= */}
-      <div
-        className="
-          overflow-hidden
-          bg-card
-          shadow-sm
-        "
-      >
+      <div className="overflow-hidden bg-card shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px]">
+          <table className="w-full min-w-[1100px]">
             {/* ================= HEADER ================= */}
             <thead>
               <tr
@@ -124,6 +119,21 @@ export default function CameraTable({ data, selectedId, onSelect }: Props) {
                 >
                   URL
                 </th>
+
+                {/* CAMERA LINK */}
+                <th
+                  className="
+                    px-6
+                    py-4
+                    text-lg
+                    font-bold
+                    uppercase
+                    tracking-wide
+                    text-muted-foreground
+                  "
+                >
+                  ACTION
+                </th>
               </tr>
             </thead>
 
@@ -132,7 +142,7 @@ export default function CameraTable({ data, selectedId, onSelect }: Props) {
               {data.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="
                       px-6
                       py-12
@@ -279,7 +289,7 @@ export default function CameraTable({ data, selectedId, onSelect }: Props) {
                         <span
                           className="
                             block
-                            max-w-[320px]
+                            max-w-[260px]
                             truncate
                             text-[16px]
                             font-[500]
@@ -289,6 +299,37 @@ export default function CameraTable({ data, selectedId, onSelect }: Props) {
                         >
                           {camera.url || "—"}
                         </span>
+                      </td>
+
+                      {/* ================= OPEN CAMERA LINK ================= */}
+                      <td className="px-6 py-4">
+                        <Link
+                          href={`/dashboard/lpr/cameras/${camera.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="
+                            inline-flex
+                            items-center
+                            gap-2
+                            whitespace-nowrap
+                            rounded-lg
+                            bg-gradient-to-r
+                            from-[#2F80ED]
+                            to-[#29C5E8]
+                            px-3
+                            py-2
+                            text-sm
+                            font-semibold
+                            text-white
+                            shadow-sm
+                            transition-all
+                            duration-200
+                            hover:scale-[1.02]
+                            hover:shadow-md
+                          "
+                        >
+                          <ExternalLink size={15} />
+                          Open Camera Link
+                        </Link>
                       </td>
                     </tr>
                   );

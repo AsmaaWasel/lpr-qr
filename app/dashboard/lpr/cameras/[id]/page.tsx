@@ -109,7 +109,7 @@ export default function CameraStreamPage() {
         <button
           onClick={handleDetect}
           disabled={loadingLPR}
-          className="rounded-xl bg-purple-600 px-6 py-3 text-foreground"
+          className="rounded-xl bg-gradient-to-r from-[#29C5E8] to-[#2F80ED] px-6 py-3 text-[#0E2038] text-[20px] font-[700]"
         >
           {loadingLPR ? "Processing..." : "Detect LPR"}
         </button>

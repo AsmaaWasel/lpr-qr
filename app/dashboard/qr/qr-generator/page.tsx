@@ -3,9 +3,12 @@
 import { useState } from "react";
 
 import { generateQR } from "@/services/qr";
+
 import QRForm, { QRFormData } from "@/components/qr/Qrform";
+
 import QRDisplay from "@/components/qr/QRDisplay";
-import { LPR_TABS, PillTabs, QR_TABS } from "@/shared/ui/voom";
+
+import { QR_TABS, PillTabs } from "@/shared/ui/voom";
 
 // =====================================================
 // MAIN PAGE
@@ -15,6 +18,7 @@ export default function QRPage() {
   const [loading, setLoading] = useState(false);
   const [qrData, setQrData] = useState<QRResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+
   const [formData, setFormData] = useState<QRFormData>({
     buildingNumber: "",
     residentId: "",
@@ -113,9 +117,11 @@ export default function QRPage() {
       // =====================================================
 
       const response = await generateQR(payload);
+
       setQrData(response);
     } catch (err) {
       console.error("Generate QR Error:", err);
+
       setError("Please try again later. Something went wrong.");
     } finally {
       setLoading(false);
@@ -129,6 +135,7 @@ export default function QRPage() {
   const handleReset = () => {
     setQrData(null);
     setError(null);
+
     setFormData({
       buildingNumber: "",
       residentId: "",
@@ -147,18 +154,39 @@ export default function QRPage() {
 
   return (
     <div className="space-y-6 pb-28">
-      <PillTabs tabs={QR_TABS} activeValue="/dashboard/qr/qr-generator" />
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* FORM */}
-        <QRForm onGenerate={handleGenerate} loading={loading} error={error} />
+      {/* =====================================================
+          TABS
+      ===================================================== */}
 
-        {/* QR DISPLAY */}
-        <QRDisplay
-          qrData={qrData}
-          loading={loading}
-          formData={formData}
-          onReset={handleReset}
-        />
+      <PillTabs tabs={QR_TABS} activeValue="/dashboard/qr/qr-generator" />
+
+      {/* =====================================================
+          CONTENT
+          FORM = 8 COLUMNS
+          QR DISPLAY = 4 COLUMNS
+      ===================================================== */}
+
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-stretch">
+        {/* =====================================================
+            FORM
+        ===================================================== */}
+
+        <div className="xl:col-span-8">
+          <QRForm onGenerate={handleGenerate} loading={loading} error={error} />
+        </div>
+
+        {/* =====================================================
+            QR DISPLAY
+        ===================================================== */}
+
+        <div className="xl:col-span-4">
+          <QRDisplay
+            qrData={qrData}
+            loading={loading}
+            formData={formData}
+            onReset={handleReset}
+          />
+        </div>
       </div>
     </div>
   );
