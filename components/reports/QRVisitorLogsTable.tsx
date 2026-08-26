@@ -70,7 +70,7 @@ export default function GateEntriesTable({
           px-3
           py-1
           text-xs
-          font-bold
+          font-[600]
           ${
             isEntry
               ? "bg-emerald-50 text-ok dark:bg-emerald-500/10 dark:text-emerald-400"
@@ -79,6 +79,7 @@ export default function GateEntriesTable({
         `}
       >
         <DoorOpen className="h-3.5 w-3.5" />
+
         {isEntry ? "ENTRY" : "EXIT"}
       </span>
     );
@@ -86,6 +87,10 @@ export default function GateEntriesTable({
 
   const getEntryByBadge = (method: GateEntry["entry_by"]) => {
     const normalized = method.toLowerCase();
+
+    // =========================
+    // PLATE
+    // =========================
 
     if (normalized === "plate") {
       return (
@@ -99,7 +104,7 @@ export default function GateEntriesTable({
             px-3
             py-1
             text-xs
-            font-bold
+            font-[600]
             text-purple-600
             dark:bg-purple-500/10
             dark:text-purple-400
@@ -110,6 +115,10 @@ export default function GateEntriesTable({
         </span>
       );
     }
+
+    // =========================
+    // QR
+    // =========================
 
     if (normalized === "qr") {
       return (
@@ -123,7 +132,7 @@ export default function GateEntriesTable({
             px-3
             py-1
             text-xs
-            font-bold
+            font-[600]
             text-blue-600
             dark:bg-blue-500/10
             dark:text-blue-400
@@ -134,6 +143,10 @@ export default function GateEntriesTable({
         </span>
       );
     }
+
+    // =========================
+    // RESIDENT / LPR
+    // =========================
 
     if (normalized === "resident") {
       return (
@@ -147,7 +160,7 @@ export default function GateEntriesTable({
             px-3
             py-1
             text-xs
-            font-bold
+            font-[600]
             text-emerald-600
             dark:bg-emerald-500/10
             dark:text-emerald-400
@@ -158,6 +171,10 @@ export default function GateEntriesTable({
         </span>
       );
     }
+
+    // =========================
+    // MANUAL
+    // =========================
 
     return (
       <span
@@ -170,7 +187,7 @@ export default function GateEntriesTable({
           px-3
           py-1
           text-xs
-          font-bold
+          font-[600]
           text-orange-600
           dark:bg-orange-500/10
           dark:text-orange-400
@@ -181,6 +198,10 @@ export default function GateEntriesTable({
       </span>
     );
   };
+
+  // =========================
+  // Render
+  // =========================
 
   return (
     <div
@@ -193,117 +214,127 @@ export default function GateEntriesTable({
     >
       <div className="overflow-x-auto">
         <table className="w-full min-w-[1100px]">
-          {/* ================= HEADER ================= */}
+          {/* =========================
+              HEADER
+          ========================= */}
+
           <thead>
             <tr
               className="
                 border-b
                 border-border
-                bg-slate-50/70
+                bg-[#F2F6FB]
                 text-left
                 dark:bg-slate-800/40
               "
             >
               {/* TYPE */}
+
               <th
                 className="
                   px-6
                   py-4
                   text-lg
-                  font-bold
+                  font-[600]
                   uppercase
                   tracking-wide
-                  text-muted-foreground
+                  text-[#7C93B4]
                 "
               >
                 Type
               </th>
 
               {/* METHOD */}
+
               <th
                 className="
                   px-6
                   py-4
                   text-lg
-                  font-bold
+                  font-[600]
                   uppercase
                   tracking-wide
-                  text-muted-foreground
+                  text-[#7C93B4]
                 "
               >
                 Method
               </th>
 
               {/* PLATE NUMBER */}
+
               <th
                 className="
                   px-6
                   py-4
                   text-lg
-                  font-bold
+                  font-[600]
                   uppercase
                   tracking-wide
-                  text-muted-foreground
+                  text-[#7C93B4]
                 "
               >
                 Plate Number
               </th>
 
               {/* RESIDENT */}
+
               <th
                 className="
                   px-6
                   py-4
                   text-lg
-                  font-bold
+                  font-[600]
                   uppercase
                   tracking-wide
-                  text-muted-foreground
+                  text-[#7C93B4]
                 "
               >
                 Resident
               </th>
 
-              {/* GATE ID */}
+              {/* GATE */}
+
               <th
                 className="
                   px-6
                   py-4
                   text-lg
-                  font-bold
+                  font-[600]
                   uppercase
                   tracking-wide
-                  text-muted-foreground
+                  text-[#7C93B4]
                 "
               >
-                Gate ID
+                Gate
               </th>
 
               {/* IMAGE */}
+
               <th
                 className="
                   px-6
                   py-4
                   text-lg
-                  font-bold
+                  font-[600]
                   uppercase
                   tracking-wide
-                  text-muted-foreground
+                  text-[#7C93B4]
                 "
               >
                 Image
               </th>
 
               {/* DATE & TIME */}
+
               <th
                 className="
                   px-6
                   py-4
                   text-lg
-                  font-bold
+                  font-[600]
                   uppercase
                   tracking-wide
-                  text-muted-foreground
+                  text-[#7C93B4]
                 "
               >
                 Date & Time
@@ -311,7 +342,10 @@ export default function GateEntriesTable({
             </tr>
           </thead>
 
-          {/* ================= BODY ================= */}
+          {/* =========================
+              BODY
+          ========================= */}
+
           <tbody>
             {data.length === 0 ? (
               <tr>
@@ -321,14 +355,14 @@ export default function GateEntriesTable({
                     px-6
                     py-12
                     text-center
-                    text-sm
+                    text-lg
                     text-muted-foreground
                   "
                 >
                   <div className="flex flex-col items-center gap-3">
-                    <DoorOpen className="h-10 w-10 text-muted-foreground" />
+                    <QrCode className="h-10 w-10 text-muted-foreground" />
 
-                    <p className="text-lg font-medium">No gate entries found</p>
+                    <p className="text-lg font-medium">No QR entries found</p>
 
                     <p className="text-lg text-muted-foreground">
                       Try adjusting your filters
@@ -357,17 +391,26 @@ export default function GateEntriesTable({
                       }
                     `}
                   >
-                    {/* ================= TYPE ================= */}
+                    {/* =========================
+                        TYPE
+                    ========================= */}
+
                     <td className="px-6 py-4">
                       {getEntryTypeBadge(entry.entry_type)}
                     </td>
 
-                    {/* ================= METHOD ================= */}
+                    {/* =========================
+                        METHOD
+                    ========================= */}
+
                     <td className="px-6 py-4">
                       {getEntryByBadge(entry.entry_by)}
                     </td>
 
-                    {/* ================= PLATE NUMBER ================= */}
+                    {/* =========================
+                        PLATE NUMBER
+                    ========================= */}
+
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div
@@ -395,8 +438,8 @@ export default function GateEntriesTable({
                           <p
                             className="
                               font-mono
-                              text-sm
-                              font-bold
+                              text-[20px]
+                              font-[600]
                               text-foreground
                               dark:text-white
                             "
@@ -417,7 +460,10 @@ export default function GateEntriesTable({
                       </div>
                     </td>
 
-                    {/* ================= RESIDENT ================= */}
+                    {/* =========================
+                        RESIDENT
+                    ========================= */}
+
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div
@@ -444,8 +490,8 @@ export default function GateEntriesTable({
                         <div>
                           <p
                             className="
-                              text-sm
-                              font-bold
+                              text-[20px]
+                              font-[600]
                               text-foreground
                               dark:text-white
                             "
@@ -468,7 +514,10 @@ export default function GateEntriesTable({
                       </div>
                     </td>
 
-                    {/* ================= GATE ID ================= */}
+                    {/* =========================
+                        GATE
+                    ========================= */}
+
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div
@@ -480,8 +529,8 @@ export default function GateEntriesTable({
                             justify-center
                             rounded-xl
                             bg-accent
-                            text-sm
-                            font-bold
+                            text-[20px]
+                            font-[600]
                             text-brand-strong
                             dark:bg-cyan-500/10
                           "
@@ -492,8 +541,8 @@ export default function GateEntriesTable({
                         <div>
                           <p
                             className="
-                              text-sm
-                              font-bold
+                              text-[20px]
+                              font-[600]
                               text-foreground
                               dark:text-white
                             "
@@ -514,7 +563,10 @@ export default function GateEntriesTable({
                       </div>
                     </td>
 
-                    {/* ================= IMAGE ================= */}
+                    {/* =========================
+                        IMAGE
+                    ========================= */}
+
                     <td className="px-6 py-4">
                       {entry.image_url ? (
                         <button
@@ -571,7 +623,10 @@ export default function GateEntriesTable({
                       )}
                     </td>
 
-                    {/* ================= DATE & TIME ================= */}
+                    {/* =========================
+                        DATE & TIME
+                    ========================= */}
+
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div
@@ -599,7 +654,7 @@ export default function GateEntriesTable({
                           <p
                             className="
                               whitespace-nowrap
-                              text-sm
+                              text-[20px]
                               font-medium
                               text-foreground
                               dark:text-white

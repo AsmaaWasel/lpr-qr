@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Camera, ArrowUpRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import {
   XAxis,
@@ -15,10 +16,12 @@ import {
 } from "recharts";
 
 import DashboardStatsCards from "@/components/dashboard/DashboardStatsCards";
+import GateEntriesTable from "@/components/reports/GateEntriesLPRTable";
 
 export default function DashboardHome() {
   const [entrances, setEntrances] = useState(1284);
   const [peakHourTraffic, setPeakHourTraffic] = useState(142);
+  const router = useRouter();
 
   const hourlyTrafficData = [
     { time: "06:00 AM", Cars: 45, Residents: 30 },
@@ -259,6 +262,62 @@ export default function DashboardHome() {
               <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
+        </div>
+
+        <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card">
+          {/* =========================
+      LIVE ACCESS FEED HEADER
+  ========================= */}
+          <div className="flex items-center justify-between border-b border-border px-5 py-4">
+            {/* Left Side */}
+            <div className="flex items-center gap-3">
+              <h2 className="text-[20px] font-[700] text-foreground">
+                Live access feed
+              </h2>
+
+              {/* Live Indicator */}
+              <span
+                className="
+          h-3
+          w-3
+          rounded-full
+          bg-red-500
+          shadow-[0_0_10px_rgba(239,68,68,0.8)]
+          animate-pulse
+        "
+              />
+            </div>
+
+            {/* Right Side */}
+            <button
+              type="button"
+              onClick={() => router.push("/dashboard/reports/lpr")}
+              className="
+        text-[20px]
+        font-[600]
+        text-[#29C5E8]
+        transition-colors
+        hover:text-[#1eb4d5]
+        hover:underline
+      "
+            >
+              Open full report
+            </button>
+          </div>
+
+          {/* =========================
+      TABLE
+  ========================= */}
+          <GateEntriesTable
+            data={[]}
+            selectedId={null}
+            onSelect={(id: number) => {
+              // handle select
+            }}
+            onImageClick={(url: string) => {
+              // handle image click
+            }}
+          />
         </div>
       </div>
     </div>
