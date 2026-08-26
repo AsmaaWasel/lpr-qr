@@ -1,6 +1,7 @@
 "use client";
 
 import { User } from "@/modules/types/user";
+import { Check } from "lucide-react";
 
 type Props = {
   data: User[];
@@ -9,40 +10,74 @@ type Props = {
 };
 
 export default function UserTable({ data, selectedId, onSelect }: Props) {
+  // =========================
+  // ROLE COLOR
+  // =========================
   const getRoleColor = (role?: string) => {
     switch (role?.toLowerCase()) {
+      // ADMIN - BLUE
       case "admin":
-        return "bg-purple-50 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400";
+        return `
+          bg-blue-50
+          text-blue-700
+          dark:bg-blue-500/10
+          dark:text-blue-400
+        `;
 
+      // OPERATOR - PURPLE
       case "operator":
-        return "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400";
+        return `
+          bg-purple-50
+          text-purple-700
+          dark:bg-purple-500/10
+          dark:text-purple-400
+        `;
 
+      // VIEWER - CYAN
       case "viewer":
-        return "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400";
+        return `
+          bg-cyan-50
+          text-cyan-700
+          dark:bg-cyan-500/10
+          dark:text-cyan-400
+        `;
 
+      // MANAGER - ORANGE
       case "manager":
-        return "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400";
+        return `
+          bg-orange-50
+          text-orange-700
+          dark:bg-orange-500/10
+          dark:text-orange-400
+        `;
 
+      // SECURITY - GREEN
       case "security":
-        return "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400";
+        return `
+          bg-emerald-50
+          text-emerald-700
+          dark:bg-emerald-500/10
+          dark:text-emerald-400
+        `;
 
+      // DEFAULT - GRAY
       default:
-        return "bg-secondary text-muted-foreground";
+        return `
+          bg-slate-50
+          text-slate-600
+          dark:bg-slate-700
+          dark:text-slate-200
+        `;
     }
   };
 
   return (
-    <div
-      className="
-        overflow-hidden
-        rounded-[24px]
-        bg-card
-        shadow-sm
-      "
-    >
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[700px]">
+    <div className="w-full bg-card shadow-sm">
+      {/* =========================
+          TABLE
+      ========================= */}
+      <div className="w-full overflow-x-auto">
+        <table className="w-full min-w-[1050px] border-collapse">
           {/* =========================
               HEADER
           ========================= */}
@@ -51,14 +86,16 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
               className="
                 border-b
                 border-border
-                bg-slate-50/70
+                bg-[#F2F6FB]
                 text-left
+                text-[#7C93B4]
                 dark:bg-slate-800/40
               "
             >
-              {/* User */}
+              {/* SELECT */}
               <th
                 className="
+                  w-[55px]
                   px-6
                   py-4
                   text-lg
@@ -68,10 +105,10 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
                   text-muted-foreground
                 "
               >
-                Name
+                <span className="sr-only">Select</span>
               </th>
 
-              {/* Email */}
+              {/* NAME */}
               <th
                 className="
                   px-6
@@ -83,10 +120,10 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
                   text-muted-foreground
                 "
               >
-                Email
+                NAME
               </th>
 
-              {/* Role */}
+              {/* EMAIL */}
               <th
                 className="
                   px-6
@@ -98,7 +135,37 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
                   text-muted-foreground
                 "
               >
-                Role
+                EMAIL
+              </th>
+
+              {/* ROLE */}
+              <th
+                className="
+                  px-6
+                  py-4
+                  text-lg
+                  font-bold
+                  uppercase
+                  tracking-wide
+                  text-muted-foreground
+                "
+              >
+                ROLE
+              </th>
+
+              {/* DEPARTMENT */}
+              <th
+                className="
+                  px-6
+                  py-4
+                  text-lg
+                  font-bold
+                  uppercase
+                  tracking-wide
+                  text-muted-foreground
+                "
+              >
+                DEPARTMENT
               </th>
             </tr>
           </thead>
@@ -110,12 +177,12 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
             {data.length === 0 ? (
               <tr>
                 <td
-                  colSpan={3}
+                  colSpan={5}
                   className="
                     px-6
                     py-12
                     text-center
-                    text-sm
+                    text-lg
                     text-muted-foreground
                   "
                 >
@@ -136,7 +203,6 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
                       border-border
                       transition
                       last:border-b-0
-
                       ${
                         isSelected
                           ? "bg-accent dark:bg-cyan-500/10"
@@ -145,51 +211,61 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
                     `}
                   >
                     {/* =========================
-                        USER
+                        SELECT
+                    ========================= */}
+                    <td className="px-6 py-4">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelect(user.id);
+                        }}
+                        className={`
+                          flex
+                          h-5
+                          w-5
+                          items-center
+                          justify-center
+                          rounded
+                          border-2
+                          transition
+                          ${
+                            isSelected
+                              ? `
+                                border-brand
+                                bg-brand
+                                text-white
+                                hover:bg-brand-strong
+                              `
+                              : `
+                                border-slate-300
+                                bg-card
+                                hover:border-brand
+                                dark:border-slate-600
+                              `
+                          }
+                        `}
+                        aria-label={`Select ${user.username || user.id}`}
+                      >
+                        {isSelected && <Check size={13} strokeWidth={3} />}
+                      </button>
+                    </td>
+
+                    {/* =========================
+                        NAME
                     ========================= */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        {/* ID */}
-                        <div
-                          className="
-                            flex
-                            h-10
-                            w-10
-                            shrink-0
-                            items-center
-                            justify-center
-                            rounded-xl
-                            bg-accent
-                            text-sm
-                            font-bold
-                            text-brand-strong
-                            dark:bg-cyan-500/10
-                          "
-                        >
-                          {user.id}
-                        </div>
-
-                        {/* Name */}
                         <div>
                           <p
                             className="
-                              text-sm
-                              font-bold
+                              text-[16px]
+                              font-[600]
                               text-foreground
                               dark:text-white
                             "
                           >
                             {user.username || "-"}
-                          </p>
-
-                          <p
-                            className="
-                              mt-0.5
-                              text-xs
-                              text-muted-foreground
-                            "
-                          >
-                            User #{user.id}
                           </p>
                         </div>
                       </div>
@@ -201,9 +277,9 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
                     <td className="px-6 py-4">
                       <span
                         className="
-                          text-sm
-                          font-medium
-                          text-foreground
+                          text-[16px]
+                          font-[500]
+                          text-[#3B5473]
                           dark:text-white
                         "
                       >
@@ -221,12 +297,28 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
                           rounded-full
                           px-3
                           py-1
-                          text-xs
-                          font-bold
+                          text-[16px]
+                          font-[500]
                           ${getRoleColor(user.role)}
                         `}
                       >
                         {user.role || "Unknown"}
+                      </span>
+                    </td>
+
+                    {/* =========================
+                        DEPARTMENT
+                    ========================= */}
+                    <td className="px-6 py-4">
+                      <span
+                        className="
+                          text-[16px]
+                          font-[500]
+                          text-[#3B5473]
+                          dark:text-white
+                        "
+                      >
+                        {user.department || "-"}
                       </span>
                     </td>
                   </tr>

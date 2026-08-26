@@ -2,6 +2,7 @@
 
 import { Plate } from "@/modules/types/plate";
 import { useRouter } from "next/navigation";
+import { Check } from "lucide-react";
 
 type Props = {
   data: Plate[];
@@ -47,140 +48,181 @@ export default function PlateTable({ data, selectedId, onSelect }: Props) {
   // =========================
   // OPEN DETAILS
   // =========================
-  const handleOpenDetails = (plateId: number) => {
+  const handleOpenDetails = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    plateId: number,
+  ) => {
+    e.stopPropagation();
+
     router.push("/dashboard/residents");
   };
 
   return (
-    <div className="w-full bg-card shadow-sm">
-      {/* Table */}
-      <div className="w-full overflow-x-auto">
-        <table className="w-full min-w-[700px] border-collapse">
-          {/* =========================
-              THEAD
-          ========================= */}
-          <thead>
-            <tr
-              className="
-                border-b
-                border-border
-                bg-[#F2F6FB]
-                text-left
-                dark:bg-slate-800/40
-              "
-            >
-              {/* Plate Number */}
-              <th
+    <div className="w-full">
+      {/* ================= TABLE ================= */}
+      <div
+        className="
+          overflow-hidden
+          bg-card
+          shadow-sm
+        "
+      >
+        <div className="w-full overflow-x-auto">
+          <table className="w-full min-w-[900px] border-collapse">
+            {/* ================= HEADER ================= */}
+            <thead>
+              <tr
                 className="
-                  px-6
-                  py-4
-                  text-lg
-                  font-bold
-                  uppercase
-                  tracking-wide
-                  text-muted-foreground
+                  border-b
+                  border-border
+                  bg-[#F2F6FB]
+                  text-left
+                  text-[#7C93B4]
+                  dark:bg-slate-800/40
                 "
               >
-                Plate Number
-              </th>
-
-              {/* Resident */}
-              <th
-                className="
-                  px-6
-                  py-4
-                  text-lg
-                  font-bold
-                  uppercase
-                  tracking-wide
-                  text-muted-foreground
-                "
-              >
-                Resident Name
-              </th>
-
-              {/* Actions */}
-              <th
-                className="
-                  px-6
-                  py-4
-                  text-lg
-                  font-bold
-                  uppercase
-                  tracking-wide
-                  text-muted-foreground
-                "
-              >
-                Actions
-              </th>
-            </tr>
-          </thead>
-
-          {/* =========================
-              TBODY
-          ========================= */}
-          <tbody>
-            {data.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={3}
+                {/* SELECT */}
+                <th
                   className="
+                    w-[55px]
                     px-6
-                    py-12
-                    text-center
+                    py-4
                     text-lg
+                    font-bold
+                    uppercase
+                    tracking-wide
                     text-muted-foreground
                   "
                 >
-                  No plates found
-                </td>
+                  <span className="sr-only">Select</span>
+                </th>
+
+                {/* PLATE NUMBER */}
+                <th
+                  className="
+                    px-6
+                    py-4
+                    text-lg
+                    font-bold
+                    uppercase
+                    tracking-wide
+                    text-muted-foreground
+                  "
+                >
+                  PLATE NUMBER
+                </th>
+
+                {/* RESIDENT */}
+                <th
+                  className="
+                    px-6
+                    py-4
+                    text-lg
+                    font-bold
+                    uppercase
+                    tracking-wide
+                    text-muted-foreground
+                  "
+                >
+                  RESIDENT NAME
+                </th>
+
+                {/* ACTIONS */}
+                <th
+                  className="
+                    px-6
+                    py-4
+                    text-lg
+                    font-bold
+                    uppercase
+                    tracking-wide
+                    text-muted-foreground
+                  "
+                >
+                  ACTIONS
+                </th>
               </tr>
-            ) : (
-              data.map((plate) => {
-                const isSelected = selectedId === plate.id;
+            </thead>
 
-                return (
-                  <tr
-                    key={plate.id}
-                    onClick={() => onSelect(plate.id)}
-                    className={`
-                      cursor-pointer
-                      border-b
-                      border-border
-                      transition
-
-                      ${
-                        isSelected
-                          ? "bg-accent dark:bg-cyan-500/10"
-                          : "hover:bg-secondary dark:hover:bg-slate-800/50"
-                      }
-                    `}
+            {/* ================= BODY ================= */}
+            <tbody>
+              {data.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="
+                      px-6
+                      py-12
+                      text-center
+                      text-lg
+                      text-muted-foreground
+                    "
                   >
-                    {/* =========================
-                        PLATE NUMBER
-                    ========================= */}
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        {/* ID */}
-                        <div
-                          className="
+                    No plates found
+                  </td>
+                </tr>
+              ) : (
+                data.map((plate) => {
+                  const isSelected = selectedId === plate.id;
+
+                  return (
+                    <tr
+                      key={plate.id}
+                      onClick={() => onSelect(plate.id)}
+                      className={`
+                        cursor-pointer
+                        border-b
+                        border-border
+                        transition
+                        last:border-b-0
+                        ${
+                          isSelected
+                            ? "bg-accent dark:bg-cyan-500/10"
+                            : "hover:bg-secondary dark:hover:bg-slate-800/50"
+                        }
+                      `}
+                    >
+                      {/* ================= SELECT ================= */}
+                      <td className="px-6 py-4">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelect(plate.id);
+                          }}
+                          className={`
                             flex
-                            h-10
-                            w-10
+                            h-5
+                            w-5
                             items-center
                             justify-center
-                            rounded-xl
-                            bg-accent
-                            text-sm
-                            font-bold
-                            text-brand-strong
-                            dark:bg-cyan-500/10
-                          "
+                            rounded
+                            border-2
+                            transition
+                            ${
+                              isSelected
+                                ? `
+                                  border-brand
+                                  bg-brand
+                                  text-white
+                                  hover:bg-brand-strong
+                                `
+                                : `
+                                  border-slate-300
+                                  bg-card
+                                  hover:border-brand
+                                  dark:border-slate-600
+                                `
+                            }
+                          `}
+                          aria-label={`Select plate ${plate.id}`}
                         >
-                          {plate.id}
-                        </div>
+                          {isSelected && <Check size={13} strokeWidth={3} />}
+                        </button>
+                      </td>
 
-                        {/* Plate */}
+                      {/* ================= PLATE NUMBER ================= */}
+                      <td className="px-6 py-4">
                         <div>
                           <p
                             className="
@@ -203,88 +245,84 @@ export default function PlateTable({ data, selectedId, onSelect }: Props) {
                             Plate #{plate.id}
                           </p>
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* =========================
-                        RESIDENT
-                    ========================= */}
-                    <td className="px-6 py-4">
-                      {plate.resident ? (
-                        <div>
-                          <p
-                            className="
-                              text-[16px]
-                              font-bold
-                              text-foreground
-                              dark:text-white
-                            "
-                          >
-                            {plate.resident.full_name}
-                          </p>
+                      {/* ================= RESIDENT ================= */}
+                      <td className="px-6 py-4">
+                        {plate.resident ? (
+                          <div>
+                            <p
+                              className="
+                                text-[16px]
+                                font-bold
+                                text-foreground
+                                dark:text-white
+                              "
+                            >
+                              {plate.resident.full_name}
+                            </p>
 
-                          <p
+                            <p
+                              className="
+                                mt-0.5
+                                text-xs
+                                text-muted-foreground
+                              "
+                            >
+                              Assigned
+                            </p>
+                          </div>
+                        ) : (
+                          <span
                             className="
-                              mt-0.5
+                              inline-flex
+                              rounded-full
+                              bg-amber-50
+                              px-3
+                              py-1
                               text-xs
-                              text-muted-foreground
+                              font-bold
+                              text-warn
+                              dark:bg-amber-500/10
+                              dark:text-amber-400
                             "
                           >
-                            Assigned
-                          </p>
-                        </div>
-                      ) : (
-                        <span
+                            Unassigned
+                          </span>
+                        )}
+                      </td>
+
+                      {/* ================= ACTIONS ================= */}
+                      <td className="px-6 py-4">
+                        <button
+                          type="button"
+                          onClick={(e) => handleOpenDetails(e, plate.id)}
                           className="
                             inline-flex
-                            rounded-full
-                            bg-amber-50
-                            px-3
-                            py-1
-                            text-xs
+                            items-center
+                            justify-center
+                            rounded-xl
+                            bg-brand
+                            px-4
+                            py-2
+                            text-sm
                             font-bold
-                            text-warn
-                            dark:bg-amber-500/10
-                            dark:text-amber-400
+                            text-white
+                            transition
+                            hover:bg-brand-strong
+                            active:scale-[0.98]
                           "
                         >
-                          Unassigned
-                        </span>
-                      )}
-                    </td>
-
-                    {/* =========================
-                        ACTIONS
-                    ========================= */}
-                    <td className="px-6 py-4">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenDetails(plate.id);
-                        }}
-                        className="
-                          rounded-xl
-                          bg-brand
-                          px-4
-                          py-2
-                          text-sm
-                          font-bold
-                          text-white
-                          transition
-                          hover:bg-brand-strong
-                          active:scale-[0.98]
-                        "
-                      >
-                        Open Details
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                          Open Details
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

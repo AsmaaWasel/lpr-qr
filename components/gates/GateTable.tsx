@@ -1,6 +1,7 @@
 "use client";
 
 import { Gate } from "@/modules/types/gate";
+import { Check } from "lucide-react";
 
 type Props = {
   data: Gate[];
@@ -13,7 +14,8 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
     <div className="w-full bg-card shadow-sm">
       {/* Table */}
       <div className="w-full overflow-x-auto">
-        <table className="w-full min-w-[700px] border-collapse">
+        <table className="w-full min-w-[800px] border-collapse">
+          {/* ================= HEADER ================= */}
           <thead>
             <tr
               className="
@@ -21,11 +23,27 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                 border-border
                 bg-[#F2F6FB]
                 text-left
-                dark:bg-slate-800/40
                 text-[#7C93B4]
+                dark:bg-slate-800/40
               "
             >
-              {/* Gate Name */}
+              {/* SELECT */}
+              <th
+                className="
+                  w-[55px]
+                  px-6
+                  py-4
+                  text-lg
+                  font-bold
+                  uppercase
+                  tracking-wide
+                  text-muted-foreground
+                "
+              >
+                <span className="sr-only">Select</span>
+              </th>
+
+              {/* GATE NAME */}
               <th
                 className="
                   px-6
@@ -40,7 +58,7 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                 GATE NAME
               </th>
 
-              {/* Type */}
+              {/* TYPE */}
               <th
                 className="
                   px-6
@@ -60,27 +78,26 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                 className="
                   px-6
                   py-4
-                 text-lg
+                  text-lg
                   font-bold
                   uppercase
                   tracking-wide
-                   text-muted-foreground
-                 
+                  text-muted-foreground
                 "
               >
                 IP
               </th>
 
-              {/* Description */}
+              {/* DESCRIPTION */}
               <th
                 className="
                   px-6
                   py-4
-                 text-lg
+                  text-lg
                   font-bold
                   uppercase
                   tracking-wide
-                   text-muted-foreground
+                  text-muted-foreground
                 "
               >
                 DESCRIPTION
@@ -88,11 +105,12 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
             </tr>
           </thead>
 
+          {/* ================= BODY ================= */}
           <tbody>
             {data.length === 0 ? (
               <tr>
                 <td
-                  colSpan={4}
+                  colSpan={5}
                   className="
                     px-6
                     py-12
@@ -117,6 +135,7 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                       border-b
                       border-border
                       transition
+                      last:border-b-0
                       ${
                         isSelected
                           ? "bg-accent dark:bg-cyan-500/10"
@@ -124,12 +143,51 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                       }
                     `}
                   >
-                    {/* GATE NAME */}
+                    {/* ================= SELECT ================= */}
+                    <td className="px-6 py-4">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelect(gate.id);
+                        }}
+                        className={`
+                          flex
+                          h-5
+                          w-5
+                          items-center
+                          justify-center
+                          rounded
+                          border-2
+                          transition
+                          ${
+                            isSelected
+                              ? `
+                                border-brand
+                                bg-brand
+                                text-white
+                                hover:bg-brand-strong
+                              `
+                              : `
+                                border-slate-300
+                                bg-card
+                                hover:border-brand
+                                dark:border-slate-600
+                              `
+                          }
+                        `}
+                        aria-label={`Select ${gate.name}`}
+                      >
+                        {isSelected && <Check size={13} strokeWidth={3} />}
+                      </button>
+                    </td>
+
+                    {/* ================= GATE NAME ================= */}
                     <td className="px-6 py-4">
                       <p
                         className="
                           text-[16px]
-                          font-bold
+                          font-[600]
                           text-foreground
                           dark:text-white
                         "
@@ -138,7 +196,7 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                       </p>
                     </td>
 
-                    {/* TYPE */}
+                    {/* ================= TYPE ================= */}
                     <td className="px-6 py-4">
                       <span
                         className={`
@@ -150,8 +208,18 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                           font-[500]
                           ${
                             gate.type === "ENTRY"
-                              ? "bg-emerald-50 text-ok dark:bg-emerald-500/10 dark:text-emerald-400"
-                              : "bg-amber-50 text-warn dark:bg-amber-500/10 dark:text-amber-400"
+                              ? `
+                                bg-emerald-50
+                                text-ok
+                                dark:bg-emerald-500/10
+                                dark:text-emerald-400
+                              `
+                              : `
+                                bg-amber-50
+                                text-warn
+                                dark:bg-amber-500/10
+                                dark:text-amber-400
+                              `
                           }
                         `}
                       >
@@ -159,13 +227,13 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                       </span>
                     </td>
 
-                    {/* IP */}
+                    {/* ================= IP ================= */}
                     <td className="px-6 py-4">
                       <span
                         className="
                           text-[16px]
                           font-[500]
-                          text-[#29C5E8]
+                          text-[#3B5473]
                           dark:text-white
                         "
                       >
@@ -173,7 +241,7 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                       </span>
                     </td>
 
-                    {/* DESCRIPTION */}
+                    {/* ================= DESCRIPTION ================= */}
                     <td className="px-6 py-4">
                       <span
                         className="

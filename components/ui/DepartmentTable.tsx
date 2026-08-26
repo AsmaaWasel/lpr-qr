@@ -1,6 +1,7 @@
 "use client";
 
 import { Department } from "@/modules/types/department";
+import { Check } from "lucide-react";
 
 type Props = {
   data: Department[];
@@ -10,16 +11,13 @@ type Props = {
 
 export default function DepartmentTable({ data, selectedId, onSelect }: Props) {
   return (
-    <div
-      className="
-        overflow-hidden
-        bg-card
-        shadow-sm
-      "
-    >
+    <div className="w-full bg-card shadow-sm">
       {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[700px]">
+      <div className="w-full overflow-x-auto">
+        <table className="w-full min-w-[850px] border-collapse">
+          {/* =========================
+              HEADER
+          ========================= */}
           <thead>
             <tr
               className="
@@ -27,10 +25,26 @@ export default function DepartmentTable({ data, selectedId, onSelect }: Props) {
                 border-border
                 bg-[#F2F6FB]
                 text-left
-                dark:bg-slate-800/40
                 text-[#7C93B4]
+                dark:bg-slate-800/40
               "
             >
+              {/* SELECT */}
+              <th
+                className="
+                  w-[55px]
+                  px-6
+                  py-4
+                  text-lg
+                  font-bold
+                  uppercase
+                  tracking-wide
+                  text-muted-foreground
+                "
+              >
+                <span className="sr-only">Select</span>
+              </th>
+
               {/* DEPARTMENT NAME */}
               <th
                 className="
@@ -78,11 +92,14 @@ export default function DepartmentTable({ data, selectedId, onSelect }: Props) {
             </tr>
           </thead>
 
+          {/* =========================
+              BODY
+          ========================= */}
           <tbody>
             {data.length === 0 ? (
               <tr>
                 <td
-                  colSpan={3}
+                  colSpan={4}
                   className="
                     px-6
                     py-12
@@ -108,6 +125,7 @@ export default function DepartmentTable({ data, selectedId, onSelect }: Props) {
                       border-border
                       transition
                       last:border-b-0
+
                       ${
                         isSelected
                           ? "bg-accent dark:bg-cyan-500/10"
@@ -115,25 +133,69 @@ export default function DepartmentTable({ data, selectedId, onSelect }: Props) {
                       }
                     `}
                   >
-                    {/* DEPARTMENT NAME */}
+                    {/* =========================
+                        SELECT
+                    ========================= */}
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div>
-                          <p
-                            className="
-                              text-[16px]
-                              font-[600]
-                              text-foreground
-                              dark:text-white
-                            "
-                          >
-                            {department.name}
-                          </p>
-                        </div>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelect(department.id);
+                        }}
+                        className={`
+                          flex
+                          h-5
+                          w-5
+                          items-center
+                          justify-center
+                          rounded
+                          border-2
+                          transition
+
+                          ${
+                            isSelected
+                              ? `
+                                border-brand
+                                bg-brand
+                                text-white
+                                hover:bg-brand-strong
+                              `
+                              : `
+                                border-slate-300
+                                bg-card
+                                hover:border-brand
+                                dark:border-slate-600
+                              `
+                          }
+                        `}
+                        aria-label={`Select ${
+                          department.name || department.id
+                        }`}
+                      >
+                        {isSelected && <Check size={13} strokeWidth={3} />}
+                      </button>
                     </td>
 
-                    {/* DESCRIPTION */}
+                    {/* =========================
+                        DEPARTMENT NAME
+                    ========================= */}
+                    <td className="px-6 py-4">
+                      <p
+                        className="
+                          text-[16px]
+                          font-[600]
+                          text-foreground
+                          dark:text-white
+                        "
+                      >
+                        {department.name || "-"}
+                      </p>
+                    </td>
+
+                    {/* =========================
+                        DESCRIPTION
+                    ========================= */}
                     <td className="px-6 py-4">
                       <span
                         className="
@@ -151,17 +213,19 @@ export default function DepartmentTable({ data, selectedId, onSelect }: Props) {
                       </span>
                     </td>
 
-                    {/* DEPARTMENT ID */}
+                    {/* =========================
+                        DEPARTMENT ID
+                    ========================= */}
                     <td className="px-6 py-4">
                       <span
                         className="
                           text-[16px]
                           font-[500]
-                          text-[#3B5473]
+                          text-[#29C5E8]
                           dark:text-white
                         "
                       >
-                        {department.id}
+                        #{department.id}
                       </span>
                     </td>
                   </tr>

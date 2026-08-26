@@ -4,7 +4,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 
 type CredentialsFormData = {
-  username: string;
+  email: string;
   password: string;
   notes: string;
 };
@@ -13,7 +13,7 @@ type Props = {
   onSubmit: (data: CredentialsFormData) => Promise<void>;
   editing?: {
     id?: number;
-    username?: string;
+    email?: string;
     password?: string;
     notes?: string;
   } | null;
@@ -22,7 +22,7 @@ type Props = {
 
 export default function CredentialsForm({ onSubmit, editing, onClose }: Props) {
   const [form, setForm] = useState<CredentialsFormData>({
-    username: editing?.username ?? "",
+    email: editing?.email ?? "",
     password: editing?.password ?? "",
     notes: editing?.notes ?? "",
   });
@@ -38,11 +38,11 @@ export default function CredentialsForm({ onSubmit, editing, onClose }: Props) {
   };
 
   const handleSubmit = async () => {
-    if (!form.username.trim()) return;
+    if (!form.email.trim()) return;
     if (!form.password.trim()) return;
 
     await onSubmit({
-      username: form.username.trim(),
+      email: form.email.trim(),
       password: form.password,
       notes: form.notes.trim(),
     });
@@ -137,17 +137,17 @@ export default function CredentialsForm({ onSubmit, editing, onClose }: Props) {
 
         {/* ================= FORM ================= */}
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          {/* USERNAME */}
+          {/* email */}
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
-              Username
+              Email
             </label>
 
             <input
               type="text"
-              placeholder="Enter username"
-              value={form.username}
-              onChange={(e) => handleChange("username", e.target.value)}
+              placeholder="Enter email"
+              value={form.email}
+              onChange={(e) => handleChange("email", e.target.value)}
               className={inputClassName}
             />
           </div>
