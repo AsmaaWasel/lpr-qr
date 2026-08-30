@@ -36,18 +36,41 @@ export default function PlatesPage() {
     );
   }
 
+  // =========================
+  // DYNAMIC STATS
+  // =========================
+
   const totalPlates = plates.length;
 
+  const insideNow = plates.filter((plate) => plate.is_inside === true).length;
+
+  const outsideNow = plates.filter((plate) => plate.is_inside === false).length;
+
+  const today = new Date();
+
+  const enteredToday = plates.filter((plate) => {
+    if (!plate.last_entry_at) return false;
+
+    const entryDate = new Date(plate.last_entry_at);
+
+    return (
+      entryDate.getFullYear() === today.getFullYear() &&
+      entryDate.getMonth() === today.getMonth() &&
+      entryDate.getDate() === today.getDate()
+    );
+  }).length;
   return (
     <div className="space-y-4">
       {/* =========================
           LPR TABS
       ========================= */}
+
       <PillTabs tabs={LPR_TABS} activeValue="/dashboard/lpr/plates" />
 
       {/* =========================
           STATS
       ========================= */}
+
       <StatRow
         items={[
           {
@@ -55,16 +78,16 @@ export default function PlatesPage() {
             value: totalPlates,
           },
           {
-            label: "ACTIVE",
-            value: 0,
+            label: "INSIDE NOW",
+            value: insideNow,
           },
           {
-            label: "INACTIVE",
-            value: 0,
+            label: "OUTSIDE",
+            value: outsideNow,
           },
           {
-            label: "TODAY",
-            value: 0,
+            label: "ENTERED TODAY",
+            value: enteredToday,
           },
         ]}
       />
@@ -72,6 +95,7 @@ export default function PlatesPage() {
       {/* =========================
           PLATES CRUD
       ========================= */}
+
       <SectionCard>
         <PlateCRUD />
       </SectionCard>

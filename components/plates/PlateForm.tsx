@@ -7,12 +7,12 @@ type Props = {
   onSubmit: (data: {
     plate_number_full: string;
     resident_id?: number;
-  }) => void | Promise<void>;
+  }) => void;
 
   editing?: {
     id: number;
     plate_number_full: string;
-    resident_id?: number;
+    resident_id: number | null;
   } | null;
 
   onClose: () => void;
