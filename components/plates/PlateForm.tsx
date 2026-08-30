@@ -104,19 +104,45 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
   // ================= FILTER RESIDENTS =================
 
   useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFilteredResidents([]);
-      setShowDropdown(false);
-      return;
-    }
+    let cancelled = false;
 
-    const filtered = residents.filter((resident) =>
-      resident.full_name.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
+    const loadResidents = async () => {
+      try {
+        const data = await getResidents(0, 100);
 
-    setFilteredResidents(filtered);
-    setShowDropdown(filtered.length > 0);
-  }, [searchTerm, residents]);
+        if (cancelled) return;
+
+        setResidents(data);
+
+        if (editing?.resident_id) {
+          const found = data.find(
+            (resident: Resident) => resident.id === editing.resident_id,
+          );
+
+          if (found) {
+            setSelectedResident(found);
+            setSearchTerm(found.full_name);
+
+            setForm((prev) => ({
+              ...prev,
+              resident_id: found.id,
+              resident_name: found.full_name,
+            }));
+          }
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Error loading residents:", error);
+        }
+      }
+    };
+
+    loadResidents();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [editing]);
 
   // ================= CLOSE DROPDOWN =================
 
