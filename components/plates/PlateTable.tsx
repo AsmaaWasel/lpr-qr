@@ -234,16 +234,6 @@ export default function PlateTable({ data, selectedId, onSelect }: Props) {
                           >
                             {formatPlateNumber(plate.plate_number_full)}
                           </p>
-
-                          <p
-                            className="
-                              mt-0.5
-                              text-xs
-                              text-muted-foreground
-                            "
-                          >
-                            Plate #{plate.id}
-                          </p>
                         </div>
                       </td>
 

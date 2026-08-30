@@ -84,27 +84,27 @@ export default function PlateCRUD() {
   // SUBMIT
   // =========================
 
-  const handleSubmit = async (data: { plate_number_full: string }) => {
+  const handleSubmit = async (data: {
+    plate_number_full: string;
+    resident_id?: number;
+  }) => {
     try {
       if (editing) {
         await updatePlate(editing.id, data);
-
         toast.success("Plate updated successfully");
       } else {
         await createPlate(data);
-
         toast.success("Plate created successfully");
       }
 
       const refreshed = await getPlates();
-
       setPlates(refreshed);
+
       setOpen(false);
       setEditing(null);
       setSelectedId(null);
     } catch (error) {
       console.error("Submit error:", error);
-
       toast.error("Something went wrong");
     }
   };
