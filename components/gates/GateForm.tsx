@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
+
 import { Gate, GateFormData } from "@/modules/types/gate";
 
 type Props = {
@@ -10,22 +11,70 @@ type Props = {
   onSubmit: (data: GateFormData) => void | Promise<void>;
 };
 
+type FormErrors = {
+  name?: string;
+  type?: string;
+  ip?: string;
+  desc?: string;
+};
+
 export default function GateForm({ editing, onClose, onSubmit }: Props) {
   const [name, setName] = useState(editing?.name ?? "");
   const [type, setType] = useState<"ENTRY" | "EXIT">(editing?.type ?? "ENTRY");
   const [desc, setDesc] = useState(editing?.desc ?? "");
   const [ip, setIp] = useState(editing?.ip ?? "");
 
-  const handleSave = async () => {
-    if (!name.trim()) {
-      alert("Please enter gate name");
-      return;
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  // =========================
+  // VALIDATION
+  // =========================
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    const trimmedName = name.trim();
+    const trimmedIp = ip.trim();
+    const trimmedDesc = desc.trim();
+
+    // Gate Name
+    if (!trimmedName) {
+      newErrors.name = "Gate name is required";
+    } else if (trimmedName.length < 2) {
+      newErrors.name = "Gate name must be at least 2 characters";
+    } else if (trimmedName.length > 100) {
+      newErrors.name = "Gate name must not exceed 100 characters";
     }
 
-    if (!ip.trim()) {
-      alert("Please enter IP address");
-      return;
+    // Type
+    if (type !== "ENTRY" && type !== "EXIT") {
+      newErrors.type = "Please select a valid gate type";
     }
+
+    // IPv4
+    const ipRegex =
+      /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
+
+    if (!trimmedIp) {
+      newErrors.ip = "IP address is required";
+    } else if (!ipRegex.test(trimmedIp)) {
+      newErrors.ip = "Please enter a valid IPv4 address";
+    }
+
+    // Description
+    if (trimmedDesc.length > 500) {
+      newErrors.desc = "Description must not exceed 500 characters";
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // =========================
+  // SAVE
+  // =========================
+  const handleSave = async () => {
+    if (!validateForm()) return;
 
     await onSubmit({
       name: name.trim(),
@@ -35,6 +84,9 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
     });
   };
 
+  // =========================
+  // INPUT STYLES
+  // =========================
   const inputClassName = `
     w-full
     h-12
@@ -55,6 +107,12 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
     focus:border-[#132f49]
     dark:focus:ring-white/10
     dark:focus:border-white/30
+  `;
+
+  const errorInputClassName = `
+    border-red-500
+    focus:border-red-500
+    focus:ring-red-500/10
   `;
 
   return (
@@ -136,11 +194,28 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
               <input
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+
+                  if (errors.name) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      name: undefined,
+                    }));
+                  }
+                }}
                 placeholder="Gate-5 - Main Entrance"
-                required
-                className={inputClassName}
+                maxLength={100}
+                className={`${inputClassName} ${
+                  errors.name ? errorInputClassName : ""
+                }`}
               />
+
+              {errors.name && (
+                <p className="text-sm font-medium text-red-500">
+                  {errors.name}
+                </p>
+              )}
             </div>
 
             {/* Type */}
@@ -151,12 +226,29 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
 
               <select
                 value={type}
-                onChange={(e) => setType(e.target.value as "ENTRY" | "EXIT")}
-                className={inputClassName}
+                onChange={(e) => {
+                  setType(e.target.value as "ENTRY" | "EXIT");
+
+                  if (errors.type) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      type: undefined,
+                    }));
+                  }
+                }}
+                className={`${inputClassName} ${
+                  errors.type ? errorInputClassName : ""
+                }`}
               >
                 <option value="ENTRY">ENTRY</option>
                 <option value="EXIT">EXIT</option>
               </select>
+
+              {errors.type && (
+                <p className="text-sm font-medium text-red-500">
+                  {errors.type}
+                </p>
+              )}
             </div>
           </div>
 
@@ -169,23 +261,59 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
             <input
               type="text"
               value={ip}
-              onChange={(e) => setIp(e.target.value)}
+              onChange={(e) => {
+                setIp(e.target.value);
+
+                if (errors.ip) {
+                  setErrors((prev) => ({
+                    ...prev,
+                    ip: undefined,
+                  }));
+                }
+              }}
               placeholder="Enter IP address (e.g., 10.20.1.11)"
-              required
-              className={inputClassName}
+              maxLength={15}
+              inputMode="decimal"
+              className={`${inputClassName} ${
+                errors.ip ? errorInputClassName : ""
+              }`}
             />
+
+            {errors.ip && (
+              <p className="text-sm font-medium text-red-500">{errors.ip}</p>
+            )}
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <label className="block text-base font-semibold text-foreground">
-              Description
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-base font-semibold text-foreground">
+                Description
+              </label>
+
+              <span
+                className={`text-xs font-medium ${
+                  desc.length > 500 ? "text-red-500" : "text-muted-foreground"
+                }`}
+              >
+                {desc.length}/500
+              </span>
+            </div>
 
             <textarea
               value={desc}
-              onChange={(e) => setDesc(e.target.value)}
+              onChange={(e) => {
+                setDesc(e.target.value);
+
+                if (errors.desc) {
+                  setErrors((prev) => ({
+                    ...prev,
+                    desc: undefined,
+                  }));
+                }
+              }}
               placeholder="Primary residents entry"
+              maxLength={500}
               rows={4}
               className={`
                 ${inputClassName}
@@ -193,8 +321,13 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
                 min-h-[120px]
                 resize-none
                 py-3
+                ${errors.desc ? errorInputClassName : ""}
               `}
             />
+
+            {errors.desc && (
+              <p className="text-sm font-medium text-red-500">{errors.desc}</p>
+            )}
           </div>
         </div>
 

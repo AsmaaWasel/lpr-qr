@@ -144,7 +144,9 @@ export default function IdentityVisitorsCRUD() {
       ========================= */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Identity Visitors</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            Identity Visitors
+          </h1>
           <p className="text-muted-foreground text-sm mt-1">
             Manage identity visitors
           </p>

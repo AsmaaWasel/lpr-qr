@@ -13,8 +13,9 @@ import {
 } from "lucide-react";
 
 import RegisterForm from "@/modules/sharedComponents/auth/RegisterForm";
-import LoginForm from "@/modules/resident-portal/components/LoginForm";
-import GateAnimation from "@/modules/resident-portal/components/GateAnimation";
+import GateAnimation from "@/components/login/GateAnimation";
+import LoginForm from "@/components/login/LoginForm";
+
 
 /* =========================================================
    FEATURES
@@ -45,7 +46,6 @@ export default function LoginPage() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
   const [showRegister, setShowRegister] = useState(false);
 
   const [gateStatus, setGateStatus] = useState<"idle" | "opening" | "error">(
@@ -74,7 +74,7 @@ export default function LoginPage() {
       const isAdmin = userRole === "admin" || userRole === "superAdmin";
 
       if (isAdmin) {
-        router.push("/dashboard/qr/qr");
+        router.push("/");
       } else {
         router.push("/dashboard");
       }
@@ -259,17 +259,6 @@ export default function LoginPage() {
               Full control.
             </h2>
 
-            <p
-              className="
-                mt-4
-                text-base
-                leading-relaxed
-                text-[#A8BDD6]
-              "
-            >
-              Cameras, access and resident credentials in a single console.
-            </p>
-
             {/* Features */}
             <ul className="mt-7 space-y-3">
               {PANEL_FEATURES.map(({ icon: Icon, label }) => (
@@ -336,7 +325,8 @@ export default function LoginPage() {
           lg:py-8
         "
       >
-        <div className="w-full max-w-[520px]">
+        {/* Changed from 520px → 580px */}
+        <div className="w-full max-w-[580px]">
           {/* Mobile logo */}
           <div className="mb-5 flex justify-center lg:hidden">
             <img
@@ -429,53 +419,6 @@ export default function LoginPage() {
                   : "Sign in to open the gate to your dashboard."}
               </p>
             </div>
-
-            {/* =================================================
-                ERROR
-            ================================================= */}
-
-            {error && !showRegister && (
-              <div
-                role="alert"
-                aria-live="polite"
-                className="
-                  mt-4
-                  flex
-                  items-start
-                  gap-3
-                  rounded-xl
-                  border
-                  border-red-200
-                  bg-red-50
-                  px-4
-                  py-2.5
-                  dark:border-red-500/25
-                  dark:bg-red-500/10
-                "
-              >
-                <AlertCircle
-                  className="
-                    mt-0.5
-                    h-[18px]
-                    w-[18px]
-                    shrink-0
-                    text-red-500
-                  "
-                />
-
-                <p
-                  className="
-                    text-sm
-                    font-medium
-                    leading-relaxed
-                    text-red-600
-                    dark:text-red-300
-                  "
-                >
-                  {error}
-                </p>
-              </div>
-            )}
 
             {/* =================================================
                 SUCCESS
@@ -604,19 +547,6 @@ export default function LoginPage() {
               </>
             )}
           </div>
-
-          {/* Mobile copyright */}
-          <p
-            className="
-              mt-4
-              text-center
-              text-xs
-              text-[#7C93B4]
-              lg:hidden
-            "
-          >
-            © {new Date().getFullYear()} All rights reserved.
-          </p>
         </div>
       </section>
     </main>

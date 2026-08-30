@@ -15,8 +15,19 @@ type Props = {
   onSubmit: (data: CameraFormData) => void | Promise<void>;
 };
 
+type FormErrors = {
+  gate_id?: string;
+  username?: string;
+  password?: string;
+  ip_address?: string;
+  port?: string;
+  add_string_to_url?: string;
+  notes?: string;
+};
+
 export default function CameraForm({ editing, onClose, onSubmit }: Props) {
   const [gates, setGates] = useState<Gate[]>([]);
+  const [errors, setErrors] = useState<FormErrors>({});
 
   const [form, setForm] = useState<CameraFormData>({
     gate_id: editing?.gate_id ?? 0,
@@ -29,6 +40,8 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
     reader_type: editing?.reader_type ?? "CAMERA",
     add_string_to_url: editing?.add_string_to_url ?? "",
   });
+
+  /* ================= FETCH GATES ================= */
 
   useEffect(() => {
     const fetchGates = async () => {
@@ -43,6 +56,8 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
     fetchGates();
   }, []);
 
+  /* ================= HANDLE CHANGE ================= */
+
   const handleChange = <K extends keyof CameraFormData>(
     key: K,
     value: CameraFormData[K],
@@ -51,11 +66,20 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
       ...prev,
       [key]: value,
     }));
+
+    // Remove error for the field being edited
+    if (errors[key as keyof FormErrors]) {
+      setErrors((prev) => ({
+        ...prev,
+        [key]: undefined,
+      }));
+    }
   };
+
+  /* ================= GATE CHANGE ================= */
 
   const handleGateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const gateId = Number(e.target.value);
-
     const selectedGate = gates.find((gate) => gate.id === gateId);
 
     setForm((prev) => ({
@@ -63,13 +87,96 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
       gate_id: gateId,
       location: selectedGate?.name || "",
     }));
+
+    if (errors.gate_id) {
+      setErrors((prev) => ({
+        ...prev,
+        gate_id: undefined,
+      }));
+    }
   };
 
+  /* ================= VALIDATION ================= */
+
+  const validateForm = (): FormErrors => {
+    const newErrors: FormErrors = {};
+
+    // Gate
+    if (!form.gate_id) {
+      newErrors.gate_id = "Please select a gate";
+    }
+
+    // Username
+    if (!form.username?.trim()) {
+      newErrors.username = "Username is required";
+    } else if (form.username.trim().length < 3) {
+      newErrors.username = "Username must be at least 3 characters";
+    } else if (form.username.trim().length > 100) {
+      newErrors.username = "Username must not exceed 100 characters";
+    }
+
+    // Password
+    // Required in both Add and Edit
+    if (!form.password?.trim()) {
+      newErrors.password = "Password is required";
+    } else if (form.password.length < 3) {
+      newErrors.password = "Password must be at least 3 characters";
+    } else if (form.password.length > 100) {
+      newErrors.password = "Password must not exceed 100 characters";
+    }
+
+    // IP Address
+    const ip = form.ip_address?.trim();
+
+    if (!ip) {
+      newErrors.ip_address = "IP address is required";
+    } else {
+      const ipRegex =
+        /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
+
+      if (!ipRegex.test(ip)) {
+        newErrors.ip_address = "Please enter a valid IP address";
+      }
+    }
+
+    // Port
+    const port = Number(form.port);
+
+    if (!form.port || port < 1 || port > 65535) {
+      newErrors.port = "Port must be between 1 and 65535";
+    }
+
+    // Add SubURL
+    const subUrl = form.add_string_to_url?.trim();
+
+    if (subUrl && !subUrl.startsWith("/")) {
+      newErrors.add_string_to_url = "SubURL should start with /";
+    }
+
+    // Notes
+    if (form.notes && form.notes.length > 500) {
+      newErrors.notes = "Notes must not exceed 500 characters";
+    }
+
+    return newErrors;
+  };
+
+  /* ================= SAVE ================= */
+
   const handleSave = async () => {
+    const validationErrors = validateForm();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
     const selectedGate = gates.find((gate) => gate.id === form.gate_id);
 
     if (!selectedGate) {
-      alert("Please select a gate");
+      setErrors({
+        gate_id: "Please select a valid gate",
+      });
       return;
     }
 
@@ -77,9 +184,15 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
       ...form,
       gate_id: selectedGate.id,
       location: selectedGate.name,
+      username: form.username.trim(),
+      ip_address: form.ip_address.trim(),
       port: Number(form.port),
+      add_string_to_url: form.add_string_to_url?.trim() || "",
+      notes: form.notes?.trim() || "",
     });
   };
+
+  /* ================= INPUT STYLE ================= */
 
   const inputClassName = `
     w-full
@@ -101,6 +214,8 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
     dark:focus:ring-white/10
     dark:focus:border-white/30
   `;
+
+  const errorClassName = "mt-1 text-sm font-medium text-red-500";
 
   return (
     <div
@@ -179,14 +294,22 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
             <select
               value={form.gate_id || ""}
               onChange={handleGateChange}
-              className={inputClassName}
+              className={`${inputClassName} ${
+                errors.gate_id ? "border-red-500 focus:border-red-500" : ""
+              }`}
             >
+              <option value="">Select gate</option>
+
               {gates.map((gate) => (
                 <option key={gate.id} value={gate.id}>
                   {gate.name}
                 </option>
               ))}
             </select>
+
+            {errors.gate_id && (
+              <p className={errorClassName}>{errors.gate_id}</p>
+            )}
           </div>
 
           {/* Username */}
@@ -200,8 +323,14 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
               placeholder="Enter username"
               value={form.username ?? ""}
               onChange={(e) => handleChange("username", e.target.value)}
-              className={inputClassName}
+              className={`${inputClassName} ${
+                errors.username ? "border-red-500 focus:border-red-500" : ""
+              }`}
             />
+
+            {errors.username && (
+              <p className={errorClassName}>{errors.username}</p>
+            )}
           </div>
 
           {/* Password */}
@@ -215,8 +344,14 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
               placeholder="Enter password"
               value={form.password ?? ""}
               onChange={(e) => handleChange("password", e.target.value)}
-              className={inputClassName}
+              className={`${inputClassName} ${
+                errors.password ? "border-red-500 focus:border-red-500" : ""
+              }`}
             />
+
+            {errors.password && (
+              <p className={errorClassName}>{errors.password}</p>
+            )}
           </div>
 
           {/* IP Address */}
@@ -230,8 +365,14 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
               placeholder="Enter IP address (e.g., 192.168.1.100)"
               value={form.ip_address ?? ""}
               onChange={(e) => handleChange("ip_address", e.target.value)}
-              className={inputClassName}
+              className={`${inputClassName} ${
+                errors.ip_address ? "border-red-500 focus:border-red-500" : ""
+              }`}
             />
+
+            {errors.ip_address && (
+              <p className={errorClassName}>{errors.ip_address}</p>
+            )}
           </div>
 
           {/* Port */}
@@ -242,6 +383,8 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
 
             <input
               type="number"
+              min={1}
+              max={65535}
               placeholder="Enter port number (e.g., 8080)"
               value={form.port || ""}
               onChange={(e) =>
@@ -250,8 +393,12 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
                   e.target.value === "" ? 0 : Number(e.target.value),
                 )
               }
-              className={inputClassName}
+              className={`${inputClassName} ${
+                errors.port ? "border-red-500 focus:border-red-500" : ""
+              }`}
             />
+
+            {errors.port && <p className={errorClassName}>{errors.port}</p>}
           </div>
 
           {/* Add SubURL */}
@@ -267,11 +414,19 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
               onChange={(e) =>
                 handleChange("add_string_to_url", e.target.value)
               }
-              className={inputClassName}
+              className={`${inputClassName} ${
+                errors.add_string_to_url
+                  ? "border-red-500 focus:border-red-500"
+                  : ""
+              }`}
             />
+
+            {errors.add_string_to_url && (
+              <p className={errorClassName}>{errors.add_string_to_url}</p>
+            )}
           </div>
 
-          {/* Notes - Full Width */}
+          {/* Notes */}
           <div className="space-y-1.5 md:col-span-2">
             <label className="block text-base font-semibold text-foreground">
               Notes
@@ -287,8 +442,11 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
                 h-auto
                 resize-none
                 py-3
+                ${errors.notes ? "border-red-500 focus:border-red-500" : ""}
               `}
             />
+
+            {errors.notes && <p className={errorClassName}>{errors.notes}</p>}
           </div>
         </div>
 

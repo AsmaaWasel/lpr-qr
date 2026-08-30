@@ -62,17 +62,17 @@ export default function LoginForm({
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Email */}
       <div className="space-y-3">
-        <label className="ml-1 block text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+        <label className="ml-1 block text-2xl font-semibold uppercase tracking-widest text-slate-400">
           Email Address
         </label>
 
         <div className="group relative">
-          <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-brand transition-colors group-focus-within:text-brand" />
+          <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-blue-500 transition-colors group-focus-within:text-sky-400" />
 
           <input
             type="email"
             placeholder="name@domain.com"
-            className="w-full rounded-xl border border-border bg-card py-4 pl-12 pr-4 text-xl text-foreground placeholder:text-xl placeholder:text-muted-foreground outline-none transition-all focus:border-sky-400/40 focus:bg-secondary focus:ring-4 focus:ring-sky-400/5"
+            className="w-full rounded-xl border border-white/5 bg-white/5 py-4 pl-12 pr-4 text-xl text-white placeholder:text-xl placeholder:text-slate-300 outline-none transition-all focus:border-sky-400/40 focus:bg-white/10 focus:ring-4 focus:ring-sky-400/5"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -81,17 +81,17 @@ export default function LoginForm({
 
       {/* Password */}
       <div className="space-y-3">
-        <label className="ml-1 block text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+        <label className="ml-1 block text-2xl font-semibold uppercase tracking-widest text-slate-400">
           Password
         </label>
 
         <div className="group relative">
-          <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-brand transition-colors group-focus-within:text-brand" />
+          <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-blue-500 transition-colors group-focus-within:text-sky-400" />
 
           <input
             type={showPassword ? "text" : "password"}
             placeholder="••••••••"
-            className="w-full rounded-xl border border-border bg-card py-4 pl-12 pr-14 text-xl text-foreground placeholder:text-sm placeholder:text-slate-200 outline-none transition-all focus:border-sky-400/40 focus:bg-secondary focus:ring-4 focus:ring-sky-400/5"
+            className="w-full rounded-xl border border-white/5 bg-white/5 py-4 pl-12 pr-14 text-xl text-white placeholder:text-2xl placeholder:text-slate-200 outline-none transition-all focus:border-sky-400/40 focus:bg-white/10 focus:ring-4 focus:ring-sky-400/5"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -99,7 +99,7 @@ export default function LoginForm({
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-white"
           >
             {showPassword ? (
               <EyeOff className="h-5 w-5" />
@@ -112,12 +112,12 @@ export default function LoginForm({
 
       {/* Remember Me / Forgot Password */}
       <div className="flex items-center justify-between px-1">
-        <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-slate-200">
+        <label className="flex cursor-pointer items-center gap-2 text-2xl text-slate-400 transition-colors hover:text-slate-200">
           <input
             type="checkbox"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
-            className="h-5 w-5 rounded border-border bg-card accent-sky-500"
+            className="h-5 w-5 rounded border-white/10 bg-white/5 accent-sky-500"
           />
           Remember me
         </label>
@@ -125,7 +125,7 @@ export default function LoginForm({
         <button
           type="button"
           onClick={() => {}}
-          className="text-sm font-medium text-sky-400/80 transition-colors hover:text-brand"
+          className="text-2xl font-medium text-sky-400/80 transition-colors hover:text-sky-400"
         >
           Forgot Password?
         </button>
@@ -133,7 +133,7 @@ export default function LoginForm({
 
       {/* Error */}
       {error && (
-        <div className="flex items-center gap-3 rounded-xl border border-red-500/20 bg-danger-soft p-4 text-sm text-danger animate-in fade-in duration-300">
+        <div className="flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-2xl text-red-400 animate-in fade-in duration-300">
           <AlertCircle className="h-5 w-5 shrink-0" />
 
           <span>{error}</span>
@@ -144,12 +144,12 @@ export default function LoginForm({
       <button
         type="submit"
         disabled={isLoading || gateStatus === "opening"}
-        className={`group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-xl py-5 text-base font-bold uppercase tracking-widest text-foreground transition-all active:scale-[0.98] disabled:opacity-70 ${
+        className={`group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-xl py-5 text-base font-bold uppercase tracking-widest text-white transition-all active:scale-[0.98] disabled:opacity-70 ${
           gateStatus === "opening"
             ? "bg-emerald-600"
             : gateStatus === "error"
               ? "bg-red-600"
-              : "bg-brand-strong hover:bg-brand"
+              : "bg-sky-600 hover:bg-sky-500"
         }`}
       >
         <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />

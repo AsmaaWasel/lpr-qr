@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Share2, QrCode, Copy, Check, RotateCcw, Loader2 } from "lucide-react";
 import { format } from "date-fns";
-import { QRFormData } from "./Qrform";
+import { QRFormData } from "./QrForm";
 
 // =====================================================
 // TYPES

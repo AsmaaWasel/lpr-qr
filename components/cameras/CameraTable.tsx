@@ -90,21 +90,6 @@ export default function CameraTable({ data, selectedId, onSelect }: Props) {
                   PORT
                 </th>
 
-                {/* CAMERA ID */}
-                <th
-                  className="
-                    px-6
-                    py-4
-                    text-lg
-                    font-bold
-                    uppercase
-                    tracking-wide
-                    text-muted-foreground
-                  "
-                >
-                  CAMERA ID
-                </th>
-
                 {/* URL */}
                 <th
                   className="
@@ -267,20 +252,6 @@ export default function CameraTable({ data, selectedId, onSelect }: Props) {
                           "
                         >
                           {camera.port || "—"}
-                        </span>
-                      </td>
-
-                      {/* ================= CAMERA ID ================= */}
-                      <td className="px-6 py-4">
-                        <span
-                          className="
-                            text-[16px]
-                            font-[500]
-                            text-[#3B5473]
-                            dark:text-white
-                          "
-                        >
-                          {camera.id}
                         </span>
                       </td>
 

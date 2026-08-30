@@ -14,7 +14,7 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
     <div className="w-full bg-card shadow-sm">
       {/* Table */}
       <div className="w-full overflow-x-auto">
-        <table className="w-full min-w-[800px] border-collapse">
+        <table className="w-full min-w-[1100px] border-collapse">
           {/* ================= HEADER ================= */}
           <thead>
             <tr
@@ -85,7 +85,37 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                   text-muted-foreground
                 "
               >
-                IP
+                IP Address
+              </th>
+
+              {/* ENTRIES TODAY */}
+              <th
+                className="
+                  px-6
+                  py-4
+                  text-lg
+                  font-bold
+                  uppercase
+                  tracking-wide
+                  text-muted-foreground
+                "
+              >
+                ENTRIES TODAY
+              </th>
+
+              {/* EXITS TODAY */}
+              <th
+                className="
+                  px-6
+                  py-4
+                  text-lg
+                  font-bold
+                  uppercase
+                  tracking-wide
+                  text-muted-foreground
+                "
+              >
+                EXITS TODAY
               </th>
 
               {/* DESCRIPTION */}
@@ -110,7 +140,7 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
             {data.length === 0 ? (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={7}
                   className="
                     px-6
                     py-12
@@ -238,6 +268,52 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                         "
                       >
                         {gate.ip || "-"}
+                      </span>
+                    </td>
+
+                    {/* ================= ENTRIES TODAY ================= */}
+                    <td className="px-6 py-4">
+                      <span
+                        className="
+                          inline-flex
+                          min-w-[45px]
+                          items-center
+                          justify-center
+                          rounded-full
+                          bg-emerald-50
+                          px-3
+                          py-1
+                          text-[16px]
+                          font-[600]
+                          text-emerald-600
+                          dark:bg-emerald-500/10
+                          dark:text-emerald-400
+                        "
+                      >
+                        {gate.entries_today ?? 0}
+                      </span>
+                    </td>
+
+                    {/* ================= EXITS TODAY ================= */}
+                    <td className="px-6 py-4">
+                      <span
+                        className="
+                          inline-flex
+                          min-w-[45px]
+                          items-center
+                          justify-center
+                          rounded-full
+                          bg-amber-50
+                          px-3
+                          py-1
+                          text-[16px]
+                          font-[600]
+                          text-amber-600
+                          dark:bg-amber-500/10
+                          dark:text-amber-400
+                        "
+                      >
+                        {gate.exits_today ?? 0}
                       </span>
                     </td>
 

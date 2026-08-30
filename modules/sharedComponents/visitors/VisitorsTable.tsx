@@ -55,9 +55,7 @@ export default function IdentityVisitorsTable({
                 key={visitor.id}
                 onClick={() => onSelect(visitor.id)}
                 className={`border-t border-border cursor-pointer transition ${
-                  selectedId === visitor.id
-                    ? "bg-sky-500/20"
-                    : "hover:bg-card"
+                  selectedId === visitor.id ? "bg-sky-500/20" : "hover:bg-card"
                 }`}
               >
                 <td className="p-4 text-foreground">{visitor.id}</td>

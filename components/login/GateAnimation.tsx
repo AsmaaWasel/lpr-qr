@@ -34,7 +34,7 @@ export default function GateAnimation({ gateStatus }: GateAnimationProps) {
                 ? "bg-emerald-400"
                 : gateStatus === "error"
                   ? "bg-red-400"
-                  : "bg-brand"
+                  : "bg-sky-400"
             }`}
           />
           <div
@@ -42,8 +42,8 @@ export default function GateAnimation({ gateStatus }: GateAnimationProps) {
               gateStatus === "opening"
                 ? "-rotate-90 bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,1)]"
                 : gateStatus === "error"
-                  ? "rotate-0 bg-danger shadow-[0_0_8px_rgba(239,68,68,0.8)]"
-                  : "rotate-0 bg-gradient-to-r from-brand via-orange-500 to-sky-400"
+                  ? "rotate-0 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"
+                  : "rotate-0 bg-gradient-to-r from-sky-400 via-orange-500 to-sky-400"
             }`}
           />
           <div className="h-6 w-2.5 bg-slate-600 rounded-t opacity-40" />

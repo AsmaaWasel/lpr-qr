@@ -47,15 +47,21 @@ export default function CameraTable({ data, selectedId, onSelect }: Props) {
                   <input type="checkbox" checked={selected} readOnly />
                 </TableCell>
 
-                <TableCell className="text-foreground">{cam.location}</TableCell>
+                <TableCell className="text-foreground">
+                  {cam.location}
+                </TableCell>
 
                 <TableCell className="text-muted-foreground">
                   {cam.ip_address}
                 </TableCell>
 
-                <TableCell className="text-muted-foreground">{cam.port}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  {cam.port}
+                </TableCell>
 
-                <TableCell className="text-muted-foreground">{cam.gate_id}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  {cam.gate_id}
+                </TableCell>
 
                 <TableCell className="text-muted-foreground break-all max-w-md">
                   {cam.url ? (

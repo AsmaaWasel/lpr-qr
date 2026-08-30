@@ -1,12 +1,17 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+
 import { PillTabs, StatRow, SectionCard, LPR_TABS } from "@/shared/ui/voom";
+
 import CameraCRUD from "@/components/cameras/CameraCRUD";
+
 import { getCameras } from "@/services/cameras";
 
+import { Camera } from "@/modules/types/camera";
+
 export default function CamerasPage() {
-  const [cameras, setCameras] = useState([]);
+  const [cameras, setCameras] = useState<Camera[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,13 +25,52 @@ export default function CamerasPage() {
         setLoading(false);
       }
     };
+
     fetchCameras();
   }, []);
 
+  /* ================= CAMERA STATS ================= */
+
+  const cameraStats = useMemo(() => {
+    const totalCameras = cameras.length;
+
+    const onlineCameras = cameras.filter((camera) => camera.is_active).length;
+
+    const inactiveCameras = cameras.filter(
+      (camera) => !camera.is_active,
+    ).length;
+
+    const camerasWithLatency = cameras.filter(
+      (camera) =>
+        camera.latency !== null &&
+        camera.latency !== undefined &&
+        !Number.isNaN(Number(camera.latency)),
+    );
+
+    const avgLatency =
+      camerasWithLatency.length > 0
+        ? Math.round(
+            camerasWithLatency.reduce(
+              (sum, camera) => sum + Number(camera.latency),
+              0,
+            ) / camerasWithLatency.length,
+          )
+        : 0;
+
+    return {
+      totalCameras,
+      onlineCameras,
+      inactiveCameras,
+      avgLatency,
+    };
+  }, [cameras]);
+
+  /* ================= LOADING ================= */
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex min-h-[400px] items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-brand border-t-transparent" />
       </div>
     );
   }
@@ -39,19 +83,19 @@ export default function CamerasPage() {
         items={[
           {
             label: "Total Cameras",
-            value: 0,
+            value: cameraStats.totalCameras,
           },
           {
             label: "ONLINE",
-            value: 1,
+            value: cameraStats.onlineCameras,
           },
           {
-            label: "DEGRADED",
-            value: 0,
+            label: "INACTIVE",
+            value: cameraStats.inactiveCameras,
           },
           {
             label: "AVG LATENCY",
-            value: 16,
+            value: `${cameraStats.avgLatency} ms`,
           },
         ]}
       />

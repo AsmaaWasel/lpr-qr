@@ -10,6 +10,8 @@ export type Camera = {
   notes?: string;
   reader_type?: string;
   add_string_to_url?: string;
+  is_active?: boolean;
+  latency?: string;
 };
 
 export type CameraFormData = {

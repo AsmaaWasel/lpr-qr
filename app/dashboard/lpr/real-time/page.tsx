@@ -652,12 +652,6 @@ export default function LiveDemoPage() {
     return "text-ok";
   };
 
-  const getLevelBgColor = (level: CongestionLevel) => {
-    if (level === "heavy") return "bg-rose-500/20 border-rose-500/30";
-    if (level === "medium") return "bg-warn/15 border-amber-500/30";
-    return "bg-ok/15 border-emerald-500/30";
-  };
-
   const getLevelLabel = (level: CongestionLevel) => {
     if (level === "heavy") return "HEAVY";
     if (level === "medium") return "MEDIUM";
@@ -708,7 +702,7 @@ export default function LiveDemoPage() {
                 height={20}
                 className="w-5 h-5"
               />
-              <span className="text-lg font-[700] text-muted-foreground hover:text-foreground transition-colors">
+              <span className="text-lg font-medium text-muted-foreground hover:text-foreground transition-colors">
                 Map
               </span>
             </button>
@@ -719,7 +713,7 @@ export default function LiveDemoPage() {
               aria-label="Settings"
             >
               <HiOutlineCog className="w-5 h-5" />
-              <span className="text-lg font-[700] text-muted-foreground hover:text-foreground transition-colors">
+              <span className="text-lg font-medium text-muted-foreground hover:text-foreground transition-colors">
                 Settings
               </span>
             </button>
@@ -728,6 +722,29 @@ export default function LiveDemoPage() {
 
         {/* GATES TABLE - DRAGGABLE */}
         <div className="bg-card backdrop-blur-sm rounded-2xl border border-border p-6 mb-6">
+          {/* HEADER */}
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <HiOutlineOfficeBuilding className="w-5 h-5 text-brand" />
+                All Gates List
+                <span className="text-sm font-medium text-muted-foreground ml-2">
+                  Live Monitoring & Control
+                </span>
+              </h3>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 bg-muted/30 px-3 py-1.5 rounded-full border border-border">
+                <span className="text-[16px] font-[700] text-[#0E2038]">
+                  Total:
+                </span>
+                <span className="text-[16px] font-[700] text-[#0E2038]">
+                  {gates.length} Gates
+                </span>
+              </div>
+            </div>
+          </div>
+
           <div className="overflow-x-auto">
             <table className="w-full min-w-[700px]">
               <thead>
@@ -770,64 +787,91 @@ export default function LiveDemoPage() {
                       <tr
                         key={gate.id}
                         onClick={() => handleGateSelect(gate)}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, gate)}
+                        onDragEnd={handleDragEnd}
                         className={`
-                          cursor-pointer
-                          border-b
-                          border-border
-                          transition
-                          last:border-b-0
-                          ${
-                            isSelected
-                              ? "bg-accent dark:bg-cyan-500/10"
-                              : "hover:bg-secondary dark:hover:bg-slate-800/50"
-                          }
-                        `}
+                  cursor-grab
+                  active:cursor-grabbing
+                  border-b
+                  border-border
+                  transition-all
+                  duration-200
+                  last:border-b-0
+                  ${
+                    isSelected
+                      ? "bg-accent dark:bg-cyan-500/10"
+                      : "hover:bg-secondary dark:hover:bg-slate-800/50"
+                  }
+                  hover:scale-[1.01]
+                  hover:shadow-md
+                  select-none
+                `}
                       >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
+                            <div className="text-muted-foreground opacity-40">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <circle cx="9" cy="9" r="2" />
+                                <circle cx="21" cy="15" r="2" />
+                                <circle cx="3" cy="21" r="2" />
+                                <line x1="9" y1="9" x2="21" y2="15" />
+                                <line x1="9" y1="9" x2="3" y2="21" />
+                              </svg>
+                            </div>
                             <div>
-                              <p className="text-[18px] font-[600] text-foreground dark:text-white">
+                              <p className="text-[16px] font-[600] text-foreground dark:text-white">
                                 {gate.name}
                               </p>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-[18px] font-[500] text-[#3B5473] dark:text-white">
+                          <span className="text-[16px] font-[500] text-[#3B5473] dark:text-white">
                             {gate.desc || "—"}
                           </span>
                         </td>
                         <td className="px-6 py-4">
                           <span
                             className={`
-                            text-[18px] font-[600]
-                            ${
-                              isOpen
-                                ? "text-[#10b981]"
-                                : "text-[#3B5473] dark:text-white"
-                            }
-                          `}
+                      text-[16px] font-[600]
+                      ${
+                        isOpen
+                          ? "text-[#10b981]"
+                          : "text-[#3B5473] dark:text-white"
+                      }
+                    `}
                           >
                             {isOpen ? "OPEN" : "CLOSED"}
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-[18px] font-[500] text-[#3B5473] dark:text-white">
+                          <span className="text-[16px] font-[500] text-[#3B5473] dark:text-white">
                             {entryCount}
                           </span>
                         </td>
                         <td className="px-6 py-4">
                           <span
                             className={`
-                            text-[18px] font-[600]
-                            ${
-                              level === "heavy"
-                                ? "text-rose-400"
-                                : level === "medium"
-                                  ? "text-warn"
-                                  : "text-ok"
-                            }
-                          `}
+                      text-[16px] font-[600]
+                      ${
+                        level === "heavy"
+                          ? "text-rose-400"
+                          : level === "medium"
+                            ? "text-warn"
+                            : "text-ok"
+                      }
+                    `}
                           >
                             {level.toUpperCase()}
                           </span>
@@ -841,11 +885,11 @@ export default function LiveDemoPage() {
           </div>
         </div>
 
-        {/* MAIN GRID - NEW LAYOUT: Heat Map on Left (2/3), Gate on Right (1/3) */}
+        {/* MAIN GRID - NEW LAYOUT: Heat Map on Left, 3 sections on Right */}
         <div className="grid grid-cols-12 gap-6">
-          {/* LEFT - Heat Map (takes 8 columns = 2/3) */}
+          {/* LEFT - Heat Map (takes full left side) */}
           <div className="col-span-8">
-            <div className="bg-card backdrop-blur-sm border border-border rounded-2xl p-5 h-full">
+            <div className="bg-card backdrop-blur-sm border border-border rounded-2xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-foreground font-bold">Gate Heat Map</h2>
                 <div className="flex gap-3 text-xs">
@@ -956,21 +1000,21 @@ export default function LiveDemoPage() {
                     >
                       <div
                         className={`
-                  relative
-                  flex
-                  flex-col
-                  items-center
-                  justify-center
-                  transition-transform
-                  duration-150
-                  ${selectedGate?.id === gate.id ? "scale-110" : "hover:scale-105"}
-                `}
+                          relative
+                          flex
+                          flex-col
+                          items-center
+                          justify-center
+                          transition-transform
+                          duration-150
+                          ${selectedGate?.id === gate.id ? "scale-110" : "hover:scale-105"}
+                        `}
                       >
                         {/* GATE */}
                         <Gate open={isOpen} size="sm" />
 
                         {/* Gate Name */}
-                        <span className="text-[8px] text-muted-foreground mt-1 font-[700] whitespace-nowrap">
+                        <span className="text-[8px] text-muted-foreground mt-1 font-medium whitespace-nowrap">
                           {gate.name.length > 8
                             ? gate.name.substring(0, 8) + ".."
                             : gate.name}
@@ -1024,60 +1068,89 @@ export default function LiveDemoPage() {
             </div>
           </div>
 
-          {/* RIGHT - Gate Section (takes 4 columns = 1/3) */}
-          <div className="col-span-4">
-            {/* Selected Gate - Full height to match map */}
-            <div className="backdrop-blur-sm border border-border rounded-2xl p-6 bg-[#0B1B30] h-full flex flex-col">
-              {/* Header with Gate Info */}
-              <div className="mb-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-muted-foreground text-[18px] font-[700] uppercase tracking-wider">
-                      Selected Gate
-                    </p>
-                    <h2 className="text-2xl font-bold text-white mt-1">
-                      {selectedGate?.name || "No Gate"}
-                    </h2>
-                    <p className="text-muted-foreground text-[18px] mt-0.5">
-                      {selectedGate?.desc || "Select a gate from the map"}
+          {/* RIGHT - Three sections stacked vertically */}
+          <div className="col-span-4 space-y-6">
+            {/* 2. All Gates */}
+            <div className="bg-card backdrop-blur-sm rounded-2xl border border-border p-5">
+              <h3 className="text-foreground font-bold text-lg mb-4 flex items-center gap-2">
+                <HiOutlineOfficeBuilding className="w-4 h-4" />
+                All Gates
+                <span className="text-lg text-muted-foreground font-normal ml-1">
+                  (Drag to map)
+                </span>
+              </h3>
+
+              <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
+                {gates.map((gate) => (
+                  <button
+                    key={gate.id}
+                    onClick={() => handleGateSelect(gate)}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, gate)}
+                    className={`w-full text-left p-3 rounded-xl transition-all duration-200 cursor-grab active:cursor-grabbing ${
+                      selectedGate?.id === gate.id
+                        ? "bg-gradient-to-r from-[#29C5E8] to-[#2F80ED] text-foreground border border-blue-500/30 shadow-lg shadow-blue-500/10"
+                        : "bg-card text-muted-foreground hover:bg-secondary hover:scale-[1.02]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-lg">{gate.name}</span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`w-2 h-2 rounded-full ${getLevelColorByEntryCount(gate.entryCount || 0)}`}
+                        ></span>
+                        <span className="text-xs text-muted-foreground">
+                          {gate.entryCount || 0}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 1. Selected Gate */}
+            <div className="backdrop-blur-sm border border-border rounded-2xl p-5 bg-[#0B1B30]">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-muted-foreground text-lg">Selected Gate</p>
+                  <h2 className="text-xl font-bold text-white">
+                    {selectedGate?.name || "No Gate"}
+                  </h2>
+                  <p className="text-muted-foreground text-lg">
+                    {selectedGate?.desc || "Select a gate from the map"}
+                  </p>
+                </div>
+
+                {selectedGate && (
+                  <div className="text-right space-y-1">
+                    <p className="text-lg">
+                      <span className="text-muted-foreground">Traffic:</span>{" "}
+                      <span
+                        className={`font-semibold ${getLevelTextColor(
+                          getCongestionLevelByEntryCount(
+                            selectedGate.entryCount || 0,
+                          ),
+                        )}`}
+                      >
+                        {getLevelLabel(
+                          getCongestionLevelByEntryCount(
+                            selectedGate.entryCount || 0,
+                          ),
+                        )}
+                      </span>
                     </p>
                   </div>
-
-                  {selectedGate && (
-                    <div className="text-right">
-                      <p className="text-[18px]">
-                        <span className="text-muted-foreground">Traffic:</span>{" "}
-                        <span
-                          className={`font-semibold ${getLevelTextColor(
-                            getCongestionLevelByEntryCount(
-                              selectedGate.entryCount || 0,
-                            ),
-                          )}`}
-                        >
-                          {getLevelLabel(
-                            getCongestionLevelByEntryCount(
-                              selectedGate.entryCount || 0,
-                            ),
-                          )}
-                        </span>
-                      </p>
-                      <p className="text-[18px] text-muted-foreground">
-                        Entries: {selectedGate.entryCount || 0}
-                      </p>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
 
-              {/* Large Gate Animation - flex-1 to fill remaining space */}
-              <div className="bg-slate-800/30 rounded-xl p-3 flex flex-col items-center justify-center border border-border flex-1 min-h-[200px]">
-                <div className="transform scale-125">
-                  <Gate open={gateOpen} size="md" />
-                </div>
+              {/* Large Gate Animation */}
+              <div className="bg-slate-800/30 rounded-xl p-4 flex flex-col items-center border border-border">
+                <Gate open={gateOpen} size="md" />
 
-                <div className="mt-4 text-center">
+                <div className="mt-3 text-center">
                   {status === "idle" && (
-                    <p className="text-muted-foreground text-[18px] flex items-center gap-2">
+                    <p className="text-muted-foreground text-lg flex items-center gap-2">
                       <HiOutlineClock className="w-4 h-4" />
                       Waiting for plate...
                     </p>
@@ -1101,8 +1174,7 @@ export default function LiveDemoPage() {
                 </div>
               </div>
 
-              {/* Control Buttons */}
-              <div className="mt-4 flex gap-3">
+              <div className="mt-3 flex gap-2">
                 <button
                   disabled={!selectedGate || gateLoading}
                   onClick={async () => {
@@ -1131,10 +1203,9 @@ export default function LiveDemoPage() {
                       setGateLoading(false);
                     }
                   }}
-                  className="flex-1 bg-ok/15 text-ok border border-emerald-500/30 py-2.5 rounded-xl hover:bg-emerald-500/30 transition-all disabled:opacity-50 font-[700] flex items-center justify-center gap-2"
+                  className="flex-1 bg-gradient-to-r from-[#29C5E8] to-[#2F80ED] text-foreground  py-2 rounded-xl  transition-all disabled:opacity-50 font-bold flex items-center justify-center gap-2 text-[20px]"
                 >
-                  <span>🔓</span>
-                  {gateLoading ? "..." : "Open"}
+                  {gateLoading ? "..." : "Open gate"}
                 </button>
 
                 <button
@@ -1165,15 +1236,15 @@ export default function LiveDemoPage() {
                       setGateLoading(false);
                     }
                   }}
-                  className="flex-1 bg-rose-500/20 text-rose-400 border border-rose-500/30 py-2.5 rounded-xl hover:bg-rose-500/30 transition-all disabled:opacity-50 font-[700] flex items-center justify-center gap-2"
+                  className="flex-1 bg-[#7C93B4;] text-white   py-2 rounded-xl  transition-all disabled:opacity-50 font-[700] flex items-center justify-center gap-2 text-lg"
                 >
-                  <span>🔒</span>
-                  {gateLoading ? "..." : "Close"}
+                  {gateLoading ? "..." : "Feed"}
                 </button>
               </div>
             </div>
           </div>
         </div>
+
         {/* GATE ENTRIES TABLE */}
         <div className="bg-card backdrop-blur-sm rounded-2xl border border-border p-6 mt-6">
           <div className="flex items-center justify-between mb-4">
@@ -1184,7 +1255,7 @@ export default function LiveDemoPage() {
                 : "Gate Entry Logs"}
             </h2>
             <div className="flex items-center gap-3">
-              <span className="text-lg text-muted-foreground bg-card px-3 py-1 rounded-full">
+              <span className="text-[16px] font-[700] text-[#0E2038]">
                 Total: {filteredEntries.length} entries
               </span>
               <button
@@ -1197,9 +1268,7 @@ export default function LiveDemoPage() {
                 disabled={loadingEntries}
                 className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-secondary rounded-lg disabled:opacity-50"
                 aria-label="Refresh logs"
-              >
-                <HiOutlineRefresh className="w-5 h-5" />
-              </button>
+              ></button>
             </div>
           </div>
 
@@ -1286,7 +1355,7 @@ export default function LiveDemoPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-[18px] font-[500] text-foreground dark:text-white">
+                          <span className="text-[16px] font-[500] text-foreground dark:text-white">
                             {entry.gate_id ? getGateName(entry.gate_id) : "N/A"}
                           </span>
                         </td>
@@ -1299,7 +1368,7 @@ export default function LiveDemoPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="font-mono text-[18px] font-[600] text-[#10b981]">
+                          <span className="font-mono text-[16px] font-[600] text-[#10b981]">
                             {entry.plate_number || "N/A"}
                           </span>
                         </td>
@@ -1316,12 +1385,12 @@ export default function LiveDemoPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-[18px] font-[500] text-[#3B5473] dark:text-white">
+                          <span className="text-[16px] font-[500] text-[#3B5473] dark:text-white">
                             {entry.entry_by || "N/A"}
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-[18px] font-[500] text-[#3B5473] dark:text-white">
+                          <span className="text-[16px] font-[500] text-[#3B5473] dark:text-white">
                             {residentId}
                           </span>
                         </td>
@@ -1557,7 +1626,7 @@ export default function LiveDemoPage() {
                 </button>
                 <button
                   onClick={saveSettings}
-                  className="flex-1 bg-blue-500/20 text-brand border border-blue-500/30 py-3 rounded-xl hover:bg-blue-500/30 transition-all font-[700] flex items-center justify-center gap-2"
+                  className="flex-1 bg-blue-500/20 text-brand border border-blue-500/30 py-3 rounded-xl hover:bg-blue-500/30 transition-all font-medium flex items-center justify-center gap-2"
                 >
                   <HiOutlineCheckCircle className="w-5 h-5" />
                   Save Settings

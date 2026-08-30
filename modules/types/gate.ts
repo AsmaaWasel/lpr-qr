@@ -5,6 +5,8 @@ export type Gate = {
   type: "ENTRY" | "EXIT";
   ip: string;
   description: string;
+  entries_today: string;
+  exits_today: string;
 };
 export type GateFormData = {
   name: string;

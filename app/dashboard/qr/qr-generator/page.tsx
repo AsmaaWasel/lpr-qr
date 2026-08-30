@@ -4,11 +4,11 @@ import { useState } from "react";
 
 import { generateQR } from "@/services/qr";
 
-import QRForm, { QRFormData } from "@/components/qr/Qrform";
 
-import QRDisplay from "@/components/qr/QRDisplay";
 
 import { QR_TABS, PillTabs } from "@/shared/ui/voom";
+import QRForm, { QRFormData } from "@/components/qr/QrForm";
+import QRDisplay from "@/components/qr/QrDisplaty";
 
 // =====================================================
 // MAIN PAGE

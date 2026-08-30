@@ -1,21 +1,13 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  ReactNode,
-} from "react";
+import { createContext, useContext, useState, ReactNode } from "react";
 
 import { adminLogin, residentLogin } from "@/services/auth";
+import { User } from "@/modules/types/user";
 
-type User = {
-  id: number;
-  username?: string;
-  email?: string;
-  role?: string;
-};
+/* =========================================================
+   TYPES
+========================================================= */
 
 type LoginResponse = {
   type: "admin" | "resident";
@@ -24,17 +16,17 @@ type LoginResponse = {
 
 type AuthContextType = {
   user: User | null;
-
   loading: boolean;
-
   login: (email: string, password: string) => Promise<LoginResponse>;
-
   logout: () => void;
 };
 
+/* =========================================================
+   CONTEXT
+========================================================= */
+
 const AuthContext = createContext<AuthContextType>({
   user: null,
-
   loading: true,
 
   login: async () => ({
@@ -45,89 +37,145 @@ const AuthContext = createContext<AuthContextType>({
   logout: () => {},
 });
 
+/* =========================================================
+   PROVIDER
+========================================================= */
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   console.log("AUTH PROVIDER MOUNTED");
 
-  const [user, setUser] = useState<User | null>(null);
+  /* =========================================================
+     INITIAL USER
+  ========================================================= */
 
-  const [loading, setLoading] = useState(true);
-
-  // =========================
-  // LOAD USER
-  // =========================
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window === "undefined") {
+      return null;
     }
 
-    setLoading(false);
-  }, []);
+    try {
+      const storedUser = localStorage.getItem("user");
 
-  // =========================
-  // LOGIN
-  // =========================
+      if (!storedUser) {
+        return null;
+      }
 
-  const login = async (email: string, password: string) => {
+      return JSON.parse(storedUser) as User;
+    } catch (error) {
+      console.error("Failed to load stored user:", error);
+
+      localStorage.removeItem("user");
+
+      return null;
+    }
+  });
+
+  /*
+   * Since the user is loaded during state initialization,
+   * there is no need for useEffect.
+   *
+   * Start with false because initialization is synchronous.
+   */
+  const [loading, setLoading] = useState(false);
+
+  /* =========================================================
+     LOGIN
+  ========================================================= */
+
+  const login = async (
+    email: string,
+    password: string,
+  ): Promise<LoginResponse> => {
     let data;
     let type: "admin" | "resident";
 
+    setLoading(true);
+
     try {
-      // Admin login
-      data = await adminLogin(email, password);
+      /* =====================================================
+         ADMIN LOGIN
+      ===================================================== */
 
-      type = "admin";
-    } catch {
-      // Resident login
-      data = await residentLogin(email, password);
+      try {
+        data = await adminLogin(email, password);
+        type = "admin";
+      } catch {
+        /* ===================================================
+           RESIDENT LOGIN
+        =================================================== */
 
-      type = "resident";
-    }
+        data = await residentLogin(email, password);
+        type = "resident";
+      }
 
-    localStorage.setItem("token", data.access_token);
+      /* =====================================================
+         TOKEN
+      ===================================================== */
 
-    localStorage.setItem("role", type);
+      localStorage.setItem("token", data.access_token);
 
-    if (data.user) {
-      localStorage.setItem("user", JSON.stringify(data.user));
+      /* Use role consistently */
+      localStorage.setItem("role", type);
 
-      setUser(data.user);
-    } else {
-      // لو resident endpoint مش بيرجع user
-      const residentUser = {
-        ...data,
-        role: "resident",
+      /* =====================================================
+         USER
+      ===================================================== */
+
+      let loggedUser: User;
+
+      if (data.user) {
+        loggedUser = data.user;
+      } else {
+        /*
+         * Resident endpoint doesn't return user.
+         * Build a user object from the response.
+         */
+
+        loggedUser = {
+          ...data,
+          role: "resident",
+        } as User;
+      }
+
+      /* =====================================================
+         STORE USER
+      ===================================================== */
+
+      localStorage.setItem("user", JSON.stringify(loggedUser));
+
+      setUser(loggedUser);
+
+      /* =====================================================
+         RETURN
+      ===================================================== */
+
+      return {
+        type,
+        user: loggedUser,
       };
-
-      localStorage.setItem("user", JSON.stringify(residentUser));
-
-      setUser(residentUser);
+    } finally {
+      setLoading(false);
     }
-
-    return {
-      type,
-    };
   };
 
-  // =========================
-  // LOGOUT
-  // =========================
+  /* =========================================================
+     LOGOUT
+  ========================================================= */
 
   const logout = () => {
     localStorage.removeItem("token");
-
     localStorage.removeItem("user");
-
     localStorage.removeItem("role");
 
     localStorage.removeItem("resident_user");
-
     localStorage.removeItem("resident_id");
 
     setUser(null);
   };
+
+  /* =========================================================
+     PROVIDER
+  ========================================================= */
 
   return (
     <AuthContext.Provider
@@ -142,5 +190,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     </AuthContext.Provider>
   );
 }
+
+/* =========================================================
+   HOOK
+========================================================= */
 
 export const useAuth = () => useContext(AuthContext);

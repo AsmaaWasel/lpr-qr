@@ -122,46 +122,10 @@ export default function Sidebar() {
           ]
         : [
             {
-              id: "dashboard",
-              label: "Dashboard",
-              href: "/dashboard",
-              icon: LayoutDashboard,
-            },
-            {
-              id: "lpr",
-              label: "LPR",
-              href: "/dashboard/lpr",
-              icon: ScanLine,
-            },
-            {
               id: "qr",
               label: "QR",
-              href: "/dashboard/qr",
+              href: "/dashboard/qr-resident",
               icon: QrCode,
-            },
-            {
-              id: "residents",
-              label: "Residents",
-              href: "/dashboard/residents",
-              icon: Home,
-            },
-            {
-              id: "users",
-              label: "Users",
-              href: "/dashboard/users",
-              icon: Users,
-            },
-            {
-              id: "reports",
-              label: "Reports",
-              href: "/dashboard/reports",
-              icon: BarChart3,
-            },
-            {
-              id: "departments",
-              label: "Depts",
-              href: "/dashboard/departments",
-              icon: Folder,
             },
           ];
 

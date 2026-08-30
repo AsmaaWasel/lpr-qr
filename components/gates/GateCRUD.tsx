@@ -68,8 +68,8 @@ export default function GateCRUD() {
     return (
       gate.name?.toLowerCase().includes(query) ||
       gate.type?.toLowerCase().includes(query) ||
-      gate.ip?.toLowerCase().includes(query) ||
-      gate.description?.toLowerCase().includes(query)
+      gate.ip?.toLowerCase().includes(query)
+      // gate.description?.toLowerCase().includes(query)
     );
   });
 
@@ -157,7 +157,7 @@ export default function GateCRUD() {
             setSearch(value);
             setCurrentPage(1);
           }}
-          searchPlaceholder="Search by name, IP or description..."
+          searchPlaceholder="Search by Gate Name , Type and IP"
           addLabel="Add Gate"
           onAdd={() => {
             setEditing(null);
