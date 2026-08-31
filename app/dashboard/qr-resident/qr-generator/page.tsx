@@ -2,407 +2,183 @@
 
 import { useState } from "react";
 
-import { Share2, QrCode, Loader2, Copy, Check, RotateCcw } from "lucide-react";
-
 import { generateQR } from "@/services/qr";
 
-type QRResponse = {
-  qr_image: string;
-  max_uses: number;
-};
+import { QR_TABS, PillTabs } from "@/shared/ui/voom";
+
+import QRDisplay from "@/components/qr/QrDisplay";
+import QRForm, { QRFormData } from "@/components/qr/Qrform";
+
+// =====================================================
+// MAIN PAGE
+// =====================================================
 
 export default function QRPage() {
   const [loading, setLoading] = useState(false);
   const [qrData, setQrData] = useState<QRResponse | null>(null);
-  const [maxUses, setMaxUses] = useState(1);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
 
-  // =========================
-  // GENERATE QR
-  // =========================
-  const handleGenerate = async () => {
+  const [formData, setFormData] = useState<QRFormData>({
+    residentId: "",
+    maxUses: 1,
+    visitorFullName: "",
+    visitorNationalId: "",
+    visitorPhoneNumber: "",
+    startDate: undefined,
+    expiryDate: undefined,
+  });
+
+  // =====================================================
+  // HANDLE GENERATE
+  // =====================================================
+
+  const handleGenerate = async (data: QRFormData) => {
     try {
-      setLoading(true);
       setError(null);
+      setFormData(data);
 
-      const data = await generateQR({
-        max_uses: maxUses,
-      });
+      // =========================
+      // VALIDATION
+      // =========================
 
-      setQrData(data);
+      if (!data.residentId.trim()) {
+        setError("Please enter resident ID.");
+        return;
+      }
+
+      if (!data.visitorFullName.trim()) {
+        setError("Please enter visitor full name.");
+        return;
+      }
+
+      if (!data.visitorNationalId.trim()) {
+        setError("Please enter visitor national ID.");
+        return;
+      }
+
+      if (!data.visitorPhoneNumber.trim()) {
+        setError("Please enter visitor phone number.");
+        return;
+      }
+
+      if (!data.startDate) {
+        setError("Please select start date.");
+        return;
+      }
+
+      if (!data.expiryDate) {
+        setError("Please select expiry date.");
+        return;
+      }
+
+      if (data.expiryDate < data.startDate) {
+        setError("Expiry date cannot be before start date.");
+        return;
+      }
+
+      setLoading(true);
+
+      // =====================================================
+      // DATE FORMATTING
+      // =====================================================
+
+      const startAt = new Date(data.startDate);
+      startAt.setHours(0, 0, 0, 0);
+
+      const expiry = new Date(data.expiryDate);
+      expiry.setHours(23, 59, 59, 999);
+
+      // =====================================================
+      // PAYLOAD
+      // =====================================================
+
+      const payload = {
+        resident_id: Number(data.residentId),
+        max_uses: data.maxUses,
+        start_at: startAt.toISOString(),
+        expiry_date: expiry.toISOString(),
+        visitor_national_id: data.visitorNationalId.trim(),
+        visitor_phone_number: data.visitorPhoneNumber.trim(),
+        visitor_full_name: data.visitorFullName.trim(),
+      };
+
+      console.log("QR Payload:", payload);
+
+      // =====================================================
+      // API
+      // =====================================================
+
+      const response = await generateQR(payload);
+
+      setQrData(response);
     } catch (err) {
-      console.log(err);
+      console.error("Generate QR Error:", err);
+
       setError("Please try again later. Something went wrong.");
     } finally {
       setLoading(false);
     }
   };
 
-  // =========================
-  // RESET
-  // =========================
+  // =====================================================
+  // HANDLE RESET
+  // =====================================================
+
   const handleReset = () => {
     setQrData(null);
     setError(null);
-    setCopied(false);
+
+    setFormData({
+      residentId: "",
+      maxUses: 1,
+      visitorFullName: "",
+      visitorNationalId: "",
+      visitorPhoneNumber: "",
+      startDate: undefined,
+      expiryDate: undefined,
+    });
   };
 
-  // =========================
-  // SHARE TO WHATSAPP
-  // =========================
-  const handleShare = () => {
-    if (!qrData) return;
-
-    const imageUrl = `http://127.0.0.1:8000/${qrData.qr_image}`;
-
-    const message = `SMARTGATE QR Access Code\n\n${imageUrl}`;
-
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
-  };
-
-  // =========================
-  // COPY LINK
-  // =========================
-  const handleCopy = async () => {
-    if (!qrData) return;
-
-    const imageUrl = `http://127.0.0.1:8000/${qrData.qr_image}`;
-
-    try {
-      await navigator.clipboard.writeText(imageUrl);
-
-      setCopied(true);
-
-      setTimeout(() => {
-        setCopied(false);
-      }, 2000);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  // =========================
-  // MAX USES
-  // =========================
-  const handleMaxUsesChange = (value: number) => {
-    if (Number.isNaN(value)) return;
-
-    setMaxUses(Math.max(1, value));
-  };
+  // =====================================================
+  // RENDER
+  // =====================================================
 
   return (
     <div className="space-y-6 pb-28">
-      {/* =========================
-          ERROR
-      ========================= */}
-      {error && (
-        <div className="bg-danger-soft border border-red-500/30 text-danger rounded-xl px-4 py-3 text-sm">
-          {error}
-        </div>
-      )}
+      {/* =====================================================
+          TABS
+      ===================================================== */}
 
-      {/* =========================
-          MAIN CONTENT
-      ========================= */}
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_1.5fr] gap-6 items-start">
-        {/* =========================
-            LEFT SIDE - INFO / TABLE
-        ========================= */}
-        <div className="space-y-4">
-          {/* MODULE */}
-          <div className="bg-card border border-border rounded-2xl p-5">
-            <p className="text-muted-foreground text-sm">Module</p>
+      {/* <PillTabs tabs={QR_TABS} activeValue="/dashboard/qr/qr-generator" /> */}
 
-            <h2 className="text-foreground text-xl font-semibold mt-2">
-              QR Security
-            </h2>
-          </div>
+      {/* =====================================================
+          CONTENT
+          FORM = 8 COLUMNS
+          QR DISPLAY = 4 COLUMNS
+      ===================================================== */}
 
-          {/* FEATURE */}
-          <div className="bg-card border border-border rounded-2xl p-5">
-            <p className="text-muted-foreground text-sm">Feature</p>
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-stretch">
+        {/* =====================================================
+            FORM
+        ===================================================== */}
 
-            <h2 className="text-foreground text-xl font-semibold mt-2">
-              QR Generation
-            </h2>
-          </div>
-
-          {/* MAX USES */}
-          <div className="bg-card border border-border rounded-2xl p-5">
-            <p className="text-muted-foreground text-sm mb-3">Max Uses</p>
-
-            <div className="flex items-center gap-3">
-              {/* MINUS */}
-              <button
-                onClick={() => handleMaxUsesChange(maxUses - 1)}
-                disabled={maxUses <= 1}
-                className="
-                  w-10 h-10
-                  rounded-lg
-                  bg-secondary
-                  text-foreground
-                  hover:bg-slate-700
-                  disabled:opacity-40
-                  disabled:cursor-not-allowed
-                  transition
-                "
-              >
-                -
-              </button>
-
-              {/* INPUT */}
-              <input
-                type="number"
-                min={1}
-                value={maxUses}
-                onChange={(e) => handleMaxUsesChange(Number(e.target.value))}
-                className="
-                  flex-1
-                  bg-[#a0acbd]
-                  border
-                  border-border
-                  rounded-xl
-                  px-4
-                  py-2
-                  text-center
-                  text-foreground
-                  outline-none
-                  focus:border-brand
-                  transition
-                "
-              />
-
-              {/* PLUS */}
-              <button
-                onClick={() => handleMaxUsesChange(maxUses + 1)}
-                className="
-                  w-10 h-10
-                  rounded-lg
-                  bg-brand
-                  text-foreground
-                  hover:bg-brand
-                  transition
-                "
-              >
-                +
-              </button>
-            </div>
-          </div>
+        <div className="xl:col-span-8">
+          <QRForm onGenerate={handleGenerate} loading={loading} error={error} />
         </div>
 
-        {/* =========================
-            RIGHT SIDE - QR
-        ========================= */}
-        <div className="bg-card border border-border rounded-2xl p-6">
-          {!qrData ? (
-            /* =========================
-               EMPTY / LOADING
-            ========================= */
-            <div className="h-[500px] flex flex-col items-center justify-center">
-              {loading ? (
-                <>
-                  <Loader2 size={80} className="text-brand mb-4 animate-spin" />
+        {/* =====================================================
+            QR DISPLAY
+        ===================================================== */}
 
-                  <h2 className="text-foreground text-xl font-semibold">
-                    Generating QR...
-                  </h2>
-
-                  <p className="text-muted-foreground mt-2">
-                    Please wait a moment
-                  </p>
-                </>
-              ) : (
-                <>
-                  <QrCode size={80} className="text-foreground mb-4" />
-
-                  <h2 className="text-foreground text-xl font-semibold">
-                    No QR Generated
-                  </h2>
-
-                  <p className="text-muted-foreground mt-2">
-                    Generate a new QR code
-                  </p>
-                </>
-              )}
-            </div>
-          ) : (
-            /* =========================
-               GENERATED QR
-            ========================= */
-            <div className="flex flex-col items-center justify-center">
-              {/* QR IMAGE */}
-              <div className="bg-card p-5 rounded-2xl shadow-2xl">
-                <img
-                  src={`http://127.0.0.1:8000/${qrData.qr_image}`}
-                  alt="QR"
-                  className="
-                    w-[320px]
-                    h-[320px]
-                    object-contain
-                  "
-                />
-              </div>
-
-              {/* GENERATED MAX USES */}
-              <div
-                className="
-                mt-6
-                bg-card
-                border
-                border-border
-                rounded-2xl
-                px-6
-                py-4
-              "
-              >
-                <p
-                  className="
-                  text-muted-foreground
-                  text-sm
-                  text-center
-                "
-                >
-                  Max Uses
-                </p>
-
-                <h2
-                  className="
-                  text-foreground
-                  text-4xl
-                  font-bold
-                  mt-2
-                  text-center
-                "
-                >
-                  {qrData.max_uses}
-                </h2>
-              </div>
-
-              {/* ACTIONS */}
-              <div
-                className="
-                mt-6
-                flex
-                flex-wrap
-                items-center
-                justify-center
-                gap-3
-              "
-              >
-                {/* WHATSAPP */}
-                <button
-                  onClick={handleShare}
-                  className="
-                    flex
-                    items-center
-                    gap-2
-                    bg-green-500
-                    hover:bg-green-400
-                    text-foreground
-                    px-5
-                    py-3
-                    rounded-xl
-                    transition
-                  "
-                >
-                  <Share2 size={18} />
-                  Share on WhatsApp
-                </button>
-
-                {/* COPY */}
-                <button
-                  onClick={handleCopy}
-                  className="
-                    flex
-                    items-center
-                    gap-2
-                    bg-secondary
-                    hover:bg-slate-700
-                    text-foreground
-                    px-5
-                    py-3
-                    rounded-xl
-                    transition
-                  "
-                >
-                  {copied ? (
-                    <Check size={18} className="text-green-400" />
-                  ) : (
-                    <Copy size={18} />
-                  )}
-
-                  {copied ? "Copied!" : "Copy Link"}
-                </button>
-
-                {/* NEW QR */}
-                <button
-                  onClick={handleReset}
-                  className="
-                    flex
-                    items-center
-                    gap-2
-                    bg-transparent
-                    border
-                    border-border
-                    hover:bg-card
-                    text-muted-foreground
-                    px-5
-                    py-3
-                    rounded-xl
-                    transition
-                  "
-                >
-                  <RotateCcw size={18} />
-                  New QR
-                </button>
-              </div>
-            </div>
-          )}
+        <div className="xl:col-span-4">
+          <QRDisplay
+            qrData={qrData}
+            loading={loading}
+            formData={formData}
+            onReset={handleReset}
+          />
         </div>
       </div>
-
-      {/* =========================
-          FLOATING GENERATE BUTTON
-      ========================= */}
-      <button
-        onClick={handleGenerate}
-        disabled={loading}
-        className="
-          fixed
-          bottom-6
-          left-[295px]
-          z-50
-          flex
-          items-center
-          justify-center
-          gap-2
-          bg-brand
-          hover:bg-brand
-          active:bg-brand-strong
-          disabled:opacity-60
-          disabled:cursor-not-allowed
-          text-foreground
-          px-6
-          py-4
-          rounded-2xl
-          shadow-2xl
-          shadow-sky-500/30
-          transition
-        "
-      >
-        {loading ? (
-          <>
-            <Loader2 size={18} className="animate-spin" />
-            Generating...
-          </>
-        ) : (
-          <>
-            <QrCode size={18} />
-            Generate QR
-          </>
-        )}
-      </button>
     </div>
   );
 }

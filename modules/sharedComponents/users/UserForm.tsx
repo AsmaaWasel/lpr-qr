@@ -16,7 +16,7 @@ type UserFormData = {
   username: string;
   email: string;
   role: string;
-  department_id: number;
+  sub_department_id: number;
   password: string;
 };
 
@@ -26,7 +26,7 @@ type Props = {
     username: string;
     email: string;
     role: string;
-    department_id: number;
+    sub_department_id: number;
     phone?: string;
   } | null;
 
@@ -45,7 +45,9 @@ export default function UserForm({ editing, onClose, onSubmit }: Props) {
 
   const [role, setRole] = useState(editing?.role ?? "admin");
 
-  const [departmentId, setDepartmentId] = useState(editing?.department_id ?? 0);
+  const [departmentId, setDepartmentId] = useState(
+    editing?.sub_department_id ?? 0,
+  );
 
   const [password, setPassword] = useState("");
 
@@ -100,7 +102,7 @@ export default function UserForm({ editing, onClose, onSubmit }: Props) {
       username: username.trim(),
       email: email.trim(),
       role,
-      department_id: departmentId,
+      sub_department_id: departmentId,
       password,
     });
   };

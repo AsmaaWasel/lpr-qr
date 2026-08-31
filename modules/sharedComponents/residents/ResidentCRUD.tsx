@@ -29,7 +29,6 @@ type ResidentFormData = {
 };
 
 type CredentialsFormData = {
-  resident_id: number;
   email: string;
   password: string;
 };
@@ -165,25 +164,25 @@ export default function ResidentCRUD() {
   // =========================
 
   const handleCredentialsSubmit = async (data: CredentialsFormData) => {
-    try {
-      setCredentialsLoading(true);
+  if (!selectedResident) return;
 
-      await addCredentials(data.resident_id, {
-        email: data.email,
-        password: data.password,
-      });
+  try {
+    setCredentialsLoading(true);
 
-      toast.success("Credentials added successfully");
+    await addCredentials(selectedResident.id, {
+      email: data.email,
+      password: data.password,
+    });
 
-      setOpenCredentials(false);
-    } catch (error) {
-      console.error("Credentials error:", error);
-      toast.error("Failed to add credentials");
-    } finally {
-      setCredentialsLoading(false);
-    }
-  };
-
+    toast.success("Credentials added successfully");
+    setOpenCredentials(false);
+  } catch (error) {
+    console.error("Credentials error:", error);
+    toast.error("Failed to add credentials");
+  } finally {
+    setCredentialsLoading(false);
+  }
+};
   // =========================
   // STATUS CHANGE
   // =========================

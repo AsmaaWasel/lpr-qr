@@ -72,7 +72,7 @@ export default function LoginForm({
           <input
             type="email"
             placeholder="name@domain.com"
-            className="w-full rounded-xl border border-white/5 bg-white/5 py-4 pl-12 pr-4 text-xl text-white placeholder:text-xl placeholder:text-slate-300 outline-none transition-all focus:border-sky-400/40 focus:bg-white/10 focus:ring-4 focus:ring-sky-400/5"
+            className="w-full rounded-xl border border-white/5 bg-white/5 py-4 pl-12 pr-4 text-xl text-black placeholder:text-xl placeholder:text-slate-300 outline-none transition-all focus:border-sky-400/40 focus:bg-white/10 focus:ring-4 focus:ring-sky-400/5"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -91,7 +91,7 @@ export default function LoginForm({
           <input
             type={showPassword ? "text" : "password"}
             placeholder="••••••••"
-            className="w-full rounded-xl border border-white/5 bg-white/5 py-4 pl-12 pr-14 text-xl text-white placeholder:text-2xl placeholder:text-slate-200 outline-none transition-all focus:border-sky-400/40 focus:bg-white/10 focus:ring-4 focus:ring-sky-400/5"
+            className="w-full rounded-xl border border-white/5 bg-white/5 py-4 pl-12 pr-14 text-xl text-black placeholder:text-2xl placeholder:text-slate-200 outline-none transition-all focus:border-sky-400/40 focus:bg-white/10 focus:ring-4 focus:ring-sky-400/5"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -99,7 +99,7 @@ export default function LoginForm({
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-white"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-black"
           >
             {showPassword ? (
               <EyeOff className="h-5 w-5" />
@@ -144,7 +144,7 @@ export default function LoginForm({
       <button
         type="submit"
         disabled={isLoading || gateStatus === "opening"}
-        className={`group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-xl py-5 text-base font-bold uppercase tracking-widest text-white transition-all active:scale-[0.98] disabled:opacity-70 ${
+        className={`group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-xl py-5 text-base font-bold uppercase tracking-widest text-black transition-all active:scale-[0.98] disabled:opacity-70 ${
           gateStatus === "opening"
             ? "bg-emerald-600"
             : gateStatus === "error"

@@ -4,11 +4,10 @@ import { useState } from "react";
 
 import { generateQR } from "@/services/qr";
 
-
-
 import { QR_TABS, PillTabs } from "@/shared/ui/voom";
-import QRForm, { QRFormData } from "@/components/qr/QrForm";
-import QRDisplay from "@/components/qr/QrDisplaty";
+
+import QRDisplay from "@/components/qr/QrDisplay";
+import QRForm, { QRFormData } from "@/components/qr/Qrform";
 
 // =====================================================
 // MAIN PAGE
@@ -20,7 +19,6 @@ export default function QRPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<QRFormData>({
-    buildingNumber: "",
     residentId: "",
     maxUses: 1,
     visitorFullName: "",
@@ -42,11 +40,6 @@ export default function QRPage() {
       // =========================
       // VALIDATION
       // =========================
-
-      if (!data.buildingNumber.trim()) {
-        setError("Please enter building number.");
-        return;
-      }
 
       if (!data.residentId.trim()) {
         setError("Please enter resident ID.");
@@ -100,7 +93,6 @@ export default function QRPage() {
       // =====================================================
 
       const payload = {
-        building_number: data.buildingNumber.trim(),
         resident_id: Number(data.residentId),
         max_uses: data.maxUses,
         start_at: startAt.toISOString(),
@@ -137,7 +129,6 @@ export default function QRPage() {
     setError(null);
 
     setFormData({
-      buildingNumber: "",
       residentId: "",
       maxUses: 1,
       visitorFullName: "",

@@ -37,14 +37,25 @@ export default function ResidentsPage() {
     );
   }
 
+  // =========================
+  // STATS
+  // =========================
+
   const totalResidents = residents.length;
 
-  const activeResidents = residents.filter(
-    (resident) => resident.status?.toLowerCase() === "active",
+  const allowedResidents = residents.filter(
+    (resident) => resident.status?.toLowerCase() === "allowed",
   ).length;
 
-  const inactiveResidents = residents.filter(
-    (resident) => resident.status?.toLowerCase() === "inactive",
+  const notAllowedResidents = residents.filter(
+    (resident) => resident.status?.toLowerCase() !== "allowed",
+  ).length;
+
+  const residentsWithCredentials = residents.filter(
+    (resident) =>
+      Boolean(resident.face_id) ||
+      Boolean(resident.driving_license) ||
+      (resident.phone_numbers?.length ?? 0) > 0,
   ).length;
 
   return (
@@ -52,6 +63,7 @@ export default function ResidentsPage() {
       {/* =========================
           STATS
       ========================= */}
+
       <StatRow
         items={[
           {
@@ -60,15 +72,15 @@ export default function ResidentsPage() {
           },
           {
             label: "ALLOWED",
-            value: 0,
+            value: allowedResidents,
           },
           {
             label: "NOT ALLOWED",
-            value: 0,
+            value: notAllowedResidents,
           },
           {
             label: "WITH CREDENTIALS",
-            value: 0,
+            value: residentsWithCredentials,
           },
         ]}
       />
@@ -76,6 +88,7 @@ export default function ResidentsPage() {
       {/* =========================
           RESIDENTS CRUD
       ========================= */}
+
       <SectionCard>
         <ResidentCRUD />
       </SectionCard>

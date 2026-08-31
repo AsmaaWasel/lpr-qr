@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
 import { useAuth } from "@/shared/context/AuthContext";
 
 import {
@@ -14,6 +13,7 @@ import {
   Home,
   BarChart3,
   Folder,
+  Building2,
 } from "lucide-react";
 
 const normalize = (p: string) => p.split("?")[0].replace(/\/$/, "");
@@ -69,6 +69,12 @@ export default function Sidebar() {
             icon: BarChart3,
           },
           {
+            id: "units",
+            label: "Units",
+            href: "/dashboard/units",
+            icon: Building2,
+          },
+          {
             id: "departments",
             label: "Depts",
             href: "/dashboard/departments",
@@ -114,6 +120,12 @@ export default function Sidebar() {
               icon: BarChart3,
             },
             {
+              id: "units",
+              label: "Units",
+              href: "/dashboard/units",
+              icon: Building2,
+            },
+            {
               id: "departments",
               label: "Depts",
               href: "/dashboard/departments",
@@ -124,7 +136,7 @@ export default function Sidebar() {
             {
               id: "qr",
               label: "QR",
-              href: "/dashboard/qr-resident",
+              href: "/dashboard/qr-resident/qr-generator",
               icon: QrCode,
             },
           ];
@@ -149,6 +161,9 @@ export default function Sidebar() {
 
       case "users":
         return current.startsWith("/dashboard/users");
+
+      case "units":
+        return current.startsWith("/dashboard/units");
 
       case "departments":
         return current.startsWith("/dashboard/departments");
@@ -186,6 +201,7 @@ export default function Sidebar() {
 
       <div className="flex flex-col items-center">
         {/* Logo Container */}
+
         <div
           className="
             flex
@@ -215,6 +231,7 @@ export default function Sidebar() {
         </div>
 
         {/* Brand */}
+
         <span
           className="
             mt-2
@@ -236,16 +253,19 @@ export default function Sidebar() {
 
       <nav
         className="
-          mt-7
+          mt-5
           flex
           w-full
           flex-1
           flex-col
           items-center
-          gap-2
+          gap-1
           overflow-y-auto
           px-2
-          scrollbar-none
+          pb-2
+          scrollbar-thin
+          scrollbar-thumb-slate-300
+          scrollbar-track-transparent
         "
       >
         {navigation.map((item) => {
@@ -267,7 +287,7 @@ export default function Sidebar() {
                 justify-center
                 gap-1.5
                 rounded-lg
-                py-3
+                py-2.5
                 transition-all
                 duration-200
 
@@ -285,6 +305,7 @@ export default function Sidebar() {
               `}
             >
               {/* ICON */}
+
               <Icon
                 size={22}
                 strokeWidth={active ? 2.2 : 1.8}
@@ -302,6 +323,7 @@ export default function Sidebar() {
               />
 
               {/* TEXT */}
+
               <span
                 className={`
                   max-w-[82px]
@@ -328,9 +350,10 @@ export default function Sidebar() {
       {/* =====================================================
           ONLINE GATES STATUS
       ====================================================== */}
+
       <div
         className="
-          mt-4
+          mt-3
           flex
           w-[94px]
           shrink-0
@@ -343,8 +366,10 @@ export default function Sidebar() {
         "
       >
         {/* Status Indicator */}
+
         <div className="relative mb-2 flex h-7 w-7 items-center justify-center">
           {/* Outer pulse */}
+
           <span
             className="
               absolute
@@ -357,6 +382,7 @@ export default function Sidebar() {
           />
 
           {/* Main circle */}
+
           <span
             className="
               relative
@@ -370,6 +396,7 @@ export default function Sidebar() {
         </div>
 
         {/* Gates Count */}
+
         <span
           className="
             text-[15px]
@@ -382,6 +409,7 @@ export default function Sidebar() {
         </span>
 
         {/* Label */}
+
         <span
           className="
             mt-1.5

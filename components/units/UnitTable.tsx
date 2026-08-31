@@ -1,86 +1,22 @@
 "use client";
 
-import { User } from "@/modules/types/user";
+
+import { Unit } from "@/modules/types/units";
 import { Check } from "lucide-react";
 
 type Props = {
-  data: User[];
+  data: Unit[];
   selectedId: number | null;
   onSelect: (id: number) => void;
 };
 
-export default function UserTable({ data, selectedId, onSelect }: Props) {
-  // =========================
-  // ROLE COLOR
-  // =========================
-  const getRoleColor = (role?: string) => {
-    switch (role?.toLowerCase()) {
-      // ADMIN - BLUE
-      case "admin":
-        return `
-          bg-blue-50
-          text-blue-700
-          dark:bg-blue-500/10
-          dark:text-blue-400
-        `;
-
-      // OPERATOR - PURPLE
-      case "operator":
-        return `
-          bg-purple-50
-          text-purple-700
-          dark:bg-purple-500/10
-          dark:text-purple-400
-        `;
-
-      // VIEWER - CYAN
-      case "viewer":
-        return `
-          bg-cyan-50
-          text-cyan-700
-          dark:bg-cyan-500/10
-          dark:text-cyan-400
-        `;
-
-      // MANAGER - ORANGE
-      case "manager":
-        return `
-          bg-orange-50
-          text-orange-700
-          dark:bg-orange-500/10
-          dark:text-orange-400
-        `;
-
-      // SECURITY - GREEN
-      case "security":
-        return `
-          bg-emerald-50
-          text-emerald-700
-          dark:bg-emerald-500/10
-          dark:text-emerald-400
-        `;
-
-      // DEFAULT - GRAY
-      default:
-        return `
-          bg-slate-50
-          text-slate-600
-          dark:bg-slate-700
-          dark:text-slate-200
-        `;
-    }
-  };
-
+export default function UnitTable({ data, selectedId, onSelect }: Props) {
   return (
     <div className="w-full bg-card shadow-sm">
-      {/* =========================
-          TABLE
-      ========================= */}
       <div className="w-full overflow-x-auto">
-        <table className="w-full min-w-[1050px] border-collapse">
-          {/* =========================
-              HEADER
-          ========================= */}
+        <table className="w-full min-w-[900px] border-collapse">
+          {/* HEADER */}
+
           <thead>
             <tr
               className="
@@ -88,11 +24,11 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
                 border-border
                 bg-[#F2F6FB]
                 text-left
-                text-[#7C93B4]
                 dark:bg-slate-800/40
               "
             >
               {/* SELECT */}
+
               <th
                 className="
                   w-[55px]
@@ -108,7 +44,24 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
                 <span className="sr-only">Select</span>
               </th>
 
+              {/* ID */}
+
+              <th
+                className="
+                  px-6
+                  py-4
+                  text-lg
+                  font-bold
+                  uppercase
+                  tracking-wide
+                  text-muted-foreground
+                "
+              >
+                ID
+              </th>
+
               {/* NAME */}
+
               <th
                 className="
                   px-6
@@ -120,10 +73,11 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
                   text-muted-foreground
                 "
               >
-                NAME
+                UNIT NAME
               </th>
 
-              {/* EMAIL */}
+              {/* TYPE */}
+
               <th
                 className="
                   px-6
@@ -135,10 +89,11 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
                   text-muted-foreground
                 "
               >
-                EMAIL
+                TYPE
               </th>
 
-              {/* ROLE */}
+              {/* PARENT */}
+
               <th
                 className="
                   px-6
@@ -150,10 +105,11 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
                   text-muted-foreground
                 "
               >
-                ROLE
+                PARENT ID
               </th>
 
-              {/* DEPARTMENT */}
+              {/* DESCRIPTION */}
+
               <th
                 className="
                   px-6
@@ -165,19 +121,18 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
                   text-muted-foreground
                 "
               >
-                DEPARTMENT
+                DESCRIPTION
               </th>
             </tr>
           </thead>
 
-          {/* =========================
-              BODY
-          ========================= */}
+          {/* BODY */}
+
           <tbody>
             {data.length === 0 ? (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={6}
                   className="
                     px-6
                     py-12
@@ -186,24 +141,23 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
                     text-muted-foreground
                   "
                 >
-                  No users found
+                  No units found
                 </td>
               </tr>
             ) : (
-              data.map((user) => {
-                const isSelected = selectedId === user.id;
+              data.map((unit) => {
+                const isSelected = selectedId === unit.id;
 
                 return (
                   <tr
-                    key={user.id}
-                    onClick={() => onSelect(user.id)}
+                    key={unit.id}
+                    onClick={() => onSelect(unit.id)}
                     className={`
                       cursor-pointer
                       border-b
                       border-border
                       transition
                       last:border-b-0
-
                       ${
                         isSelected
                           ? "bg-accent dark:bg-cyan-500/10"
@@ -211,15 +165,14 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
                       }
                     `}
                   >
-                    {/* =========================
-                        SELECT
-                    ========================= */}
+                    {/* SELECT */}
+
                     <td className="px-6 py-4">
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onSelect(user.id);
+                          onSelect(unit.id);
                         }}
                         className={`
                           flex
@@ -230,7 +183,6 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
                           rounded
                           border-2
                           transition
-
                           ${
                             isSelected
                               ? `
@@ -247,80 +199,103 @@ export default function UserTable({ data, selectedId, onSelect }: Props) {
                               `
                           }
                         `}
-                        aria-label={`Select ${user.username || user.id}`}
+                        aria-label={`Select ${unit.name}`}
                       >
                         {isSelected && <Check size={13} strokeWidth={3} />}
                       </button>
                     </td>
 
-                    {/* =========================
-                        NAME
-                    ========================= */}
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div>
-                          <p
-                            className="
-                              text-[16px]
-                              font-[600]
-                              text-foreground
-                              dark:text-white
-                            "
-                          >
-                            {user.username || "-"}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
+                    {/* ID */}
 
-                    {/* =========================
-                        EMAIL
-                    ========================= */}
                     <td className="px-6 py-4">
                       <span
                         className="
                           text-[16px]
-                          font-[500]
+                          font-[600]
                           text-[#3B5473]
                           dark:text-white
                         "
                       >
-                        {user.email || "-"}
+                        {unit.id}
                       </span>
                     </td>
 
-                    {/* =========================
-                        ROLE
-                    ========================= */}
+                    {/* NAME */}
+
+                    <td className="px-6 py-4">
+                      <p
+                        className="
+                          text-[16px]
+                          font-[600]
+                          text-foreground
+                          dark:text-white
+                        "
+                      >
+                        {unit.name}
+                      </p>
+                    </td>
+
+                    {/* TYPE */}
+
                     <td className="px-6 py-4">
                       <span
-                        className={`
+                        className="
                           inline-flex
                           rounded-full
+                          bg-emerald-50
                           px-3
                           py-1
                           text-[16px]
                           font-[500]
-                          ${getRoleColor(user.role)}
-                        `}
+                          text-emerald-600
+                          dark:bg-emerald-500/10
+                          dark:text-emerald-400
+                        "
                       >
-                        {user.role || "Unknown"}
+                        {unit.type}
                       </span>
                     </td>
 
-                    {/* =========================
-                        DEPARTMENT
-                    ========================= */}
+                    {/* PARENT ID */}
+
                     <td className="px-6 py-4">
                       <span
                         className="
+                          inline-flex
+                          min-w-[45px]
+                          items-center
+                          justify-center
+                          rounded-full
+                          bg-slate-100
+                          px-3
+                          py-1
+                          text-[16px]
+                          font-[600]
+                          text-[#3B5473]
+                          dark:bg-slate-700
+                          dark:text-white
+                        "
+                      >
+                        {unit.parent_id ?? "-"}
+                      </span>
+                    </td>
+
+                    {/* DESCRIPTION */}
+
+                    <td className="px-6 py-4">
+                      <span
+                        className="
+                          block
+                          max-w-[350px]
+                          truncate
                           text-[16px]
                           font-[500]
                           text-[#3B5473]
                           dark:text-white
                         "
+                        title={unit.description || "-"}
                       >
-                        {user.sub_department?.name || "-"}
+                        {unit.description || "-"}
                       </span>
                     </td>
                   </tr>

@@ -1,13 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
 import { getResidents } from "@/services/resident";
 
 type Props = {
-  onSubmit: (data: {
-    plate_number_full: string;
-    resident_id?: number;
-  }) => void;
+  onSubmit: (data: { plate_number_full: string; resident_id?: number }) => void;
 
   editing?: {
     id: number;
@@ -48,14 +46,12 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
   })();
 
   const [form, setForm] = useState(initial);
-
   const [errors, setErrors] = useState<FormErrors>({});
 
   // ================= RESIDENTS =================
 
   const [searchTerm, setSearchTerm] = useState("");
   const [residents, setResidents] = useState<Resident[]>([]);
-  const [filteredResidents, setFilteredResidents] = useState<Resident[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [loadingResidents, setLoadingResidents] = useState(false);
   const [selectedResident, setSelectedResident] = useState<Resident | null>(
@@ -67,52 +63,19 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
   // ================= FETCH RESIDENTS =================
 
   useEffect(() => {
+    let cancelled = false;
+
     const loadResidents = async () => {
       try {
         setLoadingResidents(true);
 
         const data = await getResidents(0, 100);
 
-        setResidents(data);
-
-        if (editing?.resident_id) {
-          const found = data.find(
-            (resident: Resident) => resident.id === editing.resident_id,
-          );
-
-          if (found) {
-            setSelectedResident(found);
-            setSearchTerm(found.full_name);
-
-            setForm((prev) => ({
-              ...prev,
-              resident_id: found.id,
-              resident_name: found.full_name,
-            }));
-          }
-        }
-      } catch (error) {
-        console.error("Failed to load residents:", error);
-      } finally {
-        setLoadingResidents(false);
-      }
-    };
-
-    loadResidents();
-  }, [editing]);
-
-  // ================= FILTER RESIDENTS =================
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadResidents = async () => {
-      try {
-        const data = await getResidents(0, 100);
-
         if (cancelled) return;
 
         setResidents(data);
+
+        // ================= EDIT MODE =================
 
         if (editing?.resident_id) {
           const found = data.find(
@@ -134,6 +97,10 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
         if (!cancelled) {
           console.error("Error loading residents:", error);
         }
+      } finally {
+        if (!cancelled) {
+          setLoadingResidents(false);
+        }
       }
     };
 
@@ -142,7 +109,21 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [editing]);
+  }, [editing?.resident_id]);
+
+  // ================= FILTER RESIDENTS =================
+
+  const filteredResidents = useMemo(() => {
+    const search = searchTerm.trim().toLowerCase();
+
+    if (!search) {
+      return residents;
+    }
+
+    return residents.filter((resident) =>
+      resident.full_name.toLowerCase().includes(search),
+    );
+  }, [residents, searchTerm]);
 
   // ================= CLOSE DROPDOWN =================
 
@@ -205,9 +186,7 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
 
     setSelectedResident(null);
 
-    if (value.trim() === "") {
-      setShowDropdown(false);
-    }
+    setShowDropdown(value.trim().length > 0);
   };
 
   // ================= SELECT RESIDENT =================
@@ -238,8 +217,6 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
 
     if (!form.numbers.trim()) {
       newErrors.numbers = "Plate numbers are required";
-    } else if (form.numbers.length < 1) {
-      newErrors.numbers = "Please enter valid plate numbers";
     }
 
     if (!form.letters.trim()) {
@@ -388,7 +365,7 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
                 value={searchTerm}
                 onChange={(e) => handleResidentSearch(e.target.value)}
                 onFocus={() => {
-                  if (searchTerm.trim() && filteredResidents.length > 0) {
+                  if (searchTerm.trim()) {
                     setShowDropdown(true);
                   }
                 }}
@@ -401,6 +378,8 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
                   }
                 `}
               />
+
+              {/* LOADING */}
 
               {loadingResidents && (
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -423,19 +402,19 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
               {showDropdown && filteredResidents.length > 0 && (
                 <div
                   className="
-                    absolute
-                    left-0
-                    right-0
-                    z-50
-                    mt-1
-                    max-h-60
-                    overflow-y-auto
-                    rounded-xl
-                    border
-                    border-border
-                    bg-card
-                    shadow-2xl
-                  "
+                      absolute
+                      left-0
+                      right-0
+                      z-50
+                      mt-1
+                      max-h-60
+                      overflow-y-auto
+                      rounded-xl
+                      border
+                      border-border
+                      bg-card
+                      shadow-2xl
+                    "
                 >
                   {filteredResidents.map((resident) => (
                     <button
@@ -443,24 +422,58 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
                       type="button"
                       onClick={() => handleResidentSelect(resident)}
                       className="
-                        w-full
-                        px-4
-                        py-3
-                        text-left
-                        text-foreground
-                        transition
-                        hover:bg-muted
-                      "
+                          w-full
+                          px-4
+                          py-3
+                          text-left
+                          text-foreground
+                          transition
+                          hover:bg-muted
+                        "
                     >
                       <div className="font-medium">{resident.full_name}</div>
 
                       <div className="mt-0.5 text-sm text-muted-foreground">
                         ID: {resident.id}
                       </div>
+
+                      {resident.phone_number && (
+                        <div className="mt-0.5 text-xs text-muted-foreground">
+                          {resident.phone_number}
+                        </div>
+                      )}
                     </button>
                   ))}
                 </div>
               )}
+
+              {/* NO RESULTS */}
+
+              {showDropdown &&
+                searchTerm.trim() &&
+                !loadingResidents &&
+                filteredResidents.length === 0 && (
+                  <div
+                    className="
+                      absolute
+                      left-0
+                      right-0
+                      z-50
+                      mt-1
+                      rounded-xl
+                      border
+                      border-border
+                      bg-card
+                      px-4
+                      py-3
+                      text-sm
+                      text-muted-foreground
+                      shadow-2xl
+                    "
+                  >
+                    No residents found
+                  </div>
+                )}
             </div>
 
             {/* ================= SELECTED RESIDENT ================= */}

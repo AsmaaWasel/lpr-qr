@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { QrCode, Loader2, CalendarDays } from "lucide-react";
 import { format } from "date-fns";
 
@@ -11,9 +11,19 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
+import { getResidents } from "@/services/resident";
+
 // =====================================================
 // TYPES
 // =====================================================
+
+type Resident = {
+  id: number;
+  full_name: string;
+  phone_number: string;
+  type: string;
+  national_id?: number;
+};
 
 type QRFormProps = {
   onGenerate: (data: QRFormData) => void;
@@ -22,7 +32,6 @@ type QRFormProps = {
 };
 
 export type QRFormData = {
-  buildingNumber: string;
   residentId: string;
   maxUses: number;
   visitorFullName: string;
@@ -41,14 +50,28 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
   // FORM STATES
   // =====================================================
 
-  const [buildingNumber, setBuildingNumber] = useState("");
   const [residentId, setResidentId] = useState("");
   const [maxUses, setMaxUses] = useState(1);
+
   const [visitorFullName, setVisitorFullName] = useState("");
   const [visitorNationalId, setVisitorNationalId] = useState("");
   const [visitorPhoneNumber, setVisitorPhoneNumber] = useState("");
+
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [expiryDate, setExpiryDate] = useState<Date | undefined>();
+
+  // =====================================================
+  // RESIDENT STATES
+  // =====================================================
+
+  const [residents, setResidents] = useState<Resident[]>([]);
+  const [residentSearch, setResidentSearch] = useState("");
+  const [selectedResident, setSelectedResident] = useState<Resident | null>(
+    null,
+  );
+
+  const [showResidentDropdown, setShowResidentDropdown] = useState(false);
+  const [loadingResidents, setLoadingResidents] = useState(false);
 
   // =====================================================
   // TODAY
@@ -58,7 +81,75 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
   today.setHours(0, 0, 0, 0);
 
   // =====================================================
-  // HANDLERS
+  // FETCH RESIDENTS
+  // =====================================================
+
+  useEffect(() => {
+    const fetchResidents = async () => {
+      try {
+        setLoadingResidents(true);
+
+        const data = await getResidents(0, 100);
+
+        setResidents(data);
+      } catch (error) {
+        console.error("Failed to fetch residents:", error);
+      } finally {
+        setLoadingResidents(false);
+      }
+    };
+
+    fetchResidents();
+  }, []);
+
+  // =====================================================
+  // FILTER RESIDENTS
+  // =====================================================
+
+  const filteredResidents = residents.filter((resident) =>
+    resident.full_name.toLowerCase().includes(residentSearch.toLowerCase()),
+  );
+
+  // =====================================================
+  // RESIDENT SEARCH
+  // =====================================================
+
+  const handleResidentSearch = (value: string) => {
+    setResidentSearch(value);
+
+    setSelectedResident(null);
+    setResidentId("");
+
+    setShowResidentDropdown(value.trim().length > 0);
+  };
+
+  // =====================================================
+  // SELECT RESIDENT
+  // =====================================================
+
+  const handleResidentSelect = (resident: Resident) => {
+    setSelectedResident(resident);
+
+    setResidentId(String(resident.id));
+
+    setResidentSearch(resident.full_name);
+
+    setShowResidentDropdown(false);
+  };
+
+  // =====================================================
+  // CLEAR RESIDENT
+  // =====================================================
+
+  const handleClearResident = () => {
+    setSelectedResident(null);
+    setResidentId("");
+    setResidentSearch("");
+    setShowResidentDropdown(false);
+  };
+
+  // =====================================================
+  // MAX USES
   // =====================================================
 
   const handleMaxUsesChange = (value: number) => {
@@ -67,9 +158,12 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
     setMaxUses(Math.max(1, value));
   };
 
+  // =====================================================
+  // SUBMIT
+  // =====================================================
+
   const handleSubmit = () => {
     onGenerate({
-      buildingNumber,
       residentId,
       maxUses,
       visitorFullName,
@@ -86,13 +180,9 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
 
   const calendarClassNames = {
     months: "text-foreground",
-
     month: "space-y-4",
-
     caption: "flex justify-center pt-1 relative items-center text-foreground",
-
     caption_label: "text-foreground text-base font-semibold",
-
     nav: "space-x-1 flex items-center",
 
     button_previous:
@@ -102,7 +192,6 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
       "h-7 w-7 bg-transparent p-0 text-foreground hover:bg-muted rounded-md",
 
     month_grid: "w-full border-collapse",
-
     weekdays: "flex",
 
     weekday: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
@@ -197,9 +286,7 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
         p-6
       "
     >
-      {/* =====================================================
-          ERROR
-      ===================================================== */}
+      {/* ERROR */}
 
       {error && (
         <div
@@ -219,9 +306,7 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
         </div>
       )}
 
-      {/* =====================================================
-          FORM HEADER
-      ===================================================== */}
+      {/* FORM HEADER */}
 
       <div className="mb-6">
         <h2 className="text-foreground text-2xl font-extrabold">
@@ -233,45 +318,169 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
         </p>
       </div>
 
-      {/* =====================================================
-          FIELDS GRID
-      ===================================================== */}
+      {/* FIELDS GRID */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* =====================================================
-            BUILDING NUMBER
+            RESIDENT NAME
         ===================================================== */}
 
-        <div>
+        <div className="relative">
           <label className="block text-foreground text-lg font-medium mb-2">
-            Building Number
+            Resident Name
           </label>
 
-          <input
-            type="text"
-            value={buildingNumber}
-            onChange={(e) => setBuildingNumber(e.target.value)}
-            placeholder="Building Number"
-            className={inputClassName}
-          />
-        </div>
+          <div className="relative">
+            <input
+              type="text"
+              value={residentSearch}
+              onChange={(e) => handleResidentSearch(e.target.value)}
+              onFocus={() => {
+                if (
+                  residentSearch.trim() &&
+                  filteredResidents.length > 0 &&
+                  !selectedResident
+                ) {
+                  setShowResidentDropdown(true);
+                }
+              }}
+              placeholder="Search resident..."
+              className={inputClassName}
+            />
 
-        {/* =====================================================
-            RESIDENT ID
-        ===================================================== */}
+            {loadingResidents && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <Loader2 size={20} className="animate-spin text-brand" />
+              </div>
+            )}
 
-        <div>
-          <label className="block text-foreground text-lg font-medium mb-2">
-            Resident ID
-          </label>
+            {/* CLEAR SELECTED RESIDENT */}
 
-          <input
-            type="number"
-            value={residentId}
-            onChange={(e) => setResidentId(e.target.value)}
-            placeholder="Resident ID"
-            className={inputClassName}
-          />
+            {selectedResident && !loadingResidents && (
+              <button
+                type="button"
+                onClick={handleClearResident}
+                className="
+                  absolute
+                  right-3
+                  top-1/2
+                  -translate-y-1/2
+                  text-muted-foreground
+                  hover:text-foreground
+                "
+              >
+                ✕
+              </button>
+            )}
+
+            {/* RESIDENT DROPDOWN */}
+
+            {showResidentDropdown &&
+              !selectedResident &&
+              filteredResidents.length > 0 && (
+                <div
+                  className="
+                    absolute
+                    left-0
+                    right-0
+                    top-full
+                    z-50
+                    mt-1
+                    max-h-60
+                    overflow-y-auto
+                    rounded-xl
+                    border
+                    border-border
+                    bg-card
+                    shadow-2xl
+                  "
+                >
+                  {filteredResidents.map((resident) => (
+                    <button
+                      key={resident.id}
+                      type="button"
+                      onClick={() => handleResidentSelect(resident)}
+                      className="
+                        w-full
+                        px-4
+                        py-3
+                        text-left
+                        text-foreground
+                        transition
+                        hover:bg-secondary
+                      "
+                    >
+                      <div className="font-semibold">{resident.full_name}</div>
+
+                      {resident.phone_number && (
+                        <div className="text-sm text-muted-foreground">
+                          {resident.phone_number}
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+            {/* NO RESULTS */}
+
+            {showResidentDropdown &&
+              !selectedResident &&
+              !loadingResidents &&
+              residentSearch.trim() &&
+              filteredResidents.length === 0 && (
+                <div
+                  className="
+                    absolute
+                    left-0
+                    right-0
+                    top-full
+                    z-50
+                    mt-1
+                    rounded-xl
+                    border
+                    border-border
+                    bg-card
+                    px-4
+                    py-3
+                    text-sm
+                    text-muted-foreground
+                    shadow-2xl
+                  "
+                >
+                  No residents found
+                </div>
+              )}
+          </div>
+
+          {/* SELECTED RESIDENT */}
+
+          {selectedResident && (
+            <div
+              className="
+                mt-2
+                flex
+                items-center
+                gap-2
+                rounded-xl
+                border
+                border-emerald-500/20
+                bg-emerald-500/10
+                px-3
+                py-2
+                text-sm
+                text-emerald-600
+              "
+            >
+              <span>✓</span>
+
+              <span className="font-semibold">
+                {selectedResident.full_name}
+              </span>
+
+              <span className="text-muted-foreground">selected</span>
+            </div>
+          )}
         </div>
 
         {/* =====================================================
@@ -300,8 +509,6 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
               focus-within:ring-brand/10
             "
           >
-            {/* Minus */}
-
             <button
               type="button"
               onClick={() => handleMaxUsesChange(maxUses - 1)}
@@ -326,8 +533,6 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
               −
             </button>
 
-            {/* Input */}
-
             <input
               type="number"
               min={1}
@@ -348,8 +553,6 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
                 focus:ring-0
               "
             />
-
-            {/* Plus */}
 
             <button
               type="button"
@@ -539,9 +742,7 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
         </div>
       </div>
 
-      {/* =====================================================
-          GENERATE BUTTON
-      ===================================================== */}
+      {/* GENERATE BUTTON */}
 
       <div className="flex justify-end mt-6">
         <button

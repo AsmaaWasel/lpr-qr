@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Share2, QrCode, Copy, Check, RotateCcw, Loader2 } from "lucide-react";
 import { format } from "date-fns";
-import { QRFormData } from "./QrForm";
+import { QRFormData } from "./Qrform";
 
 // =====================================================
 // TYPES
@@ -58,7 +58,6 @@ export default function QRDisplay({
 
     const imageUrl = getQrImageUrl();
     const {
-      buildingNumber,
       residentId,
       maxUses,
       visitorFullName,
@@ -70,7 +69,7 @@ export default function QRDisplay({
 
     const message = `SMARTGATE QR Access Code
 
-Building Number: ${qrData.building_number ?? buildingNumber}
+
 Resident ID: ${qrData.resident_id ?? residentId}
 Visitor Name: ${qrData.visitor_full_name ?? visitorFullName}
 Visitor National ID: ${qrData.visitor_national_id ?? visitorNationalId}
@@ -166,9 +165,6 @@ ${imageUrl}`;
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-2 py-1.5">
                 <p className="text-white/60 text-[8px] text-center uppercase tracking-wider">
                   Building
-                </p>
-                <p className="text-white text-xs font-bold text-center truncate">
-                  {qrData.building_number ?? formData.buildingNumber}
                 </p>
               </div>
 

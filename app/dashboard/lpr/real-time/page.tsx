@@ -5,7 +5,7 @@ import { getPlates } from "@/services/plate";
 import { getGateEntry, getGates } from "@/services/gate";
 import { openGate, closeGate } from "@/services/access-control";
 import Image from "next/image";
-import Link from "next/link";
+
 import { usePathname } from "next/navigation";
 
 import { GateData, GateEntry } from "@/modules/types/gateEntry";
@@ -1208,8 +1208,9 @@ export default function LiveDemoPage() {
                   {gateLoading ? "..." : "Open gate"}
                 </button>
 
+                {/* ✅ تم تغيير هذا الزر من "Feed" إلى "Close Gate" */}
                 <button
-                  disabled={!selectedGate || gateLoading}
+                  disabled={!selectedGate || gateLoading || !gateOpen}
                   onClick={async () => {
                     if (!selectedGate) return;
                     try {
@@ -1236,9 +1237,9 @@ export default function LiveDemoPage() {
                       setGateLoading(false);
                     }
                   }}
-                  className="flex-1 bg-[#7C93B4;] text-white   py-2 rounded-xl  transition-all disabled:opacity-50 font-[700] flex items-center justify-center gap-2 text-lg"
+                  className="flex-1 bg-rose-500/20 text-rose-400 border border-rose-500/30 py-2 rounded-xl transition-all disabled:opacity-50 font-[700] flex items-center justify-center gap-2 text-lg hover:bg-rose-500/30"
                 >
-                  {gateLoading ? "..." : "Feed"}
+                  {gateLoading ? "..." : "Close Gate"}
                 </button>
               </div>
             </div>

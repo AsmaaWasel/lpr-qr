@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 
 import { ReaderFormData } from "@/modules/types/camera";
-import { getGates } from "@/services/gate";
+
 
 type Gate = {
   id: number;
@@ -15,6 +15,16 @@ type Props = {
   editing?: Partial<ReaderFormData> | null;
   onClose: () => void;
   onSubmit: (data: ReaderFormData) => void | Promise<void>;
+};
+
+type FormErrors = {
+  gate_id?: string;
+  reader_type?: string;
+  username?: string;
+  password?: string;
+  ip_address?: string;
+  port?: string;
+  add_string_to_url?: string;
 };
 
 export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
@@ -32,9 +42,12 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
     add_string_to_url: editing?.add_string_to_url ?? "",
   });
 
+  const [errors, setErrors] = useState<FormErrors>({});
+
   // =========================
   // GET GATES
   // =========================
+
   useEffect(() => {
     const fetchGates = async () => {
       try {
@@ -51,6 +64,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
   // =========================
   // HANDLE CHANGE
   // =========================
+
   const handleChange = <K extends keyof ReaderFormData>(
     key: K,
     value: ReaderFormData[K],
@@ -59,13 +73,21 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
       ...prev,
       [key]: value,
     }));
+
+    // Clear error for changed field
+    setErrors((prev) => ({
+      ...prev,
+      [key]: undefined,
+    }));
   };
 
   // =========================
   // GATE CHANGE
   // =========================
+
   const handleGateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const gateId = Number(e.target.value);
+
     const selectedGate = gates.find((gate) => gate.id === gateId);
 
     setForm((prev) => ({
@@ -73,16 +95,23 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
       gate_id: gateId,
       location: selectedGate?.name || "",
     }));
+
+    setErrors((prev) => ({
+      ...prev,
+      gate_id: undefined,
+    }));
   };
 
   // =========================
   // READER TYPE
   // =========================
+
   const isCamera = form.reader_type === "CAMERA";
 
   // =========================
   // INPUT STYLE
   // =========================
+
   const inputClassName = `
     w-full
     h-12
@@ -108,6 +137,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
   // =========================
   // LABEL STYLE
   // =========================
+
   const labelClassName = `
     block
     text-sm
@@ -115,23 +145,120 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
     text-foreground
   `;
 
+  const errorClassName = `
+    mt-1
+    text-sm
+    font-medium
+    text-red-500
+  `;
+
+  // =========================
+  // VALIDATE IP
+  // =========================
+
+  const isValidIp = (ip: string) => {
+    const parts = ip.trim().split(".");
+
+    if (parts.length !== 4) {
+      return false;
+    }
+
+    return parts.every((part) => {
+      if (!/^\d+$/.test(part)) {
+        return false;
+      }
+
+      const number = Number(part);
+
+      return number >= 0 && number <= 255;
+    });
+  };
+
+  // =========================
+  // VALIDATION
+  // =========================
+
+  const validateForm = (): FormErrors => {
+    const newErrors: FormErrors = {};
+
+    // Gate
+    if (!form.gate_id || form.gate_id <= 0) {
+      newErrors.gate_id = "Please select a gate";
+    }
+
+    // Reader Type
+    if (!form.reader_type?.trim()) {
+      newErrors.reader_type = "Please select reader type";
+    } else if (
+      form.reader_type !== "CAMERA" &&
+      form.reader_type !== "QRREADER"
+    ) {
+      newErrors.reader_type = "Invalid reader type";
+    }
+
+    // IP Address
+    if (!form.ip_address?.trim()) {
+      newErrors.ip_address = "IP address is required";
+    } else if (!isValidIp(form.ip_address)) {
+      newErrors.ip_address = "Please enter a valid IP address";
+    }
+
+    // Port
+    if (!form.port || Number(form.port) <= 0) {
+      newErrors.port = "Port is required";
+    } else if (Number(form.port) < 1 || Number(form.port) > 65535) {
+      newErrors.port = "Port must be between 1 and 65535";
+    }
+
+    // Camera specific validation
+    if (isCamera) {
+      // Username
+      if (!form.username?.trim()) {
+        newErrors.username = "Camera username is required";
+      } else if (form.username.trim().length < 2) {
+        newErrors.username = "Username must be at least 2 characters";
+      }
+
+      // Password
+      if (!form.password?.trim()) {
+        newErrors.password = "Camera password is required";
+      } else if (form.password.length < 4) {
+        newErrors.password = "Password must be at least 4 characters";
+      }
+    }
+
+    return newErrors;
+  };
+
   // =========================
   // SAVE
   // =========================
-  const handleSave = async () => {
-    const selectedGate = gates.find((gate) => gate.id === form.gate_id);
 
-    if (!selectedGate) {
-      alert("Please select a gate");
+  const handleSave = async () => {
+    const validationErrors = validateForm();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
     }
 
-    await onSubmit({
+    const selectedGate = gates.find((gate) => gate.id === form.gate_id);
+
+    if (!selectedGate) {
+      setErrors({
+        gate_id: "Please select a valid gate",
+      });
+      return;
+    }
+
+    const submitData: ReaderFormData = {
       ...form,
       gate_id: selectedGate.id,
       location: selectedGate.name,
       port: Number(form.port),
-    });
+    };
+
+    await onSubmit(submitData);
   };
 
   return (
@@ -167,6 +294,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
         {/* =========================
             HEADER
         ========================== */}
+
         <div className="mb-6 flex items-start justify-between">
           <div>
             <h2 className="text-2xl font-bold text-foreground">
@@ -204,6 +332,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
         {/* =========================
             FORM
         ========================== */}
+
         <div
           className="
             grid
@@ -216,13 +345,17 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
           {/* =========================
               GATE
           ========================== */}
+
           <div className="space-y-1.5">
             <label className={labelClassName}>Gate</label>
 
             <select
               value={form.gate_id || ""}
               onChange={handleGateChange}
-              className={inputClassName}
+              className={`
+                ${inputClassName}
+                ${errors.gate_id ? "border-red-500 focus:border-red-500" : ""}
+              `}
             >
               <option value="">Select gate</option>
 
@@ -232,28 +365,47 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
                 </option>
               ))}
             </select>
+
+            {errors.gate_id && (
+              <p className={errorClassName}>{errors.gate_id}</p>
+            )}
           </div>
 
           {/* =========================
               READER TYPE
           ========================== */}
+
           <div className="space-y-1.5">
             <label className={labelClassName}>Reader Type</label>
 
             <select
               value={form.reader_type}
               onChange={(e) => handleChange("reader_type", e.target.value)}
-              className={inputClassName}
+              className={`
+                ${inputClassName}
+                ${
+                  errors.reader_type
+                    ? "border-red-500 focus:border-red-500"
+                    : ""
+                }
+              `}
             >
               <option value="">Select reader type</option>
+
               <option value="CAMERA">Camera</option>
+
               <option value="QRREADER">QR Reader</option>
             </select>
+
+            {errors.reader_type && (
+              <p className={errorClassName}>{errors.reader_type}</p>
+            )}
           </div>
 
           {/* =========================
               USERNAME
           ========================== */}
+
           {isCamera && (
             <div className="space-y-1.5">
               <label className={labelClassName}>Username</label>
@@ -263,14 +415,24 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
                 placeholder="Enter camera username"
                 value={form.username}
                 onChange={(e) => handleChange("username", e.target.value)}
-                className={inputClassName}
+                className={`
+                  ${inputClassName}
+                  ${
+                    errors.username ? "border-red-500 focus:border-red-500" : ""
+                  }
+                `}
               />
+
+              {errors.username && (
+                <p className={errorClassName}>{errors.username}</p>
+              )}
             </div>
           )}
 
           {/* =========================
               PASSWORD
           ========================== */}
+
           {isCamera && (
             <div className="space-y-1.5">
               <label className={labelClassName}>Password</label>
@@ -280,14 +442,24 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
                 placeholder="Enter camera password"
                 value={form.password}
                 onChange={(e) => handleChange("password", e.target.value)}
-                className={inputClassName}
+                className={`
+                  ${inputClassName}
+                  ${
+                    errors.password ? "border-red-500 focus:border-red-500" : ""
+                  }
+                `}
               />
+
+              {errors.password && (
+                <p className={errorClassName}>{errors.password}</p>
+              )}
             </div>
           )}
 
           {/* =========================
               IP ADDRESS
           ========================== */}
+
           <div className="space-y-1.5">
             <label className={labelClassName}>IP Address</label>
 
@@ -296,28 +468,46 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
               value={form.ip_address}
               onChange={(e) => handleChange("ip_address", e.target.value)}
               placeholder="Enter IP address (e.g., 10.20.1.11)"
-              className={inputClassName}
+              className={`
+                ${inputClassName}
+                ${
+                  errors.ip_address ? "border-red-500 focus:border-red-500" : ""
+                }
+              `}
             />
+
+            {errors.ip_address && (
+              <p className={errorClassName}>{errors.ip_address}</p>
+            )}
           </div>
 
           {/* =========================
               PORT
           ========================== */}
+
           <div className="space-y-1.5">
             <label className={labelClassName}>Port</label>
 
             <input
               type="number"
+              min={1}
+              max={65535}
               value={form.port || ""}
               onChange={(e) => handleChange("port", Number(e.target.value))}
               placeholder="Enter port number (e.g., 8080)"
-              className={inputClassName}
+              className={`
+                ${inputClassName}
+                ${errors.port ? "border-red-500 focus:border-red-500" : ""}
+              `}
             />
+
+            {errors.port && <p className={errorClassName}>{errors.port}</p>}
           </div>
 
           {/* =========================
               ADD SUB URL
           ========================== */}
+
           <div className="space-y-1.5">
             <label className={labelClassName}>Add SubURL</label>
 
@@ -335,6 +525,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
           {/* =========================
               NOTES
           ========================== */}
+
           <div className="space-y-1.5 md:col-span-2">
             <label className={labelClassName}>Notes</label>
 
@@ -356,6 +547,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
         {/* =========================
             ACTIONS
         ========================== */}
+
         <div
           className="
             mt-7

@@ -18,6 +18,7 @@ import { CrudShell, QR_TABS } from "@/shared/ui/voom";
 import { Camera, CameraFormData } from "@/modules/types/camera";
 
 import ReaderForm from "./ReaderForm";
+import ReaderTable from "./ReaderTable";
 
 export default function CameraCRUD() {
   const [cameras, setCameras] = useState<Camera[]>([]);
@@ -160,7 +161,7 @@ export default function CameraCRUD() {
         onPrevious={() => setCurrentPage((p) => Math.max(1, p - 1))}
         onNext={() => setCurrentPage((p) => Math.min(totalPages || 1, p + 1))}
       >
-        <CameraTable
+        <ReaderTable
           data={paginatedCameras}
           selectedId={selectedId}
           onSelect={(id) => setSelectedId((prev) => (prev === id ? null : id))}

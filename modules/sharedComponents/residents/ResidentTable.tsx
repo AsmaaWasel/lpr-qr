@@ -409,21 +409,6 @@ export default function ResidentTable({
                   NATIONAL ID
                 </th>
 
-                {/* TYPE */}
-                <th
-                  className="
-                    px-6
-                    py-4
-                    text-lg
-                    font-bold
-                    uppercase
-                    tracking-wide
-                    text-muted-foreground
-                  "
-                >
-                  TYPE
-                </th>
-
                 {/* PLATES */}
                 <th
                   className="
@@ -609,23 +594,6 @@ export default function ResidentTable({
                           "
                         >
                           {resident.national_id ?? "—"}
-                        </span>
-                      </td>
-
-                      {/* TYPE */}
-                      <td className="px-6 py-4">
-                        <span
-                          className={`
-                            inline-flex
-                            rounded-full
-                            px-3
-                            py-1
-                            text-[16px]
-                            font-[500]
-                            ${getTypeColor(resident.type)}
-                          `}
-                        >
-                          {resident.type}
                         </span>
                       </td>
 

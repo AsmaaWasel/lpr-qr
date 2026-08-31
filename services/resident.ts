@@ -99,3 +99,15 @@ export const toggleResidentStatus = async (id: number, status: boolean) => {
   const res = await api.patch(`${API}/${id}/subscribe/${status}`);
   return res.data;
 };
+
+// =========================
+// CHANGE PASSWORD
+// =========================
+
+export const changeResidentPassword = async (data: {
+  current_password: string;
+  new_password: string;
+}) => {
+  const res = await api.patch(`${API}/change-password`, data);
+  return res.data;
+};

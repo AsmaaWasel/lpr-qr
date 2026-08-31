@@ -1,12 +1,10 @@
 "use client";
 
 import { Moon, Sun, Globe2 } from "lucide-react";
-
 import { useTheme } from "next-themes";
-
 import { usePathname, useRouter } from "next/navigation";
-
 import { useAuth } from "@/shared/context/AuthContext";
+import { useEffect, useState } from "react";
 
 const normalize = (p: string) => p.split("?")[0].replace(/\/$/, "");
 
@@ -87,6 +85,21 @@ const PAGE_INFO: Record<
     title: "Departments",
     description: "Manage system departments",
   },
+
+  "/dashboard/units": {
+    title: "Units",
+    description: "Manage system units",
+  },
+
+  "/dashboard/profile": {
+    title: "Profile",
+    description: "Manage your profile information",
+  },
+
+  "/dashboard/resident-profile": {
+    title: "Profile",
+    description: "Manage your profile information",
+  },
 };
 
 export default function Header() {
@@ -98,6 +111,45 @@ export default function Header() {
 
   const current = normalize(pathname);
   const isDark = resolvedTheme === "dark";
+
+  const [role, setRole] = useState<string>("");
+
+  // =========================
+  // GET ROLE FROM LOCAL STORAGE
+  // =========================
+
+  useEffect(() => {
+    try {
+      /*
+       * لو الـ user محفوظ بالشكل:
+       * localStorage.setItem("user", JSON.stringify(user))
+       */
+
+      const storedUser = localStorage.getItem("user");
+
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+
+        if (parsedUser?.role) {
+          setRole(String(parsedUser.role).toUpperCase());
+          return;
+        }
+      }
+
+      /*
+       * لو الـ role نفسه محفوظ:
+       * localStorage.setItem("role", user.role)
+       */
+
+      const storedRole = localStorage.getItem("role");
+
+      if (storedRole) {
+        setRole(storedRole.toUpperCase());
+      }
+    } catch (error) {
+      console.error("Failed to read user role:", error);
+    }
+  }, []);
 
   // =========================
   // PAGE INFO
@@ -160,11 +212,40 @@ export default function Header() {
       .toUpperCase() || "US";
 
   // =========================
+  // PROFILE NAVIGATION
+  // =========================
+
+  const handleProfileClick = () => {
+    const currentRole = role.toUpperCase();
+
+    if (
+      currentRole === "ADMIN" ||
+      currentRole === "SUPER_ADMIN" ||
+      currentRole === "SUPERADMIN"
+    ) {
+      router.push("/dashboard/profile");
+      return;
+    }
+
+    if (currentRole === "RESIDENT") {
+      router.push("/dashboard/resident-profile");
+      return;
+    }
+
+    // fallback
+    router.push("/dashboard/profile");
+  };
+
+  // =========================
   // LOGOUT
   // =========================
 
   const handleLogout = () => {
     logout();
+
+    localStorage.removeItem("user");
+    localStorage.removeItem("role");
+
     router.push("/");
   };
 
@@ -204,10 +285,9 @@ export default function Header() {
           className="
             mt-0.5
             text-[15px]
-            text-[##7C93B4]
             font-[600]
             leading-relaxed
-            text-muted-foreground
+            text-[#7C93B4]
           "
         >
           {page.description}
@@ -234,13 +314,10 @@ export default function Header() {
             md:flex
           "
         >
-          {/* Red blinking light */}
-
           <span className="relative flex h-2.5 w-2.5">
             <span
               className="
                 absolute
-              
                 inline-flex
                 h-full
                 w-full
@@ -248,30 +325,22 @@ export default function Header() {
                 rounded-full
                 bg-red-500
                 opacity-75
-               
               "
             />
 
             <span
               className="
                 relative
-              
                 inline-flex
                 h-2.5
                 w-2.5
                 rounded-full
                 bg-red-500
-                
               "
             />
           </span>
 
-          <span
-            className="text-[14px] font-[600] text-[#D64B68] font-['sans-serif']
-"
-          >
-            Fault
-          </span>
+          <span className="text-[14px] font-[600] text-[#D64B68]">Fault</span>
         </div>
 
         {/* ================= TIME ================= */}
@@ -291,8 +360,6 @@ export default function Header() {
             md:flex
           "
         >
-          {/* Blinking time light */}
-
           <span className="relative flex h-1.5 w-1.5">
             <span
               className="
@@ -346,8 +413,6 @@ export default function Header() {
           "
           aria-label="Toggle theme"
         >
-          {/* Sun */}
-
           <div
             className={`
               flex
@@ -366,8 +431,6 @@ export default function Header() {
           >
             <Sun size={15} />
           </div>
-
-          {/* Moon */}
 
           <div
             className={`
@@ -409,13 +472,15 @@ export default function Header() {
           "
         >
           <Globe2 size={16} />
-
           <span>EN / ع</span>
         </button>
 
-        {/* ================= AVATAR ================= */}
+        {/* ================= PROFILE ================= */}
 
-        <div
+        <button
+          type="button"
+          onClick={handleProfileClick}
+          title="Open Profile"
           className="
             flex
             h-10
@@ -427,31 +492,32 @@ export default function Header() {
             text-sm
             font-bold
             text-white
+            transition
+            hover:scale-105
+            hover:opacity-90
+            active:scale-95
           "
         >
           {initials}
-        </div>
+        </button>
 
         {/* ================= LOGOUT ================= */}
 
-        {/* ================= LOGOUT ================= */}
         <button
           type="button"
           onClick={handleLogout}
           className="
-    hidden
-    items-center
-    gap-1.5
-    ml-2
-    text-base
-    font-extrabold
-    text-danger
-    transition
-    hover:text-danger
-    md:flex
-  "
+            hidden
+            items-center
+            gap-1.5
+            ml-2
+            text-base
+            font-extrabold
+            transition
+            md:flex
+          "
         >
-          <span className="text-[#D64B68] font-[600] text-[15px]">Logout</span>
+          <span className="text-[15px] font-[600] text-[#D64B68]">Logout</span>
         </button>
       </div>
     </header>
