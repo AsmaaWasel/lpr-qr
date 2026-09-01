@@ -16,7 +16,6 @@ import RegisterForm from "@/modules/sharedComponents/auth/RegisterForm";
 import GateAnimation from "@/components/login/GateAnimation";
 import LoginForm from "@/components/login/LoginForm";
 
-
 /* =========================================================
    FEATURES
 ========================================================= */
@@ -69,12 +68,12 @@ export default function LoginPage() {
 
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      const userRole = localStorage.getItem("userRole");
+      const userRole = localStorage.getItem("role");
 
-      const isAdmin = userRole === "admin" || userRole === "superAdmin";
-
-      if (isAdmin) {
+      if (userRole === "admin" || userRole === "superAdmin") {
         router.push("/");
+      } else if (userRole === "resident") {
+        router.push("/dashboard/qr-resident/qr-generator");
       } else {
         router.push("/dashboard");
       }

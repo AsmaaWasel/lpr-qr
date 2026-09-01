@@ -4,9 +4,24 @@ import api from "./api";
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 const API = `${API_BASE}`;
 
-// GENERATE QR
+export type CreateResidentQRData = {
+  max_uses: number;
+  start_at: string;
+  expiry_date: string;
+  visitor_national_id: string;
+  visitor_phone_number: string;
+  visitor_full_name: string;
+};
+
+// GENERATE ADMIN QR
 export const generateQR = async (data: { max_uses: number }) => {
-  const res = await api.post(`${API}/qr/admin/generate`, data);
+  const res = await api.post(`${API}/qr/admin/generate/visitor`, data);
+  return res.data;
+};
+// GENERATE RESIDENT QR
+export const createResidentQR = async (data: CreateResidentQRData) => {
+  const res = await api.post(`${API}/qr/resident/generate/visitor`, data);
+
   return res.data;
 };
 

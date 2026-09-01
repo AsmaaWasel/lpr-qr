@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+
 import { Share2, QrCode, Copy, Check, RotateCcw, Loader2 } from "lucide-react";
-import { format } from "date-fns";
+
 import { QRFormData } from "./Qrform";
 
 // =====================================================
@@ -45,46 +46,62 @@ export default function QRDisplay({
   // =====================================================
 
   const getQrImageUrl = () => {
-    if (!qrData) return "";
+    if (!qrData?.qr_image) return "";
+
     return `http://127.0.0.1:8000/${qrData.qr_image}`;
   };
 
   // =====================================================
-  // SHARE WHATSAPP
+  // SHARE QR IMAGE
   // =====================================================
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (!qrData) return;
 
     const imageUrl = getQrImageUrl();
-    const {
-      residentId,
-      maxUses,
-      visitorFullName,
-      visitorNationalId,
-      visitorPhoneNumber,
-      startDate,
-      expiryDate,
-    } = formData;
 
-    const message = `SMARTGATE QR Access Code
+    try {
+      // تحميل صورة الـ QR من الـ backend
+      const response = await fetch(imageUrl);
 
+      if (!response.ok) {
+        throw new Error("Failed to fetch QR image");
+      }
 
-Resident ID: ${qrData.resident_id ?? residentId}
-Visitor Name: ${qrData.visitor_full_name ?? visitorFullName}
-Visitor National ID: ${qrData.visitor_national_id ?? visitorNationalId}
-Visitor Phone: ${qrData.visitor_phone_number ?? visitorPhoneNumber}
-Start Date: ${startDate ? format(startDate, "dd/MM/yyyy") : "-"}
-Expiry Date: ${expiryDate ? format(expiryDate, "dd/MM/yyyy") : "-"}
-Max Uses: ${qrData.max_uses ?? maxUses}
+      const blob = await response.blob();
 
-${imageUrl}`;
+      // تحويل الصورة إلى File
+      const file = new File([blob], "qr-code.png", {
+        type: blob.type || "image/png",
+      });
 
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
+      // مشاركة الصورة فقط
+      // لا يوجد text
+      // لا يوجد title
+      // لا يوجد URL
+      if (
+        navigator.share &&
+        navigator.canShare &&
+        navigator.canShare({
+          files: [file],
+        })
+      ) {
+        await navigator.share({
+          files: [file],
+        });
+
+        return;
+      }
+
+      // المتصفح لا يدعم مشاركة الملفات
+      console.error("This browser/device does not support sharing images.");
+    } catch (error) {
+      console.error("Share error:", error);
+    }
   };
 
   // =====================================================
-  // COPY LINK
+  // COPY IMAGE URL
   // =====================================================
 
   const handleCopy = async () => {
@@ -94,10 +111,14 @@ ${imageUrl}`;
 
     try {
       await navigator.clipboard.writeText(imageUrl);
+
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error(err);
+
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Copy error:", error);
     }
   };
 
@@ -108,172 +129,281 @@ ${imageUrl}`;
   return (
     <div
       className="
-    bg-[#132f49]
-   
-    border
-    border-border
-    rounded-2xl
-    p-3
-    flex
-    items-center
-    justify-center
-    w-full
-    
-    mx-auto
-    min-h-[300px]
-    max-h-[350px]
-  "
+        w-full
+        min-h-[300px]
+        rounded-2xl
+        border
+        border-border
+        bg-[#132f49]
+        p-4
+        flex
+        items-center
+        justify-center
+        overflow-hidden
+      "
     >
       {!qrData ? (
-        <div className="flex flex-col items-center justify-center py-4">
+        // =================================================
+        // EMPTY / LOADING STATE
+        // =================================================
+
+        <div className="flex flex-col items-center justify-center py-8 text-center">
           {loading ? (
             <>
-              <Loader2 size={32} className="text-white mb-2 animate-spin" />
-              <h2 className="text-white text-sm font-semibold">
+              <Loader2 size={32} className="mb-3 animate-spin text-white" />
+
+              <h2 className="text-sm font-semibold text-white">
                 Generating QR...
               </h2>
-              <p className="text-white/60 text-xs mt-1">Please wait</p>
+
+              <p className="mt-1 text-xs text-white/60">Please wait</p>
             </>
           ) : (
             <>
-              <QrCode size={32} className="text-white/50 mb-2" />
-              <h2 className="text-white text-[20px] font-[700]">
-                No QR Generated
-              </h2>
-              <p className="text-white/50 text-[18px] text-center mt-1 ">
+              <QrCode size={36} className="mb-3 text-white/50" />
+
+              <h2 className="text-xl font-bold text-white">No QR Generated</h2>
+
+              <p className="mt-2 max-w-[320px] text-sm text-white/50">
                 Fill the information above and generate a QR code
               </p>
             </>
           )}
         </div>
       ) : (
-        <div className="flex flex-row items-center gap-3 w-full">
-          {/* QR IMAGE - Smaller */}
-          <div className="bg-white p-2 rounded-lg shadow-lg flex-shrink-0">
+        // =================================================
+        // QR RESULT
+        // =================================================
+
+        <div
+          className="
+            flex
+            w-full
+            flex-col
+            items-center
+            justify-center
+            gap-5
+            sm:flex-row
+            sm:items-center
+          "
+        >
+          {/* ============================================= */}
+          {/* QR IMAGE */}
+          {/* ============================================= */}
+
+          <div
+            className="
+              flex
+              h-[180px]
+              w-[180px]
+              flex-shrink-0
+              items-center
+              justify-center
+              rounded-xl
+              bg-white
+              p-2
+              shadow-lg
+              sm:h-[200px]
+              sm:w-[200px]
+            "
+          >
             <img
               src={getQrImageUrl()}
-              alt="QR"
-              className="w-[700px] h-[700px] object-contain"
+              alt="QR Code"
+              className="
+                h-full
+                w-full
+                rounded-md
+                object-contain
+              "
             />
           </div>
 
-          {/* INFO & ACTIONS */}
-          <div className="flex-1 min-w-0">
-            {/* QR INFO - Compact Grid */}
-            <div className="grid grid-cols-2 gap-1.5 mb-2">
+          {/* ============================================= */}
+          {/* INFO + ACTIONS */}
+          {/* ============================================= */}
+
+          <div className="w-full min-w-0 flex-1">
+            {/* QR INFO */}
+
+            <div className="mb-3 grid grid-cols-2 gap-2">
               {/* Building */}
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-2 py-1.5">
-                <p className="text-white/60 text-[8px] text-center uppercase tracking-wider">
+
+              <div
+                className="
+                  rounded-lg
+                  border
+                  border-white/20
+                  bg-white/10
+                  px-3
+                  py-2
+                  backdrop-blur-sm
+                "
+              >
+                <p className="text-center text-[9px] font-medium uppercase tracking-wider text-white/60">
                   Building
+                </p>
+
+                <p className="mt-1 truncate text-center text-xs font-bold text-white">
+                  {qrData.building_number ?? "-"}
                 </p>
               </div>
 
               {/* Resident */}
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-2 py-1.5">
-                <p className="text-white/60 text-[8px] text-center uppercase tracking-wider">
+
+              <div
+                className="
+                  rounded-lg
+                  border
+                  border-white/20
+                  bg-white/10
+                  px-3
+                  py-2
+                  backdrop-blur-sm
+                "
+              >
+                <p className="text-center text-[9px] font-medium uppercase tracking-wider text-white/60">
                   Resident
                 </p>
-                <p className="text-white text-xs font-bold text-center truncate">
-                  {qrData.resident_id ?? formData.residentId}
+
+                <p className="mt-1 truncate text-center text-xs font-bold text-white">
+                  {qrData.resident_id ?? formData.residentId ?? "-"}
                 </p>
               </div>
 
               {/* Visitor */}
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-2 py-1.5">
-                <p className="text-white/60 text-[8px] text-center uppercase tracking-wider">
+
+              <div
+                className="
+                  rounded-lg
+                  border
+                  border-white/20
+                  bg-white/10
+                  px-3
+                  py-2
+                  backdrop-blur-sm
+                "
+              >
+                <p className="text-center text-[9px] font-medium uppercase tracking-wider text-white/60">
                   Visitor
                 </p>
-                <p className="text-white text-xs font-bold text-center truncate">
-                  {qrData.visitor_full_name ?? formData.visitorFullName}
+
+                <p className="mt-1 truncate text-center text-xs font-bold text-white">
+                  {qrData.visitor_full_name ?? formData.visitorFullName ?? "-"}
                 </p>
               </div>
 
               {/* Max Uses */}
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-2 py-1.5">
-                <p className="text-white/60 text-[8px] text-center uppercase tracking-wider">
+
+              <div
+                className="
+                  rounded-lg
+                  border
+                  border-white/20
+                  bg-white/10
+                  px-3
+                  py-2
+                  backdrop-blur-sm
+                "
+              >
+                <p className="text-center text-[9px] font-medium uppercase tracking-wider text-white/60">
                   Max Uses
                 </p>
-                <p className="text-white text-xs font-bold text-center">
-                  {qrData.max_uses ?? formData.maxUses}
+
+                <p className="mt-1 text-center text-xs font-bold text-white">
+                  {qrData.max_uses ?? formData.maxUses ?? "-"}
                 </p>
               </div>
             </div>
 
-            {/* ACTIONS - Smaller */}
-            <div className="flex flex-wrap items-center gap-1.5">
-              {/* WhatsApp */}
+            {/* =========================================== */}
+            {/* ACTIONS */}
+            {/* =========================================== */}
+
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Share QR Image */}
+
               <button
+                type="button"
                 onClick={handleShare}
                 className="
                   flex
                   items-center
-                  gap-1
-                  bg-[#25D366]
-                  hover:bg-[#20BD5A]
-                  text-white
-                  px-2.5
-                  py-1
+                  gap-1.5
                   rounded-lg
-                  transition
+                  bg-[#25D366]
+                  px-3
+                  py-2
                   text-xs
                   font-medium
+                  text-white
+                  transition
+                  hover:bg-[#20BD5A]
+                  active:scale-[0.98]
                 "
               >
-                <Share2 size={12} />
+                <Share2 size={13} />
                 Share
               </button>
 
               {/* Copy */}
+
               <button
+                type="button"
                 onClick={handleCopy}
                 className="
                   flex
                   items-center
-                  gap-1
-                  bg-white/20
-                  backdrop-blur-sm
-                  hover:bg-white/30
-                  text-white
-                  px-2.5
-                  py-1
+                  gap-1.5
                   rounded-lg
-                  transition
-                  text-xs
-                  font-medium
                   border
                   border-white/20
+                  bg-white/20
+                  px-3
+                  py-2
+                  text-xs
+                  font-medium
+                  text-white
+                  backdrop-blur-sm
+                  transition
+                  hover:bg-white/30
+                  active:scale-[0.98]
                 "
               >
                 {copied ? (
-                  <Check size={12} className="text-green-400" />
+                  <Check size={13} className="text-green-400" />
                 ) : (
-                  <Copy size={12} />
+                  <Copy size={13} />
                 )}
+
                 {copied ? "Copied!" : "Copy"}
               </button>
 
               {/* New QR */}
+
               <button
+                type="button"
                 onClick={onReset}
                 className="
                   flex
                   items-center
-                  gap-1
-                  bg-transparent
+                  gap-1.5
+                  rounded-lg
                   border
                   border-white/30
-                  hover:bg-white/10
-                  text-white/80
-                  hover:text-white
-                  px-2.5
-                  py-1
-                  rounded-lg
-                  transition
+                  bg-transparent
+                  px-3
+                  py-2
                   text-xs
                   font-medium
+                  text-white/80
+                  transition
+                  hover:bg-white/10
+                  hover:text-white
+                  active:scale-[0.98]
                 "
               >
-                <RotateCcw size={12} />
+                <RotateCcw size={13} />
                 New
               </button>
             </div>

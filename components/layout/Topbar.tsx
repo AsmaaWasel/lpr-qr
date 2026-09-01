@@ -223,7 +223,7 @@ export default function Header() {
       currentRole === "SUPER_ADMIN" ||
       currentRole === "SUPERADMIN"
     ) {
-      router.push("/dashboard/profile");
+      router.push("/dashboard/admin-profile");
       return;
     }
 
@@ -233,7 +233,7 @@ export default function Header() {
     }
 
     // fallback
-    router.push("/dashboard/profile");
+    router.push("/dashboard/admin-profile");
   };
 
   // =========================

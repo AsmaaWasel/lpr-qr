@@ -146,11 +146,11 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
       newErrors.port = "Port must be between 1 and 65535";
     }
 
-    // Add SubURL
-    const subUrl = form.add_string_to_url?.trim();
+    // Add subURL
+    const subURL = form.add_string_to_url?.trim();
 
-    if (subUrl && !subUrl.startsWith("/")) {
-      newErrors.add_string_to_url = "SubURL should start with /";
+    if (subURL && !subURL.startsWith("/")) {
+      newErrors.add_string_to_url = "subURL should start with /";
     }
 
     // Notes
@@ -401,10 +401,10 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
             {errors.port && <p className={errorClassName}>{errors.port}</p>}
           </div>
 
-          {/* Add SubURL */}
+          {/* Add subURL */}
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
-              Add SubURL
+              Add subURL
             </label>
 
             <input

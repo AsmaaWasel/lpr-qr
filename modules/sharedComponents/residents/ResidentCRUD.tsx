@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import ResidentTable from "./ResidentTable";
 import ResidentForm from "./ResidentForm";
-import CredentialsForm from "./CredentialsForm";
+
 import { useToast } from "@/shared/hooks/use-toast";
 import { Resident } from "@/modules/types/resident";
 
@@ -17,6 +17,7 @@ import {
 } from "@/services/resident";
 
 import { CrudShell } from "@/shared/ui/voom";
+import CredentialsForm from "./CredentialsForm";
 
 type ResidentFormData = {
   full_name: string;
@@ -164,25 +165,25 @@ export default function ResidentCRUD() {
   // =========================
 
   const handleCredentialsSubmit = async (data: CredentialsFormData) => {
-  if (!selectedResident) return;
+    if (!selectedResident) return;
 
-  try {
-    setCredentialsLoading(true);
+    try {
+      setCredentialsLoading(true);
 
-    await addCredentials(selectedResident.id, {
-      email: data.email,
-      password: data.password,
-    });
+      await addCredentials(selectedResident.id, {
+        email: data.email,
+        password: data.password,
+      });
 
-    toast.success("Credentials added successfully");
-    setOpenCredentials(false);
-  } catch (error) {
-    console.error("Credentials error:", error);
-    toast.error("Failed to add credentials");
-  } finally {
-    setCredentialsLoading(false);
-  }
-};
+      toast.success("Credentials added successfully");
+      setOpenCredentials(false);
+    } catch (error) {
+      console.error("Credentials error:", error);
+      toast.error("Failed to add credentials");
+    } finally {
+      setCredentialsLoading(false);
+    }
+  };
   // =========================
   // STATUS CHANGE
   // =========================

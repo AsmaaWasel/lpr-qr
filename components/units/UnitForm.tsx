@@ -1,13 +1,9 @@
-
 "use client";
 
 import { useState } from "react";
 import { X } from "lucide-react";
-import {
-  Unit,
-  UnitFormData,
-  UnitType,
-} from "@/modules/types/units";
+
+import { Unit, UnitFormData, UnitType } from "@/modules/types/units";
 
 type Building = {
   id: number;
@@ -16,7 +12,7 @@ type Building = {
 
 type Props = {
   editing?: Unit | null;
-  buildings: Building[];
+  buildings?: Building[];
   onClose: () => void;
   onSubmit: (data: UnitFormData) => void | Promise<void>;
 };
@@ -30,24 +26,18 @@ type FormErrors = {
 
 export default function UnitForm({
   editing,
-  buildings,
+  buildings = [],
   onClose,
   onSubmit,
 }: Props) {
   const [name, setName] = useState(editing?.name ?? "");
 
-  const [type, setType] = useState<UnitType>(
-    editing?.type ?? "VILLA"
-  );
+  const [type, setType] = useState<UnitType>(editing?.type ?? "VILLA");
 
-  const [description, setDescription] = useState(
-    editing?.description ?? ""
-  );
+  const [description, setDescription] = useState(editing?.description ?? "");
 
   const [parentId, setParentId] = useState(
-    editing?.parent_id != null
-      ? String(editing.parent_id)
-      : ""
+    editing?.parent_id != null ? String(editing.parent_id) : "",
   );
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -69,22 +59,16 @@ export default function UnitForm({
     if (!trimmedName) {
       newErrors.name = "Unit name is required";
     } else if (trimmedName.length < 2) {
-      newErrors.name =
-        "Unit name must be at least 2 characters";
+      newErrors.name = "Unit name must be at least 2 characters";
     } else if (trimmedName.length > 100) {
-      newErrors.name =
-        "Unit name must not exceed 100 characters";
+      newErrors.name = "Unit name must not exceed 100 characters";
     }
 
     // =========================
     // TYPE
     // =========================
 
-    if (
-      type !== "BUILDING" &&
-      type !== "APARTMENT" &&
-      type !== "VILLA"
-    ) {
+    if (type !== "BUILDING" && type !== "APARTMENT" && type !== "VILLA") {
       newErrors.type = "Please select a valid unit type";
     }
 
@@ -93,29 +77,26 @@ export default function UnitForm({
     // =========================
 
     if (trimmedDescription.length > 500) {
-      newErrors.description =
-        "Description must not exceed 500 characters";
+      newErrors.description = "Description must not exceed 500 characters";
     }
 
     // =========================
     // PARENT BUILDING
-    // Only required for APARTMENT
+    // APARTMENT ONLY
     // =========================
 
     if (type === "APARTMENT") {
       if (!parentId) {
-        newErrors.parent_id =
-          "Please select a building";
+        newErrors.parent_id = "Please select a building";
       } else {
         const parsedParentId = Number(parentId);
 
         const buildingExists = buildings.some(
-          (building) => building.id === parsedParentId
+          (building) => building.id === parsedParentId,
         );
 
         if (!buildingExists) {
-          newErrors.parent_id =
-            "Please select a valid building";
+          newErrors.parent_id = "Please select a valid building";
         }
       }
     }
@@ -137,11 +118,8 @@ export default function UnitForm({
       type,
       description: description.trim(),
 
-      // Parent only exists for apartments
-      parent_id:
-        type === "APARTMENT" && parentId
-          ? Number(parentId)
-          : null,
+      // Parent building is only used for apartments
+      parent_id: type === "APARTMENT" && parentId ? Number(parentId) : null,
     });
   };
 
@@ -149,12 +127,10 @@ export default function UnitForm({
   // TYPE CHANGE
   // =========================
 
-  const handleTypeChange = (
-    newType: UnitType
-  ) => {
+  const handleTypeChange = (newType: UnitType) => {
     setType(newType);
 
-    // Parent is only valid for apartments
+    // Parent building is only valid for apartments
     if (newType !== "APARTMENT") {
       setParentId("");
     }
@@ -241,9 +217,7 @@ export default function UnitForm({
             </h2>
 
             <p className="mt-2 text-sm md:text-base font-medium text-muted-foreground">
-              {editing
-                ? "Update unit information"
-                : "Add a new system unit"}
+              {editing ? "Update unit information" : "Add a new system unit"}
             </p>
           </div>
 
@@ -274,13 +248,11 @@ export default function UnitForm({
         ========================= */}
 
         <div className="space-y-6">
-
           {/* =========================
               NAME + TYPE
           ========================= */}
 
           <div className="grid grid-cols-1 md:grid-cols-[1fr_220px] gap-5">
-
             {/* NAME */}
 
             <div className="space-y-2">
@@ -304,9 +276,7 @@ export default function UnitForm({
                 placeholder="Building A / Apartment 101 / Villa 1"
                 maxLength={100}
                 className={`${inputClassName} ${
-                  errors.name
-                    ? errorInputClassName
-                    : ""
+                  errors.name ? errorInputClassName : ""
                 }`}
               />
 
@@ -326,28 +296,16 @@ export default function UnitForm({
 
               <select
                 value={type}
-                onChange={(e) =>
-                  handleTypeChange(
-                    e.target.value as UnitType
-                  )
-                }
+                onChange={(e) => handleTypeChange(e.target.value as UnitType)}
                 className={`${inputClassName} ${
-                  errors.type
-                    ? errorInputClassName
-                    : ""
+                  errors.type ? errorInputClassName : ""
                 }`}
               >
-                <option value="BUILDING">
-                  BUILDING
-                </option>
+                <option value="BUILDING">BUILDING</option>
 
-                <option value="APARTMENT">
-                  APARTMENT
-                </option>
+                <option value="APARTMENT">APARTMENT</option>
 
-                <option value="VILLA">
-                  VILLA
-                </option>
+                <option value="VILLA">VILLA</option>
               </select>
 
               {errors.type && (
@@ -382,20 +340,13 @@ export default function UnitForm({
                   }
                 }}
                 className={`${inputClassName} ${
-                  errors.parent_id
-                    ? errorInputClassName
-                    : ""
+                  errors.parent_id ? errorInputClassName : ""
                 }`}
               >
-                <option value="">
-                  Select a building
-                </option>
+                <option value="">Select a building</option>
 
                 {buildings.map((building) => (
-                  <option
-                    key={building.id}
-                    value={building.id}
-                  >
+                  <option key={building.id} value={building.id}>
                     {building.name}
                   </option>
                 ))}
@@ -404,6 +355,14 @@ export default function UnitForm({
               {errors.parent_id && (
                 <p className="text-sm font-medium text-red-500">
                   {errors.parent_id}
+                </p>
+              )}
+
+              {/* No Buildings */}
+
+              {buildings.length === 0 && (
+                <p className="text-xs font-medium text-muted-foreground">
+                  No buildings available
                 </p>
               )}
             </div>
@@ -451,11 +410,7 @@ export default function UnitForm({
                 min-h-[120px]
                 resize-none
                 py-3
-                ${
-                  errors.description
-                    ? errorInputClassName
-                    : ""
-                }
+                ${errors.description ? errorInputClassName : ""}
               `}
             />
 
@@ -472,7 +427,6 @@ export default function UnitForm({
         ========================= */}
 
         <div className="mt-8 flex justify-end gap-3 border-t border-border pt-6">
-
           <button
             type="button"
             onClick={onClose}
@@ -515,4 +469,3 @@ export default function UnitForm({
     </div>
   );
 }
-

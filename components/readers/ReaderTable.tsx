@@ -347,7 +347,7 @@ export default function ReaderTable({ data, selectedId, onSelect }: Props) {
                       {/* ================= ACTION ================= */}
                       <td className="px-6 py-4">
                         <Link
-                          href={`/dashboard/lpr/cameras/${camera.id}`}
+                          href={`/dashboard/qr/qr-readers/${camera.id}`}
                           onClick={(e) => e.stopPropagation()}
                           className="
                             inline-flex

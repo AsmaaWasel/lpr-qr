@@ -2,117 +2,61 @@
 
 import { useState } from "react";
 
-import { generateQR } from "@/services/qr";
+import { createResidentQR } from "@/services/qr";
+import QRResidentDisplay, { QRResidentResponse } from "@/components/qr/QRResidentDisplay";
+import QRResidentForm, { QRResidentFormData } from "@/components/qr/QRResientForm";
 
-import { QR_TABS, PillTabs } from "@/shared/ui/voom";
 
-import QRDisplay from "@/components/qr/QrDisplay";
-import QRForm, { QRFormData } from "@/components/qr/Qrform";
 
 // =====================================================
 // MAIN PAGE
 // =====================================================
 
-export default function QRPage() {
+export default function QRResidentPage() {
   const [loading, setLoading] = useState(false);
-  const [qrData, setQrData] = useState<QRResponse | null>(null);
+  const [qrData, setQrData] = useState<QRResidentResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  const [formData, setFormData] = useState<QRFormData>({
-    residentId: "",
-    maxUses: 1,
-    visitorFullName: "",
-    visitorNationalId: "",
-    visitorPhoneNumber: "",
-    startDate: undefined,
-    expiryDate: undefined,
-  });
 
   // =====================================================
   // HANDLE GENERATE
   // =====================================================
 
-  const handleGenerate = async (data: QRFormData) => {
+  const handleGenerate = async (data: QRResidentFormData) => {
     try {
       setError(null);
-      setFormData(data);
-
-      // =========================
-      // VALIDATION
-      // =========================
-
-      if (!data.residentId.trim()) {
-        setError("Please enter resident ID.");
-        return;
-      }
-
-      if (!data.visitorFullName.trim()) {
-        setError("Please enter visitor full name.");
-        return;
-      }
-
-      if (!data.visitorNationalId.trim()) {
-        setError("Please enter visitor national ID.");
-        return;
-      }
-
-      if (!data.visitorPhoneNumber.trim()) {
-        setError("Please enter visitor phone number.");
-        return;
-      }
-
-      if (!data.startDate) {
-        setError("Please select start date.");
-        return;
-      }
-
-      if (!data.expiryDate) {
-        setError("Please select expiry date.");
-        return;
-      }
-
-      if (data.expiryDate < data.startDate) {
-        setError("Expiry date cannot be before start date.");
-        return;
-      }
-
       setLoading(true);
 
-      // =====================================================
-      // DATE FORMATTING
-      // =====================================================
-
-      const startAt = new Date(data.startDate);
-      startAt.setHours(0, 0, 0, 0);
-
-      const expiry = new Date(data.expiryDate);
-      expiry.setHours(23, 59, 59, 999);
-
-      // =====================================================
+      // =========================
       // PAYLOAD
-      // =====================================================
+      // =========================
 
       const payload = {
-        resident_id: Number(data.residentId),
-        max_uses: data.maxUses,
-        start_at: startAt.toISOString(),
-        expiry_date: expiry.toISOString(),
-        visitor_national_id: data.visitorNationalId.trim(),
-        visitor_phone_number: data.visitorPhoneNumber.trim(),
-        visitor_full_name: data.visitorFullName.trim(),
+        max_uses: data.max_uses,
+
+        start_at: data.start_at,
+
+        expiry_date: data.expiry_date,
+
+        visitor_national_id: data.visitor_national_id.trim(),
+
+        visitor_phone_number: data.visitor_phone_number.trim(),
+
+        visitor_full_name: data.visitor_full_name.trim(),
       };
 
-      console.log("QR Payload:", payload);
+      console.log("Resident QR Payload:", payload);
 
-      // =====================================================
-      // API
-      // =====================================================
+      // =========================
+      // API REQUEST
+      // =========================
 
-      const response = await generateQR(payload);
+      const response = await createResidentQR(payload);
+
+      console.log("Resident QR Response:", response);
 
       setQrData(response);
     } catch (err) {
-      console.error("Generate QR Error:", err);
+      console.error("Generate Resident QR Error:", err);
 
       setError("Please try again later. Something went wrong.");
     } finally {
@@ -127,16 +71,6 @@ export default function QRPage() {
   const handleReset = () => {
     setQrData(null);
     setError(null);
-
-    setFormData({
-      residentId: "",
-      maxUses: 1,
-      visitorFullName: "",
-      visitorNationalId: "",
-      visitorPhoneNumber: "",
-      startDate: undefined,
-      expiryDate: undefined,
-    });
   };
 
   // =====================================================
@@ -145,36 +79,23 @@ export default function QRPage() {
 
   return (
     <div className="space-y-6 pb-28">
-      {/* =====================================================
-          TABS
-      ===================================================== */}
-
-      {/* <PillTabs tabs={QR_TABS} activeValue="/dashboard/qr/qr-generator" /> */}
-
-      {/* =====================================================
-          CONTENT
-          FORM = 8 COLUMNS
-          QR DISPLAY = 4 COLUMNS
-      ===================================================== */}
-
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-stretch">
-        {/* =====================================================
-            FORM
-        ===================================================== */}
+        {/* FORM */}
 
         <div className="xl:col-span-8">
-          <QRForm onGenerate={handleGenerate} loading={loading} error={error} />
+          <QRResidentForm
+            onGenerate={handleGenerate}
+            loading={loading}
+            error={error}
+          />
         </div>
 
-        {/* =====================================================
-            QR DISPLAY
-        ===================================================== */}
+        {/* QR DISPLAY */}
 
         <div className="xl:col-span-4">
-          <QRDisplay
+          <QRResidentDisplay
             qrData={qrData}
             loading={loading}
-            formData={formData}
             onReset={handleReset}
           />
         </div>

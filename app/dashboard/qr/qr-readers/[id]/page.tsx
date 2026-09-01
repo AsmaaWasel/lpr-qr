@@ -70,7 +70,7 @@ export default function CameraStreamPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-bold text-foreground">Camera Stream</h1>
+      <h1 className="text-2xl font-bold text-foreground">Reader Stream</h1>
 
       <div className="overflow-hidden rounded-2xl border border-border bg-black">
         <video
@@ -87,9 +87,9 @@ export default function CameraStreamPage() {
         <button
           onClick={handleQrDetect}
           disabled={loadingQR}
-          className="rounded-xl bg-emerald-600 px-6 py-3 text-foreground hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-xl bg-gradient-to-r from-[#29C5E8] to-[#2F80ED] px-6 py-3 text-[#0E2038] text-[20px] font-[700]"
         >
-          {loadingQR ? "Scanning..." : "Detect QR"}
+          {loadingQR ? "Processing..." : "Detect QR"}
         </button>
       </div>
 

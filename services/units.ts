@@ -1,4 +1,5 @@
 import { Unit, UnitFormData } from "@/modules/types/units";
+
 import api from "./api";
 
 const API = "/units";
@@ -8,11 +9,33 @@ const API = "/units";
 // =========================
 
 export const getUnits = async (): Promise<Unit[]> => {
-  const res = await api.get<Unit[]>(API);
+  const res = await api.get(API);
 
-  console.log(res.data);
+  console.log("Units API Response:", res.data);
 
-  return res.data;
+  // API returns array
+  if (Array.isArray(res.data)) {
+    return res.data;
+  }
+
+  // API returns { data: [] }
+  if (res.data && Array.isArray(res.data.data)) {
+    return res.data.data;
+  }
+
+  // API returns { items: [] }
+  if (res.data && Array.isArray(res.data.items)) {
+    return res.data.items;
+  }
+
+  // API returns { results: [] }
+  if (res.data && Array.isArray(res.data.results)) {
+    return res.data.results;
+  }
+
+  console.warn("Unexpected units response format:", res.data);
+
+  return [];
 };
 
 // =========================
@@ -33,7 +56,7 @@ export const updateUnit = async (
   id: number,
   data: UnitFormData,
 ): Promise<Unit> => {
-  const res = await api.patch<Unit>(`${API}/${id}`, data);
+  const res = await api.put<Unit>(`${API}/${id}`, data);
 
   return res.data;
 };

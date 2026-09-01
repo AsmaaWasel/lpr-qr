@@ -3,11 +3,20 @@
 import { useEffect, useState } from "react";
 
 import { CrudShell } from "@/shared/ui/voom";
+
 import { Unit, UnitFormData } from "@/modules/types/units";
+
 import UnitTable from "./UnitTable";
 import UnitForm from "./UnitForm";
+
 import { useToast } from "@/shared/hooks/use-toast";
+
 import { createUnit, deleteUnit, getUnits, updateUnit } from "@/services/units";
+
+type Building = {
+  id: number;
+  name: string;
+};
 
 export default function UnitCRUD() {
   // =========================
@@ -15,6 +24,8 @@ export default function UnitCRUD() {
   // =========================
 
   const [units, setUnits] = useState<Unit[]>([]);
+
+  const [buildings, setBuildings] = useState<Building[]>([]);
 
   const [open, setOpen] = useState(false);
 
@@ -40,20 +51,44 @@ export default function UnitCRUD() {
   // LOAD UNITS
   // =========================
 
+  const loadUnits = async () => {
+    try {
+      const data = await getUnits();
+
+      const safeUnits = Array.isArray(data) ? data : [];
+
+      setUnits(safeUnits);
+
+      // =========================
+      // GET BUILDINGS
+      // =========================
+
+      const buildingList: Building[] = safeUnits
+        .filter((unit) => unit.type === "BUILDING")
+        .map((unit) => ({
+          id: unit.id,
+          name: unit.name,
+        }));
+
+      setBuildings(buildingList);
+
+      console.log("Buildings:", buildingList);
+    } catch (error) {
+      console.error("Load units error:", error);
+
+      toast.error("Failed to load units");
+
+      setUnits([]);
+      setBuildings([]);
+    }
+  };
+
+  // =========================
+  // INITIAL LOAD
+  // =========================
+
   useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await getUnits();
-
-        setUnits(data);
-      } catch (error) {
-        console.error("Load units error:", error);
-
-        toast.error("Failed to load units");
-      }
-    };
-
-    load();
+    loadUnits();
   }, []);
 
   // =========================
@@ -75,7 +110,7 @@ export default function UnitCRUD() {
   // PAGINATION
   // =========================
 
-  const totalPages = Math.ceil(filteredUnits.length / pageSize);
+  const totalPages = Math.ceil(filteredUnits.length / pageSize) || 1;
 
   const paginatedUnits = filteredUnits.slice(
     (currentPage - 1) * pageSize,
@@ -98,14 +133,11 @@ export default function UnitCRUD() {
         toast.success("Unit created successfully");
       }
 
-      const refreshed = await getUnits();
-
-      setUnits(refreshed);
+      // Reload units + buildings
+      await loadUnits();
 
       setOpen(false);
-
       setEditing(null);
-
       setSelectedId(null);
     } catch (error) {
       console.error("Submit unit error:", error);
@@ -126,9 +158,8 @@ export default function UnitCRUD() {
 
       toast.success("Unit deleted successfully");
 
-      const refreshed = await getUnits();
-
-      setUnits(refreshed);
+      // Reload units + buildings
+      await loadUnits();
 
       setSelectedId(null);
     } catch (error) {
@@ -170,7 +201,7 @@ export default function UnitCRUD() {
           totalItems={filteredUnits.length}
           itemLabel="units"
           onPrevious={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          onNext={() => setCurrentPage((p) => Math.min(totalPages || 1, p + 1))}
+          onNext={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
         >
           <UnitTable
             data={paginatedUnits}
@@ -182,9 +213,14 @@ export default function UnitCRUD() {
         </CrudShell>
       </div>
 
+      {/* =========================
+          UNIT FORM
+      ========================= */}
+
       {open && (
         <UnitForm
           editing={editing}
+          buildings={buildings}
           onClose={() => {
             setOpen(false);
             setEditing(null);

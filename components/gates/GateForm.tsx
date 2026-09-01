@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import { X } from "lucide-react";
 
 import { Gate, GateFormData } from "@/modules/types/gate";
@@ -16,6 +17,7 @@ type FormErrors = {
   type?: string;
   ip?: string;
   desc?: string;
+  form?: string;
 };
 
 export default function GateForm({ editing, onClose, onSubmit }: Props) {
@@ -29,6 +31,7 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
   // =========================
   // VALIDATION
   // =========================
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
@@ -73,20 +76,46 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
   // =========================
   // SAVE
   // =========================
+
   const handleSave = async () => {
+    // Clear previous backend error
+    setErrors((prev) => ({
+      ...prev,
+      form: undefined,
+    }));
+
     if (!validateForm()) return;
 
-    await onSubmit({
-      name: name.trim(),
-      type,
-      desc: desc.trim(),
-      ip: ip.trim(),
-    });
+    try {
+      await onSubmit({
+        name: name.trim(),
+        type,
+        desc: desc.trim(),
+        ip: ip.trim(),
+      });
+    } catch (error: any) {
+      console.error("Gate save error:", error);
+
+      // Get error message from backend response
+      const backendMessage =
+        error?.response?.data?.detail ||
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.response?.data?.errors?.[0]?.message ||
+        error?.response?.data?.errors?.[0] ||
+        "Failed to save gate";
+
+      setErrors((prev) => ({
+        ...prev,
+        form: backendMessage,
+      }));
+    }
   };
 
   // =========================
   // INPUT STYLES
   // =========================
+
   const inputClassName = `
     w-full
     h-12
@@ -114,6 +143,10 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
     focus:border-red-500
     focus:ring-red-500/10
   `;
+
+  // =========================
+  // RENDER
+  // =========================
 
   return (
     <div
@@ -147,7 +180,10 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
         "
         onMouseDown={(e) => e.stopPropagation()}
       >
-        {/* HEADER */}
+        {/* =========================
+            HEADER
+        ========================= */}
+
         <div className="mb-8 flex items-start justify-between">
           <div>
             <h2 className="text-2xl md:text-3xl font-bold text-foreground">
@@ -181,11 +217,38 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
           </button>
         </div>
 
-        {/* FORM */}
+        {/* =========================
+            BACKEND ERROR
+        ========================= */}
+
+        {errors.form && (
+          <div
+            className="
+              mb-6
+              rounded-xl
+              border
+              border-red-500/20
+              bg-red-500/10
+              px-4
+              py-3
+            "
+          >
+            <p className="text-sm font-medium text-red-500">{errors.form}</p>
+          </div>
+        )}
+
+        {/* =========================
+            FORM
+        ========================= */}
+
         <div className="space-y-6">
-          {/* Gate Name + Type */}
+          {/* =========================
+              GATE NAME + TYPE
+          ========================= */}
+
           <div className="grid grid-cols-1 md:grid-cols-[1fr_220px] gap-5">
             {/* Gate Name */}
+
             <div className="space-y-2">
               <label className="block text-base font-semibold text-foreground">
                 Gate Name
@@ -197,10 +260,11 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
                 onChange={(e) => {
                   setName(e.target.value);
 
-                  if (errors.name) {
+                  if (errors.name || errors.form) {
                     setErrors((prev) => ({
                       ...prev,
                       name: undefined,
+                      form: undefined,
                     }));
                   }
                 }}
@@ -219,6 +283,7 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
             </div>
 
             {/* Type */}
+
             <div className="space-y-2">
               <label className="block text-base font-semibold text-foreground">
                 Type
@@ -229,10 +294,11 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
                 onChange={(e) => {
                   setType(e.target.value as "ENTRY" | "EXIT");
 
-                  if (errors.type) {
+                  if (errors.type || errors.form) {
                     setErrors((prev) => ({
                       ...prev,
                       type: undefined,
+                      form: undefined,
                     }));
                   }
                 }}
@@ -252,7 +318,10 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
             </div>
           </div>
 
-          {/* IP Address */}
+          {/* =========================
+              IP ADDRESS
+          ========================= */}
+
           <div className="space-y-2">
             <label className="block text-base font-semibold text-foreground">
               IP Address
@@ -264,10 +333,11 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
               onChange={(e) => {
                 setIp(e.target.value);
 
-                if (errors.ip) {
+                if (errors.ip || errors.form) {
                   setErrors((prev) => ({
                     ...prev,
                     ip: undefined,
+                    form: undefined,
                   }));
                 }
               }}
@@ -284,7 +354,10 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
             )}
           </div>
 
-          {/* Description */}
+          {/* =========================
+              DESCRIPTION
+          ========================= */}
+
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="block text-base font-semibold text-foreground">
@@ -305,10 +378,11 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
               onChange={(e) => {
                 setDesc(e.target.value);
 
-                if (errors.desc) {
+                if (errors.desc || errors.form) {
                   setErrors((prev) => ({
                     ...prev,
                     desc: undefined,
+                    form: undefined,
                   }));
                 }
               }}
@@ -331,8 +405,13 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
           </div>
         </div>
 
-        {/* ACTIONS */}
+        {/* =========================
+            ACTIONS
+        ========================= */}
+
         <div className="mt-8 flex justify-end gap-3 border-t border-border pt-6">
+          {/* Cancel */}
+
           <button
             type="button"
             onClick={onClose}
@@ -350,6 +429,8 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
           >
             Cancel
           </button>
+
+          {/* Save */}
 
           <button
             type="button"

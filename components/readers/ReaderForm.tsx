@@ -1,10 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 
 import { ReaderFormData } from "@/modules/types/camera";
+import { getGates } from "@/services/gate";
 
+// =====================================================
+// TYPES
+// =====================================================
 
 type Gate = {
   id: number;
@@ -27,8 +31,21 @@ type FormErrors = {
   add_string_to_url?: string;
 };
 
+// =====================================================
+// COMPONENT
+// =====================================================
+
 export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
+  // =====================================================
+  // GATES
+  // =====================================================
+
   const [gates, setGates] = useState<Gate[]>([]);
+  const [loadingGates, setLoadingGates] = useState(true);
+
+  // =====================================================
+  // FORM
+  // =====================================================
 
   const [form, setForm] = useState<ReaderFormData>({
     gate_id: editing?.gate_id ?? 0,
@@ -44,26 +61,94 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
 
   const [errors, setErrors] = useState<FormErrors>({});
 
-  // =========================
+  // =====================================================
   // GET GATES
-  // =========================
+  // =====================================================
 
   useEffect(() => {
     const fetchGates = async () => {
       try {
-        const data = await getGates();
-        setGates(data);
+        setLoadingGates(true);
+
+        const response = await getGates();
+
+        console.log("Gates API response:", response);
+
+        // API ممكن يرجع:
+        // [
+        //   { id: 1, name: "Gate 1" }
+        // ]
+        //
+        // أو:
+        // { data: [...] }
+        //
+        // أو:
+        // { gates: [...] }
+
+        let gatesData: Gate[] = [];
+
+        if (Array.isArray(response)) {
+          gatesData = response;
+        } else if (
+          response &&
+          typeof response === "object" &&
+          "data" in response &&
+          Array.isArray((response as any).data)
+        ) {
+          gatesData = (response as any).data;
+        } else if (
+          response &&
+          typeof response === "object" &&
+          "gates" in response &&
+          Array.isArray((response as any).gates)
+        ) {
+          gatesData = (response as any).gates;
+        }
+
+        // Normalize data
+        const normalizedGates = gatesData
+          .map((gate: any) => ({
+            id: Number(gate.id),
+            name: String(gate.name ?? ""),
+          }))
+          .filter((gate) => gate.id > 0 && gate.name.trim() !== "");
+
+        console.log("Normalized gates:", normalizedGates);
+
+        setGates(normalizedGates);
+
+        // =================================================
+        // EDIT MODE
+        // Set location based on selected gate
+        // =================================================
+
+        if (editing?.gate_id) {
+          const selectedGate = normalizedGates.find(
+            (gate) => gate.id === Number(editing.gate_id),
+          );
+
+          if (selectedGate) {
+            setForm((prev) => ({
+              ...prev,
+              gate_id: selectedGate.id,
+              location: selectedGate.name,
+            }));
+          }
+        }
       } catch (error) {
-        console.error("Failed to fetch gates", error);
+        console.error("Failed to fetch gates:", error);
+        setGates([]);
+      } finally {
+        setLoadingGates(false);
       }
     };
 
     fetchGates();
-  }, []);
+  }, [editing?.gate_id]);
 
-  // =========================
+  // =====================================================
   // HANDLE CHANGE
-  // =========================
+  // =====================================================
 
   const handleChange = <K extends keyof ReaderFormData>(
     key: K,
@@ -74,16 +159,15 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
       [key]: value,
     }));
 
-    // Clear error for changed field
     setErrors((prev) => ({
       ...prev,
       [key]: undefined,
     }));
   };
 
-  // =========================
+  // =====================================================
   // GATE CHANGE
-  // =========================
+  // =====================================================
 
   const handleGateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const gateId = Number(e.target.value);
@@ -93,7 +177,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
     setForm((prev) => ({
       ...prev,
       gate_id: gateId,
-      location: selectedGate?.name || "",
+      location: selectedGate?.name ?? "",
     }));
 
     setErrors((prev) => ({
@@ -102,15 +186,15 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
     }));
   };
 
-  // =========================
+  // =====================================================
   // READER TYPE
-  // =========================
+  // =====================================================
 
   const isCamera = form.reader_type === "CAMERA";
 
-  // =========================
+  // =====================================================
   // INPUT STYLE
-  // =========================
+  // =====================================================
 
   const inputClassName = `
     w-full
@@ -134,9 +218,9 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
     dark:focus:border-white/30
   `;
 
-  // =========================
+  // =====================================================
   // LABEL STYLE
-  // =========================
+  // =====================================================
 
   const labelClassName = `
     block
@@ -152,9 +236,9 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
     text-red-500
   `;
 
-  // =========================
+  // =====================================================
   // VALIDATE IP
-  // =========================
+  // =====================================================
 
   const isValidIp = (ip: string) => {
     const parts = ip.trim().split(".");
@@ -174,9 +258,9 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
     });
   };
 
-  // =========================
+  // =====================================================
   // VALIDATION
-  // =========================
+  // =====================================================
 
   const validateForm = (): FormErrors => {
     const newErrors: FormErrors = {};
@@ -184,6 +268,12 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
     // Gate
     if (!form.gate_id || form.gate_id <= 0) {
       newErrors.gate_id = "Please select a gate";
+    } else {
+      const gateExists = gates.some((gate) => gate.id === Number(form.gate_id));
+
+      if (!gateExists) {
+        newErrors.gate_id = "Please select a valid gate";
+      }
     }
 
     // Reader Type
@@ -210,7 +300,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
       newErrors.port = "Port must be between 1 and 65535";
     }
 
-    // Camera specific validation
+    // Camera validation
     if (isCamera) {
       // Username
       if (!form.username?.trim()) {
@@ -230,9 +320,9 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
     return newErrors;
   };
 
-  // =========================
+  // =====================================================
   // SAVE
-  // =========================
+  // =====================================================
 
   const handleSave = async () => {
     const validationErrors = validateForm();
@@ -242,12 +332,13 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
       return;
     }
 
-    const selectedGate = gates.find((gate) => gate.id === form.gate_id);
+    const selectedGate = gates.find((gate) => gate.id === Number(form.gate_id));
 
     if (!selectedGate) {
       setErrors({
         gate_id: "Please select a valid gate",
       });
+
       return;
     }
 
@@ -258,8 +349,14 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
       port: Number(form.port),
     };
 
+    console.log("Submitting reader:", submitData);
+
     await onSubmit(submitData);
   };
+
+  // =====================================================
+  // RENDER
+  // =====================================================
 
   return (
     <div
@@ -291,9 +388,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
         "
         onMouseDown={(e) => e.stopPropagation()}
       >
-        {/* =========================
-            HEADER
-        ========================== */}
+        {/* HEADER */}
 
         <div className="mb-6 flex items-start justify-between">
           <div>
@@ -329,9 +424,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
           </button>
         </div>
 
-        {/* =========================
-            FORM
-        ========================== */}
+        {/* FORM */}
 
         <div
           className="
@@ -342,9 +435,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
             md:grid-cols-2
           "
         >
-          {/* =========================
-              GATE
-          ========================== */}
+          {/* GATE */}
 
           <div className="space-y-1.5">
             <label className={labelClassName}>Gate</label>
@@ -352,28 +443,46 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
             <select
               value={form.gate_id || ""}
               onChange={handleGateChange}
+              disabled={loadingGates}
               className={`
                 ${inputClassName}
                 ${errors.gate_id ? "border-red-500 focus:border-red-500" : ""}
+                ${loadingGates ? "cursor-not-allowed opacity-60" : ""}
               `}
             >
-              <option value="">Select gate</option>
+              <option value="">
+                {loadingGates
+                  ? "Loading gates..."
+                  : gates.length === 0
+                    ? "No gates available"
+                    : "Select gate"}
+              </option>
 
-              {gates.map((gate) => (
-                <option key={gate.id} value={gate.id}>
-                  {gate.name}
-                </option>
-              ))}
+              {!loadingGates &&
+                gates.map((gate) => (
+                  <option key={gate.id} value={gate.id}>
+                    {gate.name}
+                  </option>
+                ))}
             </select>
+
+            {loadingGates && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Loader2 size={13} className="animate-spin" />
+                Loading gates...
+              </div>
+            )}
+
+            {!loadingGates && gates.length === 0 && (
+              <p className={errorClassName}>No gates available</p>
+            )}
 
             {errors.gate_id && (
               <p className={errorClassName}>{errors.gate_id}</p>
             )}
           </div>
 
-          {/* =========================
-              READER TYPE
-          ========================== */}
+          {/* READER TYPE */}
 
           <div className="space-y-1.5">
             <label className={labelClassName}>Reader Type</label>
@@ -402,9 +511,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
             )}
           </div>
 
-          {/* =========================
-              USERNAME
-          ========================== */}
+          {/* USERNAME */}
 
           {isCamera && (
             <div className="space-y-1.5">
@@ -429,9 +536,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
             </div>
           )}
 
-          {/* =========================
-              PASSWORD
-          ========================== */}
+          {/* PASSWORD */}
 
           {isCamera && (
             <div className="space-y-1.5">
@@ -456,9 +561,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
             </div>
           )}
 
-          {/* =========================
-              IP ADDRESS
-          ========================== */}
+          {/* IP ADDRESS */}
 
           <div className="space-y-1.5">
             <label className={labelClassName}>IP Address</label>
@@ -481,9 +584,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
             )}
           </div>
 
-          {/* =========================
-              PORT
-          ========================== */}
+          {/* PORT */}
 
           <div className="space-y-1.5">
             <label className={labelClassName}>Port</label>
@@ -504,9 +605,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
             {errors.port && <p className={errorClassName}>{errors.port}</p>}
           </div>
 
-          {/* =========================
-              ADD SUB URL
-          ========================== */}
+          {/* ADD SUB URL */}
 
           <div className="space-y-1.5">
             <label className={labelClassName}>Add SubURL</label>
@@ -522,9 +621,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
             />
           </div>
 
-          {/* =========================
-              NOTES
-          ========================== */}
+          {/* NOTES */}
 
           <div className="space-y-1.5 md:col-span-2">
             <label className={labelClassName}>Notes</label>
@@ -544,9 +641,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
           </div>
         </div>
 
-        {/* =========================
-            ACTIONS
-        ========================== */}
+        {/* ACTIONS */}
 
         <div
           className="
