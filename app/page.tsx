@@ -71,7 +71,7 @@ export default function LoginPage() {
       const userRole = localStorage.getItem("role");
 
       if (userRole === "admin" || userRole === "superAdmin") {
-        router.push("/");
+        router.push("/dashboard");
       } else if (userRole === "resident") {
         router.push("/dashboard/qr-resident/qr-generator");
       } else {

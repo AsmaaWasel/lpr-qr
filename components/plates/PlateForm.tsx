@@ -227,7 +227,6 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
   };
 
   // ================= SAVE =================
-
   const handleSave = async () => {
     const validationErrors = validateForm();
 
@@ -240,12 +239,15 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
       plate_number_full: string;
       resident_id?: number;
     } = {
-      plate_number_full: form.numbers + form.letters,
+      plate_number_full:
+        form.numbers + form.letters.split("").reverse().join(""),
     };
 
     if (form.resident_id) {
       submitData.resident_id = form.resident_id;
     }
+
+    console.log("REQUEST DATA:", submitData);
 
     await onSubmit(submitData);
   };
@@ -253,7 +255,7 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
   // ================= PREVIEW =================
 
   const previewLetters = form.letters
-    ? form.letters.split("").reverse().join(" ")
+    ? form.letters.split("").join(" ")
     : "س ج ط";
 
   // ================= STYLES =================

@@ -3,50 +3,45 @@
 import {
   Car,
   User,
-  DoorOpen,
   Calendar,
   Image as ImageIcon,
   Hash,
   QrCode,
+  LogIn,
+  LogOut,
+  IdCard,
+  Phone,
 } from "lucide-react";
 
-type Resident = {
-  id: number;
-  full_name: string;
-};
-
-type GateEntry = {
-  id: number;
-  entry_type: "entry" | "exit" | "ENTRY" | "EXIT";
-  entry_by: "resident" | "plate" | "manual" | "qr" | "QR" | "PLATE" | "MANUAL";
-  entry_by_table_id: number | null;
-  image_url: string | null;
-  plate_number: string | null;
-  resident_id: number | null;
-  gate_id: number;
-  created_at: string;
-  resident: Resident | null;
-};
+import { VisitorLog } from "@/services/visitorLogs";
 
 type Props = {
-  data: GateEntry[];
+  data: VisitorLog[];
   selectedId: number | null;
   onSelect: (id: number) => void;
   onImageClick: (url: string) => void;
 };
 
-export default function GateEntriesTable({
+export default function QRVisitorLogsTable({
   data,
   selectedId,
   onSelect,
   onImageClick,
 }: Props) {
   // =========================
-  // Helpers
+  // FORMAT DATE
   // =========================
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) {
+      return "-";
+    }
+
     const date = new Date(dateString);
+
+    if (Number.isNaN(date.getTime())) {
+      return "-";
+    }
 
     return date.toLocaleDateString("en-US", {
       year: "numeric",
@@ -57,98 +52,14 @@ export default function GateEntriesTable({
     });
   };
 
-  const getEntryTypeBadge = (type: GateEntry["entry_type"]) => {
-    const isEntry = type.toLowerCase() === "entry";
+  // =========================
+  // STATUS BADGE
+  // =========================
 
-    return (
-      <span
-        className={`
-          inline-flex
-          items-center
-          gap-1.5
-          rounded-full
-          px-3
-          py-1
-          text-xs
-          font-[600]
-          ${
-            isEntry
-              ? "bg-emerald-50 text-ok dark:bg-emerald-500/10 dark:text-emerald-400"
-              : "bg-red-50 text-danger dark:bg-red-500/10 dark:text-red-400"
-          }
-        `}
-      >
-        <DoorOpen className="h-3.5 w-3.5" />
+  const getStatusBadge = (status: string) => {
+    const normalized = status.toLowerCase();
 
-        {isEntry ? "ENTRY" : "EXIT"}
-      </span>
-    );
-  };
-
-  const getEntryByBadge = (method: GateEntry["entry_by"]) => {
-    const normalized = method.toLowerCase();
-
-    // =========================
-    // PLATE
-    // =========================
-
-    if (normalized === "plate") {
-      return (
-        <span
-          className="
-            inline-flex
-            items-center
-            gap-1.5
-            rounded-full
-            bg-purple-50
-            px-3
-            py-1
-            text-xs
-            font-[600]
-            text-purple-600
-            dark:bg-purple-500/10
-            dark:text-purple-400
-          "
-        >
-          <Car className="h-3.5 w-3.5" />
-          Plate
-        </span>
-      );
-    }
-
-    // =========================
-    // QR
-    // =========================
-
-    if (normalized === "qr") {
-      return (
-        <span
-          className="
-            inline-flex
-            items-center
-            gap-1.5
-            rounded-full
-            bg-blue-50
-            px-3
-            py-1
-            text-xs
-            font-[600]
-            text-blue-600
-            dark:bg-blue-500/10
-            dark:text-blue-400
-          "
-        >
-          <QrCode className="h-3.5 w-3.5" />
-          QR Code
-        </span>
-      );
-    }
-
-    // =========================
-    // RESIDENT / LPR
-    // =========================
-
-    if (normalized === "resident") {
+    if (normalized === "entered") {
       return (
         <span
           className="
@@ -166,15 +77,35 @@ export default function GateEntriesTable({
             dark:text-emerald-400
           "
         >
-          <User className="h-3.5 w-3.5" />
-          LPR
+          <LogIn className="h-3.5 w-3.5" />
+          Entered
         </span>
       );
     }
 
-    // =========================
-    // MANUAL
-    // =========================
+    if (normalized === "exited") {
+      return (
+        <span
+          className="
+            inline-flex
+            items-center
+            gap-1.5
+            rounded-full
+            bg-red-50
+            px-3
+            py-1
+            text-xs
+            font-[600]
+            text-red-600
+            dark:bg-red-500/10
+            dark:text-red-400
+          "
+        >
+          <LogOut className="h-3.5 w-3.5" />
+          Exited
+        </span>
+      );
+    }
 
     return (
       <span
@@ -193,14 +124,25 @@ export default function GateEntriesTable({
           dark:text-orange-400
         "
       >
-        <User className="h-3.5 w-3.5" />
-        Manual
+        {status}
       </span>
     );
   };
 
   // =========================
-  // Render
+  // GET PHONE NUMBER
+  // =========================
+
+  const getPhoneNumber = (resident: any) => {
+    if (!resident) return "-";
+    if (resident.phone_numbers && resident.phone_numbers.length > 0) {
+      return resident.phone_numbers[0].phone_number;
+    }
+    return "-";
+  };
+
+  // =========================
+  // RENDER
   // =========================
 
   return (
@@ -213,7 +155,7 @@ export default function GateEntriesTable({
       "
     >
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[1100px]">
+        <table className="w-full min-w-[1400px]">
           {/* =========================
               HEADER
           ========================= */}
@@ -228,8 +170,7 @@ export default function GateEntriesTable({
                 dark:bg-slate-800/40
               "
             >
-              {/* TYPE */}
-
+              {/* QR Code */}
               <th
                 className="
                   px-6
@@ -241,11 +182,10 @@ export default function GateEntriesTable({
                   text-[#7C93B4]
                 "
               >
-                Type
+                QR Code
               </th>
 
-              {/* METHOD */}
-
+              {/* Visitor */}
               <th
                 className="
                   px-6
@@ -257,11 +197,10 @@ export default function GateEntriesTable({
                   text-[#7C93B4]
                 "
               >
-                Method
+                Visitor
               </th>
 
-              {/* PLATE NUMBER */}
-
+              {/* Visitor National ID */}
               <th
                 className="
                   px-6
@@ -273,11 +212,25 @@ export default function GateEntriesTable({
                   text-[#7C93B4]
                 "
               >
-                Plate Number
+                Visitor National ID
               </th>
 
-              {/* RESIDENT */}
+              {/* Visitor Phone */}
+              <th
+                className="
+                  px-6
+                  py-4
+                  text-lg
+                  font-[600]
+                  uppercase
+                  tracking-wide
+                  text-[#7C93B4]
+                "
+              >
+                Visitor Phone
+              </th>
 
+              {/* Resident */}
               <th
                 className="
                   px-6
@@ -292,8 +245,22 @@ export default function GateEntriesTable({
                 Resident
               </th>
 
-              {/* GATE */}
+              {/* Resident National ID */}
+              {/* <th
+                className="
+                  px-6
+                  py-4
+                  text-lg
+                  font-[600]
+                  uppercase
+                  tracking-wide
+                  text-[#7C93B4]
+                "
+              >
+                Resident National ID
+              </th> */}
 
+              {/* Resident Phone */}
               <th
                 className="
                   px-6
@@ -305,11 +272,10 @@ export default function GateEntriesTable({
                   text-[#7C93B4]
                 "
               >
-                Gate
+                Resident Phone
               </th>
 
-              {/* IMAGE */}
-
+              {/* Plate Number */}
               <th
                 className="
                   px-6
@@ -321,11 +287,10 @@ export default function GateEntriesTable({
                   text-[#7C93B4]
                 "
               >
-                Image
+                Plate Number
               </th>
 
-              {/* DATE & TIME */}
-
+              {/* Status */}
               <th
                 className="
                   px-6
@@ -337,7 +302,52 @@ export default function GateEntriesTable({
                   text-[#7C93B4]
                 "
               >
-                Date & Time
+                Status
+              </th>
+
+              {/* Created By */}
+              <th
+                className="
+                  px-6
+                  py-4
+                  text-lg
+                  font-[600]
+                  uppercase
+                  tracking-wide
+                  text-[#7C93B4]
+                "
+              >
+                Created By
+              </th>
+
+              {/* Entry Time */}
+              <th
+                className="
+                  px-6
+                  py-4
+                  text-lg
+                  font-[600]
+                  uppercase
+                  tracking-wide
+                  text-[#7C93B4]
+                "
+              >
+                Entry Time
+              </th>
+
+              {/* Exit Time */}
+              <th
+                className="
+                  px-6
+                  py-4
+                  text-lg
+                  font-[600]
+                  uppercase
+                  tracking-wide
+                  text-[#7C93B4]
+                "
+              >
+                Exit Time
               </th>
             </tr>
           </thead>
@@ -350,7 +360,7 @@ export default function GateEntriesTable({
             {data.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={12}
                   className="
                     px-6
                     py-12
@@ -360,9 +370,17 @@ export default function GateEntriesTable({
                   "
                 >
                   <div className="flex flex-col items-center gap-3">
-                    <QrCode className="h-10 w-10 text-muted-foreground" />
+                    <QrCode
+                      className="
+                        h-10
+                        w-10
+                        text-muted-foreground
+                      "
+                    />
 
-                    <p className="text-lg font-medium">No QR entries found</p>
+                    <p className="text-lg font-medium">
+                      No QR visitor logs found
+                    </p>
 
                     <p className="text-lg text-muted-foreground">
                       Try adjusting your filters
@@ -371,13 +389,13 @@ export default function GateEntriesTable({
                 </td>
               </tr>
             ) : (
-              data.map((entry) => {
-                const isSelected = selectedId === entry.id;
+              data.map((log) => {
+                const isSelected = selectedId === log.id;
 
                 return (
                   <tr
-                    key={entry.id}
-                    onClick={() => onSelect(entry.id)}
+                    key={log.id}
+                    onClick={() => onSelect(log.id)}
                     className={`
                       cursor-pointer
                       border-b
@@ -392,23 +410,7 @@ export default function GateEntriesTable({
                     `}
                   >
                     {/* =========================
-                        TYPE
-                    ========================= */}
-
-                    <td className="px-6 py-4">
-                      {getEntryTypeBadge(entry.entry_type)}
-                    </td>
-
-                    {/* =========================
-                        METHOD
-                    ========================= */}
-
-                    <td className="px-6 py-4">
-                      {getEntryByBadge(entry.entry_by)}
-                    </td>
-
-                    {/* =========================
-                        PLATE NUMBER
+                        QR CODE
                     ========================= */}
 
                     <td className="px-6 py-4">
@@ -425,7 +427,7 @@ export default function GateEntriesTable({
                             dark:bg-cyan-500/10
                           "
                         >
-                          <Car
+                          <QrCode
                             className="
                               h-4
                               w-4
@@ -437,31 +439,20 @@ export default function GateEntriesTable({
                         <div>
                           <p
                             className="
-                              font-mono
-                              text-[20px]
+                              text-[18px]
                               font-[600]
                               text-foreground
                               dark:text-white
                             "
                           >
-                            {entry.plate_number || "N/A"}
-                          </p>
-
-                          <p
-                            className="
-                              mt-0.5
-                              text-xs
-                              text-muted-foreground
-                            "
-                          >
-                            Plate Number
+                            {log.qr_code_id ? `QR #${log.qr_code_id}` : "N/A"}
                           </p>
                         </div>
                       </div>
                     </td>
 
                     {/* =========================
-                        RESIDENT
+                        VISITOR
                     ========================= */}
 
                     <td className="px-6 py-4">
@@ -490,189 +481,269 @@ export default function GateEntriesTable({
                         <div>
                           <p
                             className="
-                              text-[20px]
+                              text-[18px]
                               font-[600]
                               text-foreground
                               dark:text-white
                             "
                           >
-                            {entry.resident?.full_name || "Unknown"}
-                          </p>
-
-                          <p
-                            className="
-                              mt-0.5
-                              text-xs
-                              text-muted-foreground
-                            "
-                          >
-                            {entry.resident_id
-                              ? `Resident #${entry.resident_id}`
-                              : "Guest"}
+                            {log.visitor_full_name || "Unknown"}
                           </p>
                         </div>
                       </div>
                     </td>
 
                     {/* =========================
-                        GATE
+                        VISITOR NATIONAL ID
+                    ========================= */}
+
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <IdCard
+                          className="
+                            h-4
+                            w-4
+                            text-[#29C5E8]
+                          "
+                        />
+                        <span
+                          className="
+                            font-mono
+                            text-[16px]
+                            font-[500]
+                            text-[#3B5473]
+                            dark:text-white
+                          "
+                        >
+                          {log.visitor_national_id || "-"}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* =========================
+                        VISITOR PHONE
+                    ========================= */}
+
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Phone
+                          className="
+                            h-4
+                            w-4
+                            text-[#29C5E8]
+                          "
+                        />
+                        <span
+                          className="
+                            font-mono
+                            text-[16px]
+                            font-[500]
+                            text-[#3B5473]
+                            dark:text-white
+                          "
+                        >
+                          {log.visitor_phone_number || "-"}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* =========================
+                        RESIDENT
                     ========================= */}
 
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div
+                        <User
                           className="
-                            flex
-                            h-10
-                            w-10
-                            items-center
-                            justify-center
-                            rounded-xl
-                            bg-accent
-                            text-[20px]
+                            h-4
+                            w-4
+                            text-[#29C5E8]
+                          "
+                        />
+
+                        <div>
+                          <p
+                            className="
+                              text-[18px]
+                              font-[600]
+                              text-[#3B5473]
+                              dark:text-white
+                            "
+                          >
+                            {log.resident?.full_name || "-"}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* =========================
+                        RESIDENT NATIONAL ID
+                    ========================= */}
+
+                    {/* <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <IdCard
+                          className="
+                            h-4
+                            w-4
+                            text-[#29C5E8]
+                          "
+                        />
+                        <span
+                          className="
+                            font-mono
+                            text-[16px]
+                            font-[500]
+                            text-[#3B5473]
+                            dark:text-white
+                          "
+                        >
+                          {log.resident?.national_id || "-"}
+                        </span>
+                      </div>
+                    </td> */}
+
+                    {/* =========================
+                        RESIDENT PHONE
+                    ========================= */}
+
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Phone
+                          className="
+                            h-4
+                            w-4
+                            text-[#29C5E8]
+                          "
+                        />
+                        <span
+                          className="
+                            font-mono
+                            text-[16px]
+                            font-[500]
+                            text-[#3B5473]
+                            dark:text-white
+                          "
+                        >
+                          {getPhoneNumber(log.resident)}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* =========================
+                        PLATE
+                    ========================= */}
+
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <Car
+                          className="
+                            h-4
+                            w-4
+                            text-[#29C5E8]
+                          "
+                        />
+
+                        <span
+                          className="
+                            font-mono
+                            text-[18px]
                             font-[600]
-                            text-brand-strong
-                            dark:bg-cyan-500/10
+                            text-foreground
+                            dark:text-white
                           "
                         >
-                          <Hash className="h-4 w-4" />
-                        </div>
-
-                        <div>
-                          <p
-                            className="
-                              text-[20px]
-                              font-[600]
-                              text-foreground
-                              dark:text-white
-                            "
-                          >
-                            Gate {entry.gate_id}
-                          </p>
-
-                          <p
-                            className="
-                              mt-0.5
-                              text-xs
-                              text-muted-foreground
-                            "
-                          >
-                            ID #{entry.gate_id}
-                          </p>
-                        </div>
+                          {log.plate_number || "N/A"}
+                        </span>
                       </div>
                     </td>
 
                     {/* =========================
-                        IMAGE
+                        STATUS
+                    ========================= */}
+
+                    <td className="px-6 py-4">{getStatusBadge(log.status)}</td>
+
+                    {/* =========================
+                        CREATED BY
                     ========================= */}
 
                     <td className="px-6 py-4">
-                      {entry.image_url ? (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onImageClick(entry.image_url!);
-                          }}
+                      <div className="flex items-center gap-2">
+                        <User
                           className="
-                            group
-                            relative
-                            h-12
-                            w-12
-                            overflow-hidden
-                            rounded-xl
-                            border
-                            border-border
-                            bg-secondary
+                            h-4
+                            w-4
+                            text-[#29C5E8]
+                          "
+                        />
+
+                        <span
+                          className="
+                            text-[16px]
+                            font-[500]
+                            text-[#3B5473]
+                            dark:text-white
                           "
                         >
-                          <img
-                            src={entry.image_url}
-                            alt="Gate entry"
-                            className="
-                              h-full
-                              w-full
-                              object-cover
-                              transition
-                              group-hover:scale-110
-                            "
-                          />
-                        </button>
-                      ) : (
-                        <div
-                          className="
-                            flex
-                            h-12
-                            w-12
-                            items-center
-                            justify-center
-                            rounded-xl
-                            bg-secondary
-                            dark:bg-slate-800/50
-                          "
-                        >
-                          <ImageIcon
-                            className="
-                              h-5
-                              w-5
-                              text-muted-foreground
-                            "
-                          />
-                        </div>
-                      )}
+                          {log.created_by?.name || "-"}
+                        </span>
+                      </div>
                     </td>
 
                     {/* =========================
-                        DATE & TIME
+                        ENTRY TIME
                     ========================= */}
 
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div
+                      <div className="flex items-center gap-2">
+                        <Calendar
                           className="
-                            flex
-                            h-10
-                            w-10
-                            items-center
-                            justify-center
-                            rounded-xl
-                            bg-accent
-                            dark:bg-cyan-500/10
+                            h-4
+                            w-4
+                            text-[#29C5E8]
+                          "
+                        />
+
+                        <span
+                          className="
+                            whitespace-nowrap
+                            text-[16px]
+                            font-[500]
+                            text-[#3B5473]
+                            dark:text-white
                           "
                         >
-                          <Calendar
-                            className="
-                              h-4
-                              w-4
-                              text-brand-strong
-                            "
-                          />
-                        </div>
+                          {formatDate(log.entry_time)}
+                        </span>
+                      </div>
+                    </td>
 
-                        <div>
-                          <p
-                            className="
-                              whitespace-nowrap
-                              text-[20px]
-                              font-medium
-                              text-foreground
-                              dark:text-white
-                            "
-                          >
-                            {formatDate(entry.created_at)}
-                          </p>
+                    {/* =========================
+                        EXIT TIME
+                    ========================= */}
 
-                          <p
-                            className="
-                              mt-0.5
-                              text-xs
-                              text-muted-foreground
-                            "
-                          >
-                            Gate activity
-                          </p>
-                        </div>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Calendar
+                          className="
+                            h-4
+                            w-4
+                            text-[#29C5E8]
+                          "
+                        />
+
+                        <span
+                          className="
+                            whitespace-nowrap
+                            text-[16px]
+                            font-[500]
+                            text-[#3B5473]
+                            dark:text-white
+                          "
+                        >
+                          {formatDate(log.exit_time)}
+                        </span>
                       </div>
                     </td>
                   </tr>

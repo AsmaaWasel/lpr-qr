@@ -79,12 +79,19 @@ export default function CameraStreamPage() {
       setRecognitionResult(data);
 
       console.log("LPR RESPONSE:", data);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error("LPR ERROR:", err);
 
-      alert("LPR Detection failed");
-    } finally {
-      setLoadingLPR(false);
+      console.error("STATUS:", err?.response?.status);
+      console.error("DATA:", err?.response?.data);
+      console.error("MESSAGE:", err?.message);
+
+      alert(
+        err?.response?.data?.detail ||
+          err?.response?.data?.message ||
+          err?.message ||
+          "LPR Detection failed",
+      );
     }
   };
 
