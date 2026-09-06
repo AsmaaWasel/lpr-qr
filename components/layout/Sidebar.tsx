@@ -24,6 +24,12 @@ export default function Sidebar() {
 
   const current = normalize(pathname);
   const role = user?.role;
+  console.log("========== SIDEBAR AUTH ==========");
+  console.log("USER:", user);
+  console.log("ROLE:", user?.role);
+  console.log("LOCAL STORAGE USER:", localStorage.getItem("user"));
+  console.log("LOCAL STORAGE ROLE:", localStorage.getItem("role"));
+  console.log("==================================");
 
   // =========================================================
   // NAVIGATION BASED ON ROLE

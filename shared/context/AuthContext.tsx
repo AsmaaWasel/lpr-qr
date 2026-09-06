@@ -1,16 +1,28 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 
 import { adminLogin, residentLogin } from "@/services/auth";
-import { User } from "@/modules/types/user";
 
-/* =========================================================
-   TYPES
-========================================================= */
+// =========================
+// TYPES
+// =========================
+
+type User = {
+  id: number;
+  username?: string;
+  email?: string;
+  role?: "superAdmin" | "admin" | "resident";
+};
 
 type LoginResponse = {
-  type: "admin" | "resident";
+  type: "superAdmin" | "admin" | "resident";
   user: User;
 };
 
@@ -21,146 +33,180 @@ type AuthContextType = {
   logout: () => void;
 };
 
-/* =========================================================
-   CONTEXT
-========================================================= */
+// =========================
+// GET ROLE FROM JWT
+// =========================
+
+const getRoleFromToken = (
+  token: string,
+): "superAdmin" | "admin" | "resident" => {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+
+    console.log("JWT PAYLOAD:", payload);
+
+    if (payload.role === "superAdmin") {
+      return "superAdmin";
+    }
+
+    if (payload.role === "admin") {
+      return "admin";
+    }
+
+    return "resident";
+  } catch (error) {
+    console.error("Failed to decode token:", error);
+    return "resident";
+  }
+};
+
+// =========================
+// CONTEXT
+// =========================
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
 
   login: async () => ({
-    type: "admin",
+    type: "resident",
     user: {} as User,
   }),
 
   logout: () => {},
 });
 
-/* =========================================================
-   PROVIDER
-========================================================= */
+// =========================
+// PROVIDER
+// =========================
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  console.log("AUTH PROVIDER MOUNTED");
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  /* =========================================================
-     INITIAL USER
-  ========================================================= */
+  // =========================
+  // LOAD USER
+  // =========================
 
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window === "undefined") {
-      return null;
-    }
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("token");
 
-    try {
-      const storedUser = localStorage.getItem("user");
+    if (storedUser && storedToken) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
 
-      if (!storedUser) {
-        return null;
+        // نقرأ الـ role الحقيقي من الـ JWT
+        const role = getRoleFromToken(storedToken);
+
+        const loggedUser: User = {
+          ...parsedUser,
+          role,
+        };
+
+        setUser(loggedUser);
+
+        // نحدث localStorage لو كان فيه role قديم
+        localStorage.setItem("user", JSON.stringify(loggedUser));
+
+        localStorage.setItem("role", role);
+      } catch (error) {
+        console.error("Failed to load user:", error);
+
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+
+        setUser(null);
       }
-
-      return JSON.parse(storedUser) as User;
-    } catch (error) {
-      console.error("Failed to load stored user:", error);
-
-      localStorage.removeItem("user");
-
-      return null;
     }
-  });
 
-  /*
-   * Since the user is loaded during state initialization,
-   * there is no need for useEffect.
-   *
-   * Start with false because initialization is synchronous.
-   */
-  const [loading, setLoading] = useState(false);
+    setLoading(false);
+  }, []);
 
-  /* =========================================================
-     LOGIN
-  ========================================================= */
+  // =========================
+  // LOGIN
+  // =========================
 
   const login = async (
     email: string,
     password: string,
   ): Promise<LoginResponse> => {
     let data;
-    let type: "admin" | "resident";
-
-    setLoading(true);
+    let type: "superAdmin" | "admin" | "resident";
 
     try {
-      /* =====================================================
-         ADMIN LOGIN
-      ===================================================== */
+      // =========================
+      // ADMIN / SUPER ADMIN LOGIN
+      // =========================
 
-      try {
-        data = await adminLogin(email, password);
-        type = "admin";
-      } catch {
-        /* ===================================================
-           RESIDENT LOGIN
-        =================================================== */
+      data = await adminLogin(email, password);
 
-        data = await residentLogin(email, password);
+      const token = data.access_token;
+
+      // نحدد الـ role من الـ JWT
+      type = getRoleFromToken(token);
+    } catch (adminError) {
+      // =========================
+      // RESIDENT LOGIN
+      // =========================
+
+      data = await residentLogin(email, password);
+
+      const token = data.access_token;
+
+      type = getRoleFromToken(token);
+
+      // لو resident endpoint بيرجع resident بشكل طبيعي
+      if (type !== "resident") {
         type = "resident";
       }
-
-      /* =====================================================
-         TOKEN
-      ===================================================== */
-
-      localStorage.setItem("token", data.access_token);
-
-      /* Use role consistently */
-      localStorage.setItem("role", type);
-
-      /* =====================================================
-         USER
-      ===================================================== */
-
-      let loggedUser: User;
-
-      if (data.user) {
-        loggedUser = data.user;
-      } else {
-        /*
-         * Resident endpoint doesn't return user.
-         * Build a user object from the response.
-         */
-
-        loggedUser = {
-          ...data,
-          role: "resident",
-        } as User;
-      }
-
-      /* =====================================================
-         STORE USER
-      ===================================================== */
-
-      localStorage.setItem("user", JSON.stringify(loggedUser));
-
-      setUser(loggedUser);
-
-      /* =====================================================
-         RETURN
-      ===================================================== */
-
-      return {
-        type,
-        user: loggedUser,
-      };
-    } finally {
-      setLoading(false);
     }
+
+    // =========================
+    // SAVE TOKEN
+    // =========================
+
+    localStorage.setItem("token", data.access_token);
+
+    // =========================
+    // SAVE ROLE
+    // =========================
+
+    localStorage.setItem("role", type);
+
+    // =========================
+    // CREATE USER
+    // =========================
+
+    const loggedUser: User = {
+      ...(data.user ?? data),
+      role: type,
+    };
+
+    // =========================
+    // SAVE USER
+    // =========================
+
+    localStorage.setItem("user", JSON.stringify(loggedUser));
+
+    setUser(loggedUser);
+
+    console.log("========== LOGIN RESULT ==========");
+    console.log("TYPE:", type);
+    console.log("USER:", loggedUser);
+    console.log("TOKEN ROLE:", getRoleFromToken(data.access_token));
+    console.log("===================================");
+
+    return {
+      type,
+      user: loggedUser,
+    };
   };
 
-  /* =========================================================
-     LOGOUT
-  ========================================================= */
+  // =========================
+  // LOGOUT
+  // =========================
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -173,9 +219,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
-  /* =========================================================
-     PROVIDER
-  ========================================================= */
+  // =========================
+  // PROVIDER
+  // =========================
 
   return (
     <AuthContext.Provider
@@ -191,8 +237,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-/* =========================================================
-   HOOK
-========================================================= */
+// =========================
+// HOOK
+// =========================
 
 export const useAuth = () => useContext(AuthContext);

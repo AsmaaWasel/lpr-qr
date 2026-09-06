@@ -70,16 +70,13 @@ export default function LoginPage() {
 
       const userRole = localStorage.getItem("role");
 
-      if (userRole === "admin" || userRole === "superAdmin") {
+      if (userRole === "superAdmin" || userRole === "admin") {
         router.push("/dashboard");
       } else if (userRole === "resident") {
         router.push("/dashboard/qr-resident/qr-generator");
-      } else {
-        router.push("/dashboard");
       }
     } catch (err) {
       console.error("Login Error:", err);
-
       setLoading(false);
       setGateStatus("error");
 
