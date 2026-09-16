@@ -1,28 +1,61 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { useMemo } from "react";
+
 import { Camera } from "@/modules/types/camera";
-import { Check, ExternalLink } from "lucide-react";
+
+import { Check, ExternalLink, Loader2 } from "lucide-react";
 
 type Props = {
   data: Camera[];
   selectedId: number | null;
   onSelect: (id: number) => void;
+  onActiveChange?: (cameraId: number, active: boolean) => Promise<void>;
 };
 
-export default function ReaderTable({ data, selectedId, onSelect }: Props) {
-  // Filter only DRIVER cameras
-  const driverCameras = useMemo(() => {
-    return data.filter((camera) => camera.camera_type === "DRIVER");
-  }, [data]);
+export default function ReaderTable({
+  data,
+  selectedId,
+  onSelect,
+  onActiveChange,
+}: Props) {
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
+
+  // =========================
+  // FILTER DRIVER CAMERAS ONLY
+  // =========================
+  const driverCameras = data.filter(
+    (camera) => camera.camera_type?.toUpperCase() === "DRIVER",
+  );
+
+  // =========================
+  // TOGGLE ACTIVE
+  // =========================
+  const handleToggleActive = async (e: React.MouseEvent, camera: Camera) => {
+    e.stopPropagation();
+
+    if (!onActiveChange) return;
+
+    try {
+      setUpdatingId(camera.id);
+
+      const newActive = !camera.is_active;
+
+      await onActiveChange(camera.id, newActive);
+    } catch (error) {
+      console.error("Failed to update reader status:", error);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   return (
     <div className="w-full">
       {/* ================= TABLE ================= */}
       <div className="overflow-hidden bg-card shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1200px]">
+          <table className="w-full min-w-[1400px]">
             {/* ================= HEADER ================= */}
             <thead>
               <tr
@@ -141,6 +174,21 @@ export default function ReaderTable({ data, selectedId, onSelect }: Props) {
                   URL
                 </th>
 
+                {/* ACTIVE */}
+                <th
+                  className="
+                    px-6
+                    py-4
+                    text-lg
+                    font-bold
+                    uppercase
+                    tracking-wide
+                    text-muted-foreground
+                  "
+                >
+                  ACTIVE
+                </th>
+
                 {/* ACTION */}
                 <th
                   className="
@@ -163,7 +211,7 @@ export default function ReaderTable({ data, selectedId, onSelect }: Props) {
               {driverCameras.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={9}
                     className="
                       px-6
                       py-12
@@ -178,6 +226,7 @@ export default function ReaderTable({ data, selectedId, onSelect }: Props) {
               ) : (
                 driverCameras.map((camera) => {
                   const isSelected = selectedId === camera.id;
+                  const isUpdating = updatingId === camera.id;
 
                   return (
                     <tr
@@ -346,6 +395,87 @@ export default function ReaderTable({ data, selectedId, onSelect }: Props) {
                         >
                           {camera.url || "—"}
                         </span>
+                      </td>
+
+                      {/* ================= ACTIVE ================= */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center">
+                          <button
+                            type="button"
+                            disabled={isUpdating}
+                            onClick={(e) => handleToggleActive(e, camera)}
+                            className={`
+                              relative
+                              inline-flex
+                              h-7
+                              w-12
+                              shrink-0
+                              items-center
+                              rounded-full
+                              transition-colors
+                              duration-200
+                              focus:outline-none
+                              focus:ring-2
+                              focus:ring-brand
+                              focus:ring-offset-2
+                              dark:focus:ring-offset-slate-900
+                              ${
+                                camera.is_active
+                                  ? "bg-emerald-500"
+                                  : "bg-slate-300 dark:bg-slate-600"
+                              }
+                              ${
+                                isUpdating
+                                  ? "cursor-not-allowed opacity-60"
+                                  : "cursor-pointer"
+                              }
+                            `}
+                            aria-label={`Toggle reader ${camera.id} active status`}
+                            aria-pressed={camera.is_active}
+                          >
+                            {isUpdating ? (
+                              <span className="flex w-full items-center justify-center">
+                                <Loader2
+                                  size={14}
+                                  className="animate-spin text-white"
+                                />
+                              </span>
+                            ) : (
+                              <span
+                                className={`
+                                  inline-block
+                                  h-5
+                                  w-5
+                                  rounded-full
+                                  bg-white
+                                  shadow
+                                  transition-transform
+                                  duration-200
+                                  ${
+                                    camera.is_active
+                                      ? "translate-x-6"
+                                      : "translate-x-1"
+                                  }
+                                `}
+                              />
+                            )}
+                          </button>
+
+                          <span
+                            className={`
+                              ml-3
+                              text-sm
+                              font-medium
+                              ${
+                                camera.is_active
+                                  ? "text-emerald-600 dark:text-emerald-400"
+                                  : "text-slate-500 dark:text-slate-400"
+                              }
+                            `}
+                          >
+                            {camera.is_active ? "Active" : "Inactive"}
+                          </span>
+                        </div>
                       </td>
 
                       {/* ================= ACTION ================= */}

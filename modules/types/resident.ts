@@ -1,6 +1,8 @@
 // modules/types/resident.ts
 export type Resident = {
   id: number;
+  name: string;
+  phone: string;
   full_name: string;
   phone_number: string;
   type: "owner" | "relative" | "staff";

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AxiosError } from "axios";
 
 import { useToast } from "@/shared/hooks/use-toast";
 
@@ -12,10 +13,23 @@ import {
 } from "@/services/cameras";
 
 import CameraTable from "./CameraTable";
-import { CrudShell } from "@/shared/ui/voom";
 import CameraForm from "./CameraForm";
 
+import { CrudShell } from "@/shared/ui/voom";
+
+import ConfirmDialog from "../ConfirmDialog";
+
 import { Camera, CameraFormData } from "@/modules/types/camera";
+
+type DialogState = {
+  open: boolean;
+  type: "confirm" | "success" | "error";
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  onConfirm?: () => void;
+};
 
 export default function CameraCRUD() {
   // =========================
@@ -33,10 +47,27 @@ export default function CameraCRUD() {
 
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-
   const pageSize = 10;
 
   const toast = useToast();
+
+  // =========================
+  // DIALOG
+  // =========================
+
+  const [dialog, setDialog] = useState<DialogState>({
+    open: false,
+    type: "confirm",
+    title: "",
+    message: "",
+  });
+
+  const closeDialog = () => {
+    setDialog((prev) => ({
+      ...prev,
+      open: false,
+    }));
+  };
 
   const selectedCamera =
     cameras.find((camera) => camera.id === selectedId) || null;
@@ -49,11 +80,9 @@ export default function CameraCRUD() {
     const load = async () => {
       try {
         const data = await getCameras();
-
         setCameras(data);
       } catch (error) {
         console.error("Load cameras error:", error);
-
         toast.error("Failed to load cameras");
       }
     };
@@ -86,23 +115,15 @@ export default function CameraCRUD() {
   );
 
   // =========================
-  // STATS
-  // =========================
-
-  const totalDevices = cameras.length;
-
-  // =========================
   // ACTIVE / INACTIVE
   // =========================
 
   const handleActiveChange = async (cameraId: number, active: boolean) => {
     try {
-      // Send new active value to backend
       await updateCamera(cameraId, {
-        active,
+        is_active: active,
       });
 
-      // Update UI immediately
       setCameras((prev) =>
         prev.map((camera) =>
           camera.id === cameraId
@@ -124,16 +145,15 @@ export default function CameraCRUD() {
 
       toast.error("Failed to update camera status");
 
-      // Let the table know that the request failed
       throw error;
     }
   };
 
   // =========================
-  // SUBMIT
+  // CREATE / UPDATE
   // =========================
 
-  const handleSubmit = async (data: CameraFormData) => {
+  const executeSubmit = async (data: CameraFormData) => {
     try {
       const payload = {
         ...data,
@@ -143,49 +163,141 @@ export default function CameraCRUD() {
       if (editing) {
         await updateCamera(editing.id, payload);
 
-        toast.success("Camera updated successfully");
+        const refreshed = await getCameras();
+
+        setCameras(refreshed);
+        setOpen(false);
+        setEditing(null);
+        setSelectedId(null);
+
+        setDialog({
+          open: true,
+          type: "success",
+          title: "Camera Updated Successfully",
+          message: "The camera information has been updated successfully.",
+          confirmText: "OK",
+          onConfirm: closeDialog,
+        });
       } else {
         await createCamera(payload);
 
-        toast.success("Camera created successfully");
+        const refreshed = await getCameras();
+
+        setCameras(refreshed);
+        setOpen(false);
+        setEditing(null);
+        setSelectedId(null);
+
+        setDialog({
+          open: true,
+          type: "success",
+          title: "Camera Created Successfully",
+          message: "The new camera has been created successfully.",
+          confirmText: "OK",
+          onConfirm: closeDialog,
+        });
       }
-
-      const refreshed = await getCameras();
-
-      setCameras(refreshed);
-
-      setOpen(false);
-      setEditing(null);
-      setSelectedId(null);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Submit error:", error);
 
-      toast.error("Something went wrong");
+      const axiosError = error as AxiosError<{
+        detail?: string;
+      }>;
+
+      const backendMessage =
+        axiosError.response?.data?.detail ||
+        "Something went wrong while saving the camera.";
+
+      setDialog({
+        open: true,
+        type: "error",
+        title: "Operation Failed",
+        message: backendMessage,
+        confirmText: "OK",
+        onConfirm: closeDialog,
+      });
+
+      throw error;
     }
+  };
+
+  // =========================
+  // SUBMIT
+  // =========================
+
+  const handleSubmit = async (data: CameraFormData) => {
+    const isEditing = !!editing;
+
+    setDialog({
+      open: true,
+      type: "confirm",
+      title: isEditing ? "Update Camera?" : "Create Camera?",
+      message: isEditing
+        ? "Are you sure you want to update this camera?"
+        : "Are you sure you want to create this camera?",
+      confirmText: isEditing ? "Update" : "Create",
+      cancelText: "Cancel",
+
+      onConfirm: () => {
+        closeDialog();
+        executeSubmit(data);
+      },
+    });
   };
 
   // =========================
   // DELETE
   // =========================
 
-  const handleDelete = async () => {
+  const executeDelete = async () => {
     if (!selectedCamera) return;
 
     try {
       await deleteCamera(selectedCamera.id);
 
-      toast.success("Camera deleted successfully");
-
       const refreshed = await getCameras();
 
       setCameras(refreshed);
-
       setSelectedId(null);
+
+      setDialog({
+        open: true,
+        type: "success",
+        title: "Camera Deleted Successfully",
+        message: "The camera has been deleted successfully.",
+        confirmText: "OK",
+        onConfirm: closeDialog,
+      });
     } catch (error) {
       console.error("Delete error:", error);
 
-      toast.error("Failed to delete camera");
+      setDialog({
+        open: true,
+        type: "error",
+        title: "Delete Failed",
+        message: "Failed to delete the camera. Please try again.",
+        confirmText: "OK",
+        onConfirm: closeDialog,
+      });
     }
+  };
+
+  const handleDelete = () => {
+    if (!selectedCamera) return;
+
+    setDialog({
+      open: true,
+      type: "confirm",
+      title: "Delete Camera?",
+      message: `Are you sure you want to delete "${selectedCamera.location}"? This action cannot be undone.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+
+      onConfirm: () => {
+        closeDialog();
+        executeDelete();
+      },
+    });
   };
 
   // =========================
@@ -251,6 +363,21 @@ export default function CameraCRUD() {
           onSubmit={handleSubmit}
         />
       )}
+
+      {/* =========================
+          CONFIRM / SUCCESS / ERROR
+      ========================= */}
+
+      <ConfirmDialog
+        open={dialog.open}
+        type={dialog.type}
+        title={dialog.title}
+        message={dialog.message}
+        confirmText={dialog.confirmText}
+        cancelText={dialog.cancelText}
+        onConfirm={dialog.onConfirm}
+        onCancel={closeDialog}
+      />
     </>
   );
 }

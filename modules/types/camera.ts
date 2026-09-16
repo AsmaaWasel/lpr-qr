@@ -12,6 +12,8 @@ export type Camera = {
   add_string_to_url?: string;
   is_active?: boolean;
   latency?: string;
+  active?: boolean;
+  camera_type?: string;
 };
 
 export type CameraFormData = {

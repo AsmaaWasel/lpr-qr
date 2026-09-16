@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { AxiosError } from "axios";
+
 import PlateTable from "./PlateTable";
 import PlateForm from "./PlateForm";
 
@@ -17,6 +19,18 @@ import {
 import { Plate } from "@/modules/types/plate";
 
 import { CrudShell } from "@/shared/ui/voom";
+
+import ConfirmDialog from "../ConfirmDialog";
+
+type DialogState = {
+  open: boolean;
+  type: "confirm" | "success" | "error";
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  onConfirm?: () => void;
+};
 
 export default function PlateCRUD() {
   // =========================
@@ -36,8 +50,29 @@ export default function PlateCRUD() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const pageSize = 10;
-
   const toast = useToast();
+
+  // =========================
+  // DIALOG
+  // =========================
+
+  const [dialog, setDialog] = useState<DialogState>({
+    open: false,
+    type: "confirm",
+    title: "",
+    message: "",
+  });
+
+  const closeDialog = () => {
+    setDialog((prev) => ({
+      ...prev,
+      open: false,
+    }));
+  };
+
+  // =========================
+  // SELECTED PLATE
+  // =========================
 
   const selectedPlate = plates.find((plate) => plate.id === selectedId) || null;
 
@@ -81,6 +116,74 @@ export default function PlateCRUD() {
   );
 
   // =========================
+  // CREATE / UPDATE
+  // =========================
+
+  const executeSubmit = async (data: {
+    plate_number_full: string;
+    resident_id?: number;
+  }) => {
+    try {
+      if (editing) {
+        await updatePlate(editing.id, data);
+
+        const refreshed = await getPlates();
+
+        setPlates(refreshed);
+        setOpen(false);
+        setEditing(null);
+        setSelectedId(null);
+
+        setDialog({
+          open: true,
+          type: "success",
+          title: "Plate Updated Successfully",
+          message: "The plate information has been updated successfully.",
+          confirmText: "OK",
+          onConfirm: closeDialog,
+        });
+      } else {
+        await createPlate(data);
+
+        const refreshed = await getPlates();
+
+        setPlates(refreshed);
+        setOpen(false);
+        setEditing(null);
+        setSelectedId(null);
+
+        setDialog({
+          open: true,
+          type: "success",
+          title: "Plate Created Successfully",
+          message: "The new plate has been created successfully.",
+          confirmText: "OK",
+          onConfirm: closeDialog,
+        });
+      }
+    } catch (error: unknown) {
+      console.error("Submit error:", error);
+
+      const axiosError = error as AxiosError<{
+        detail?: string;
+      }>;
+
+      const backendMessage =
+        axiosError.response?.data?.detail ||
+        "Something went wrong while saving the plate.";
+
+      setDialog({
+        open: true,
+        type: "error",
+        title: "Operation Failed",
+        message: backendMessage,
+        confirmText: "OK",
+        onConfirm: closeDialog,
+      });
+    }
+  };
+
+  // =========================
   // SUBMIT
   // =========================
 
@@ -88,41 +191,33 @@ export default function PlateCRUD() {
     plate_number_full: string;
     resident_id?: number;
   }) => {
-    try {
-      if (editing) {
-        await updatePlate(editing.id, data);
-        toast.success("Plate updated successfully");
-      } else {
-        await createPlate(data);
-        toast.success("Plate created successfully");
-      }
+    const isEditing = !!editing;
 
-      const refreshed = await getPlates();
-      setPlates(refreshed);
-
-      setOpen(false);
-      setEditing(null);
-      setSelectedId(null);
-    } catch (error) {
-      console.error("Submit error:", error);
-
-      // مهم جدًا:
-      // نرمي الـ error تاني عشان PlateForm يمسك رسالة الـ backend
-      throw error;
-    }
+    setDialog({
+      open: true,
+      type: "confirm",
+      title: isEditing ? "Update Plate?" : "Create Plate?",
+      message: isEditing
+        ? "Are you sure you want to update this plate?"
+        : "Are you sure you want to create this plate?",
+      confirmText: isEditing ? "Update" : "Create",
+      cancelText: "Cancel",
+      onConfirm: () => {
+        closeDialog();
+        executeSubmit(data);
+      },
+    });
   };
 
   // =========================
   // DELETE
   // =========================
 
-  const handleDelete = async () => {
+  const executeDelete = async () => {
     if (!selectedPlate) return;
 
     try {
       await deletePlate(selectedPlate.id);
-
-      toast.success("Plate deleted successfully");
 
       const refreshed = await getPlates();
 
@@ -133,11 +228,52 @@ export default function PlateCRUD() {
       if (currentPage > 1 && (currentPage - 1) * pageSize >= refreshed.length) {
         setCurrentPage((page) => Math.max(1, page - 1));
       }
-    } catch (error) {
+
+      setDialog({
+        open: true,
+        type: "success",
+        title: "Plate Deleted Successfully",
+        message: "The plate has been deleted successfully.",
+        confirmText: "OK",
+        onConfirm: closeDialog,
+      });
+    } catch (error: unknown) {
       console.error("Delete error:", error);
 
-      toast.error("Failed to delete plate");
+      const axiosError = error as AxiosError<{
+        detail?: string;
+      }>;
+
+      const backendMessage =
+        axiosError.response?.data?.detail ||
+        "Failed to delete the plate. Please try again.";
+
+      setDialog({
+        open: true,
+        type: "error",
+        title: "Delete Failed",
+        message: backendMessage,
+        confirmText: "OK",
+        onConfirm: closeDialog,
+      });
     }
+  };
+
+  const handleDelete = () => {
+    if (!selectedPlate) return;
+
+    setDialog({
+      open: true,
+      type: "confirm",
+      title: "Delete Plate?",
+      message: `Are you sure you want to delete "${selectedPlate.plate_number_full}"? This action cannot be undone.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      onConfirm: () => {
+        closeDialog();
+        executeDelete();
+      },
+    });
   };
 
   // =========================
@@ -204,6 +340,21 @@ export default function PlateCRUD() {
           onSubmit={handleSubmit}
         />
       )}
+
+      {/* =========================
+          CONFIRM / SUCCESS / ERROR
+      ========================= */}
+
+      <ConfirmDialog
+        open={dialog.open}
+        type={dialog.type}
+        title={dialog.title}
+        message={dialog.message}
+        confirmText={dialog.confirmText}
+        cancelText={dialog.cancelText}
+        onConfirm={dialog.onConfirm}
+        onCancel={closeDialog}
+      />
     </>
   );
 }

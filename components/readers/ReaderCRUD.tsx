@@ -12,6 +12,7 @@ import {
 } from "@/services/cameras";
 
 import { CrudShell } from "@/shared/ui/voom";
+
 import { Camera, CameraFormData } from "@/modules/types/camera";
 
 import ReaderForm from "./ReaderForm";
@@ -42,17 +43,17 @@ export default function ReaderCRUD({ onStatsChange }: Props) {
   const [currentPage, setCurrentPage] = useState(1);
 
   const pageSize = 10;
-
   const toast = useToast();
 
-  const selectedCamera = cameras.find((c) => c.id === selectedId) || null;
+  const selectedCamera =
+    cameras.find((camera) => camera.id === selectedId) || null;
 
   // =========================
   // DRIVER CAMERAS
   // =========================
 
   const driverCameras = cameras.filter(
-    (camera) => camera.camera_type === "DRIVER",
+    (camera) => camera.camera_type?.toUpperCase() === "DRIVER",
   );
 
   // =========================
@@ -65,12 +66,12 @@ export default function ReaderCRUD({ onStatsChange }: Props) {
 
     // DRIVER cameras with reader_type CAMERA
     const totalCameras = driverCameras.filter(
-      (camera) => camera.reader_type === "CAMERA",
+      (camera) => camera.reader_type?.toUpperCase() === "CAMERA",
     ).length;
 
     // DRIVER cameras with reader_type QRREADER
     const totalQrReaders = driverCameras.filter(
-      (camera) => camera.reader_type === "QRREADER",
+      (camera) => camera.reader_type?.toUpperCase() === "QRREADER",
     ).length;
 
     // DRIVER cameras that are inactive
@@ -85,6 +86,7 @@ export default function ReaderCRUD({ onStatsChange }: Props) {
       offline,
     });
   }, [cameras, onStatsChange]);
+
   // =========================
   // LOAD
   // =========================
@@ -94,7 +96,8 @@ export default function ReaderCRUD({ onStatsChange }: Props) {
       try {
         const data = await getCameras();
         setCameras(data);
-      } catch {
+      } catch (error) {
+        console.error("Load readers error:", error);
         toast.error("Failed to load cameras");
       }
     };
@@ -106,12 +109,12 @@ export default function ReaderCRUD({ onStatsChange }: Props) {
   // FILTERS
   // =========================
 
-  const filteredCameras = driverCameras.filter((cam) => {
+  const filteredCameras = driverCameras.filter((camera) => {
     const searchValue = search.toLowerCase();
 
     return (
-      cam.location?.toLowerCase().includes(searchValue) ||
-      cam.ip_address?.includes(searchValue)
+      camera.location?.toLowerCase().includes(searchValue) ||
+      camera.ip_address?.toLowerCase().includes(searchValue)
     );
   });
 
@@ -127,6 +130,43 @@ export default function ReaderCRUD({ onStatsChange }: Props) {
   );
 
   // =========================
+  // ACTIVE / INACTIVE
+  // =========================
+
+  const handleActiveChange = async (cameraId: number, active: boolean) => {
+    try {
+      // Update backend
+      await updateCamera(cameraId, {
+        is_active: active,
+      });
+
+      // Update local state immediately
+      setCameras((prev) =>
+        prev.map((camera) =>
+          camera.id === cameraId
+            ? {
+                ...camera,
+                is_active: active,
+              }
+            : camera,
+        ),
+      );
+
+      toast.success(
+        active
+          ? "Reader activated successfully"
+          : "Reader deactivated successfully",
+      );
+    } catch (error) {
+      console.error("Failed to update reader active status:", error);
+
+      toast.error("Failed to update reader status");
+
+      throw error;
+    }
+  };
+
+  // =========================
   // SUBMIT
   // =========================
 
@@ -134,12 +174,10 @@ export default function ReaderCRUD({ onStatsChange }: Props) {
     try {
       if (editing) {
         await updateCamera(editing.id, data);
-
-        toast.success("Camera updated successfully");
+        toast.success("Reader updated successfully");
       } else {
         await createCamera(data);
-
-        toast.success("Camera created successfully");
+        toast.success("Reader created successfully");
       }
 
       const refreshed = await getCameras();
@@ -150,7 +188,6 @@ export default function ReaderCRUD({ onStatsChange }: Props) {
       setSelectedId(null);
     } catch (error) {
       console.error("Submit error:", error);
-
       toast.error("Something went wrong");
     }
   };
@@ -165,14 +202,15 @@ export default function ReaderCRUD({ onStatsChange }: Props) {
     try {
       await deleteCamera(selectedCamera.id);
 
-      toast.success("Camera deleted successfully");
+      toast.success("Reader deleted successfully");
 
       const refreshed = await getCameras();
 
       setCameras(refreshed);
       setSelectedId(null);
-    } catch {
-      toast.error("Failed to delete camera");
+    } catch (error) {
+      console.error("Delete reader error:", error);
+      toast.error("Failed to delete reader");
     }
   };
 
@@ -206,13 +244,16 @@ export default function ReaderCRUD({ onStatsChange }: Props) {
         totalPages={totalPages}
         totalItems={filteredCameras.length}
         itemLabel="readers"
-        onPrevious={() => setCurrentPage((p) => Math.max(1, p - 1))}
-        onNext={() => setCurrentPage((p) => Math.min(totalPages || 1, p + 1))}
+        onPrevious={() => setCurrentPage((page) => Math.max(1, page - 1))}
+        onNext={() =>
+          setCurrentPage((page) => Math.min(totalPages || 1, page + 1))
+        }
       >
         <ReaderTable
           data={paginatedCameras}
           selectedId={selectedId}
           onSelect={(id) => setSelectedId((prev) => (prev === id ? null : id))}
+          onActiveChange={handleActiveChange}
         />
       </CrudShell>
 

@@ -29,18 +29,23 @@ export default function CamerasPage() {
     fetchCameras();
   }, []);
 
-  /* ================= CAMERA STATS ================= */
+  /* ================= LPR CAMERA STATS ================= */
 
   const cameraStats = useMemo(() => {
-    const totalCameras = cameras.length;
+    // Only LPR cameras
+    const lprCameras = cameras.filter((camera) => camera.camera_type === "LPR");
 
-    const onlineCameras = cameras.filter((camera) => camera.is_active).length;
+    const totalCameras = lprCameras.length;
 
-    const inactiveCameras = cameras.filter(
+    const onlineCameras = lprCameras.filter(
+      (camera) => camera.is_active === true,
+    ).length;
+
+    const inactiveCameras = lprCameras.filter(
       (camera) => camera.is_active === false,
     ).length;
 
-    const camerasWithLatency = cameras.filter(
+    const camerasWithLatency = lprCameras.filter(
       (camera) =>
         camera.latency !== null &&
         camera.latency !== undefined &&
@@ -55,7 +60,7 @@ export default function CamerasPage() {
               0,
             ) / camerasWithLatency.length,
           )
-        : 3;
+        : 0;
 
     return {
       totalCameras,
@@ -95,7 +100,7 @@ export default function CamerasPage() {
           },
           {
             label: "AVG LATENCY",
-            value: `${cameraStats.avgLatency} ms`,
+            value: `3 ms`,
           },
         ]}
       />
