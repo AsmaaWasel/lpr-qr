@@ -1,18 +1,13 @@
 "use client";
 
 import { useState } from "react";
+
 import { useRouter } from "next/navigation";
+
 import { useAuth } from "@/shared/context/AuthContext";
 
-import {
-  AlertCircle,
-  ArrowLeft,
-  KeyRound,
-  ShieldCheck,
-  Video,
-} from "lucide-react";
+import { ArrowLeft, KeyRound, ShieldCheck, Video } from "lucide-react";
 
-import RegisterForm from "@/modules/sharedComponents/auth/RegisterForm";
 import GateAnimation from "@/components/login/GateAnimation";
 import LoginForm from "@/components/login/LoginForm";
 
@@ -45,7 +40,6 @@ export default function LoginPage() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showRegister, setShowRegister] = useState(false);
 
   const [gateStatus, setGateStatus] = useState<"idle" | "opening" | "error">(
     "idle",
@@ -77,30 +71,12 @@ export default function LoginPage() {
       }
     } catch (err) {
       console.error("Login Error:", err);
+
       setLoading(false);
       setGateStatus("error");
 
       setError(err instanceof Error ? err.message : "Login failed");
     }
-  };
-
-  /* =========================================================
-     REGISTER SUCCESS
-  ========================================================= */
-
-  const handleRegisterSuccess = (username: string, password: string) => {
-    setShowRegister(false);
-    setError("");
-  };
-
-  /* =========================================================
-     BACK TO LOGIN
-  ========================================================= */
-
-  const backToLogin = () => {
-    setShowRegister(false);
-    setError("");
-    setGateStatus("idle");
   };
 
   /* =========================================================
@@ -125,6 +101,7 @@ export default function LoginPage() {
         "
       >
         {/* Background image */}
+
         <div
           aria-hidden
           className="
@@ -142,6 +119,7 @@ export default function LoginPage() {
         />
 
         {/* Dark overlay */}
+
         <div
           aria-hidden
           className="
@@ -155,6 +133,7 @@ export default function LoginPage() {
         />
 
         {/* Grid */}
+
         <div
           aria-hidden
           className="absolute inset-0 opacity-[0.05]"
@@ -166,6 +145,7 @@ export default function LoginPage() {
         />
 
         {/* Cyan glow */}
+
         <div
           aria-hidden
           className="
@@ -181,6 +161,7 @@ export default function LoginPage() {
         />
 
         {/* Blue glow */}
+
         <div
           aria-hidden
           className="
@@ -196,6 +177,7 @@ export default function LoginPage() {
         />
 
         {/* Panel content */}
+
         <div
           className="
             relative
@@ -209,6 +191,7 @@ export default function LoginPage() {
           "
         >
           {/* Logo */}
+
           <img
             src="/logo.svg"
             alt="Company logo"
@@ -221,6 +204,7 @@ export default function LoginPage() {
           />
 
           {/* Main content */}
+
           <div className="max-w-md">
             <div
               className="
@@ -250,44 +234,43 @@ export default function LoginPage() {
                 xl:text-5xl
               "
             >
-              One gate.
-              <br />
-              Full control.
+              Compound Gates fully managed from one dashboard
             </h2>
 
             {/* Features */}
+
             <ul className="mt-7 space-y-3">
               {PANEL_FEATURES.map(({ icon: Icon, label }) => (
                 <li key={label} className="flex items-center gap-3">
                   <span
                     className="
-                      flex
-                      h-9
-                      w-9
-                      shrink-0
-                      items-center
-                      justify-center
-                      rounded-lg
-                      border
-                      border-[#29C5E8]/25
-                      bg-[#29C5E8]/10
-                    "
+                        flex
+                        h-9
+                        w-9
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-lg
+                        border
+                        border-[#29C5E8]/25
+                        bg-[#29C5E8]/10
+                      "
                   >
                     <Icon
                       className="
-                        h-[18px]
-                        w-[18px]
-                        text-[#29C5E8]
-                      "
+                          h-[18px]
+                          w-[18px]
+                          text-[#29C5E8]
+                        "
                     />
                   </span>
 
                   <span
                     className="
-                      text-[14px]
-                      font-medium
-                      text-[#C4D5E8]
-                    "
+                        text-[14px]
+                        font-medium
+                        text-[#C4D5E8]
+                      "
                   >
                     {label}
                   </span>
@@ -297,6 +280,7 @@ export default function LoginPage() {
           </div>
 
           {/* Copyright */}
+
           <p className="text-xs text-[#5E7896]">
             © {new Date().getFullYear()} All rights reserved.
           </p>
@@ -321,9 +305,9 @@ export default function LoginPage() {
           lg:py-8
         "
       >
-        {/* Changed from 520px → 580px */}
         <div className="w-full max-w-[580px]">
           {/* Mobile logo */}
+
           <div className="mb-5 flex justify-center lg:hidden">
             <img
               src="/logo.svg"
@@ -355,6 +339,7 @@ export default function LoginPage() {
             "
           >
             {/* Gate animation */}
+
             <div className="flex justify-center">
               <GateAnimation gateStatus={gateStatus} />
             </div>
@@ -364,31 +349,6 @@ export default function LoginPage() {
             ================================================= */}
 
             <div className="mt-4">
-              {showRegister && (
-                <button
-                  type="button"
-                  onClick={backToLogin}
-                  className="
-                    mb-3
-                    inline-flex
-                    items-center
-                    gap-1.5
-                    rounded-md
-                    text-sm
-                    font-medium
-                    text-[#7C93B4]
-                    transition-colors
-                    hover:text-[#29C5E8]
-                    focus-visible:outline-none
-                    focus-visible:ring-2
-                    focus-visible:ring-[#29C5E8]/50
-                  "
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to sign in
-                </button>
-              )}
-
               <h1
                 className="
                   text-[24px]
@@ -399,7 +359,7 @@ export default function LoginPage() {
                   dark:text-white
                 "
               >
-                {showRegister ? "Create an admin account" : "Welcome back"}
+                Welcome back
               </h1>
 
               <p
@@ -410,9 +370,7 @@ export default function LoginPage() {
                   text-[#7C93B4]
                 "
               >
-                {showRegister
-                  ? "Set up a new administrator for this portal."
-                  : "Sign in to open the gate to your dashboard."}
+                Sign into your dashboard.
               </p>
             </div>
 
@@ -420,7 +378,7 @@ export default function LoginPage() {
                 SUCCESS
             ================================================= */}
 
-            {gateStatus === "opening" && !showRegister && (
+            {gateStatus === "opening" && (
               <div
                 aria-live="polite"
                 className="
@@ -461,87 +419,75 @@ export default function LoginPage() {
             )}
 
             {/* =================================================
-                FORM
+                LOGIN FORM
             ================================================= */}
 
             <div className="mt-5">
-              {!showRegister ? (
-                <LoginForm
-                  onSubmit={handleLogin}
-                  isLoading={loading}
-                  error={error}
-                  gateStatus={gateStatus}
-                />
-              ) : (
-                <RegisterForm
-                  onBack={backToLogin}
-                  onSuccess={handleRegisterSuccess}
-                />
-              )}
+              <LoginForm
+                onSubmit={handleLogin}
+                isLoading={loading}
+                error={error}
+                gateStatus={gateStatus}
+              />
             </div>
 
             {/* =================================================
-                CREATE ADMIN
+                REGISTER DISABLED
+            =================================================
+
+                Register functionality has been intentionally
+                disabled/commented out.
+
+                It can be enabled later if needed.
+
             ================================================= */}
 
-            {!showRegister && (
-              <>
-                {/* Divider */}
-                <div className="my-4 flex items-center gap-4">
-                  <span className="h-px flex-1 bg-border" />
+            {/*
+            <div className="my-4 flex items-center gap-4">
+              <span className="h-px flex-1 bg-border" />
 
-                  <span
-                    className="
-                      text-[11px]
-                      font-semibold
-                      uppercase
-                      tracking-[0.14em]
-                      text-[#7C93B4]
-                    "
-                  >
-                    or
-                  </span>
+              <span
+                className="
+                  text-[11px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.14em]
+                  text-[#7C93B4]
+                "
+              >
+                or
+              </span>
 
-                  <span className="h-px flex-1 bg-border" />
-                </div>
+              <span className="h-px flex-1 bg-border" />
+            </div>
 
-                {/* Register button */}
-                <button
-                  type="button"
-                  disabled={loading || gateStatus === "opening"}
-                  onClick={() => {
-                    setShowRegister(true);
-                    setError("");
-                    setGateStatus("idle");
-                  }}
-                  className="
-                    w-full
-                    rounded-xl
-                    border
-                    border-border
-                    bg-[#F2F6FB]
-                    py-2.5
-                    text-[15px]
-                    font-semibold
-                    text-[#3B5473]
-                    transition-colors
-                    hover:border-[#29C5E8]/40
-                    hover:bg-[#29C5E8]/10
-                    hover:text-[#1C93AF]
-                    focus-visible:outline-none
-                    focus-visible:ring-2
-                    focus-visible:ring-[#29C5E8]/50
-                    disabled:cursor-not-allowed
-                    disabled:opacity-50
-                    dark:bg-slate-800/40
-                    dark:text-white
-                    dark:hover:text-[#29C5E8]
-                  "
-                >
-                  Create an admin account
-                </button>
-              </>
-            )}
+            <button
+              type="button"
+              className="
+                w-full
+                rounded-xl
+                border
+                border-border
+                bg-[#F2F6FB]
+                py-2.5
+                text-[15px]
+                font-semibold
+                text-[#3B5473]
+                transition-colors
+                hover:border-[#29C5E8]/40
+                hover:bg-[#29C5E8]/10
+                hover:text-[#1C93AF]
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-[#29C5E8]/50
+                dark:bg-slate-800/40
+                dark:text-white
+                dark:hover:text-[#29C5E8]
+              "
+            >
+              Create an admin account
+            </button>
+            */}
           </div>
         </div>
       </section>

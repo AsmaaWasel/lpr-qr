@@ -10,9 +10,7 @@ export default function CamerasPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">QR Readers</h1>
 
-          <p className="text-muted-foreground mt-1">
-            Manage system readers and entry points
-          </p>
+          <p className="text-muted-foreground mt-1">Manage system readers</p>
         </div>
       </div>
 

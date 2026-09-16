@@ -16,34 +16,39 @@ export default function PlateTable({ data, selectedId, onSelect }: Props) {
   // =========================
   // FORMAT PLATE NUMBER
   // =========================
-  const formatPlateNumber = (plate: string) => {
-    if (!plate) return "";
 
-    const clean = plate.replace(/\s/g, "");
+ 
+const formatPlateNumber = (plate: string) => {
+  if (!plate) return "";
 
-    const numbers = clean.match(/\d+/g)?.join("") || "";
-    const letters = clean.match(/[^\d]+/g)?.join("") || "";
+  const clean = plate.replace(/\s/g, "");
 
-    const spacedLetters = letters.split("").join(" ");
+  const numbers = clean.match(/\d+/g)?.join("") || "";
+  const letters = clean.match(/[^\d]+/g)?.join("") || "";
 
-    if (numbers && letters && /^\d/.test(clean)) {
-      return `${numbers} ${spacedLetters}`;
-    }
+  const spacedNumbers = numbers.split("").join(" ");
+  const reversedLetters = letters.split("").reverse().join(" ");
+  
+  if (numbers && letters && /^\d/.test(clean)) {
+    return `${spacedNumbers} ${reversedLetters}`;
+  }
 
-    if (letters && numbers && /^[^\d]/.test(clean)) {
-      return `${spacedLetters} ${numbers}`;
-    }
+  if (letters && numbers && /^[^\d]/.test(clean)) {
+    return `${reversedLetters} ${spacedNumbers}`;
+  }
 
-    if (!numbers && letters) {
-      return spacedLetters;
-    }
+  if (!numbers && letters) {
+    return reversedLetters;
+  }
 
-    if (numbers && !letters) {
-      return numbers;
-    }
+  if (numbers && !letters) {
+    return spacedNumbers;
+  }
 
-    return clean;
-  };
+  return clean;
+};
+
+
 
   // =========================
   // OPEN DETAILS
@@ -250,16 +255,6 @@ export default function PlateTable({ data, selectedId, onSelect }: Props) {
                               "
                             >
                               {plate.resident.full_name}
-                            </p>
-
-                            <p
-                              className="
-                                mt-0.5
-                                text-xs
-                                text-muted-foreground
-                              "
-                            >
-                              Assigned
                             </p>
                           </div>
                         ) : (

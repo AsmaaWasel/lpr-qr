@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-
+import { useMemo } from "react";
 import { Camera } from "@/modules/types/camera";
-
 import { Check, ExternalLink } from "lucide-react";
 
 type Props = {
@@ -13,6 +12,11 @@ type Props = {
 };
 
 export default function ReaderTable({ data, selectedId, onSelect }: Props) {
+  // Filter only DRIVER cameras
+  const driverCameras = useMemo(() => {
+    return data.filter((camera) => camera.camera_type === "DRIVER");
+  }, [data]);
+
   return (
     <div className="w-full">
       {/* ================= TABLE ================= */}
@@ -156,7 +160,7 @@ export default function ReaderTable({ data, selectedId, onSelect }: Props) {
 
             {/* ================= BODY ================= */}
             <tbody>
-              {data.length === 0 ? (
+              {driverCameras.length === 0 ? (
                 <tr>
                   <td
                     colSpan={8}
@@ -168,11 +172,11 @@ export default function ReaderTable({ data, selectedId, onSelect }: Props) {
                       text-muted-foreground
                     "
                   >
-                    No cameras found
+                    No DRIVER cameras found
                   </td>
                 </tr>
               ) : (
-                data.map((camera) => {
+                driverCameras.map((camera) => {
                   const isSelected = selectedId === camera.id;
 
                   return (

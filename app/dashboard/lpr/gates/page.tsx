@@ -47,6 +47,7 @@ export default function GatesPage() {
   const exitGates = gates.filter(
     (gate) => gate.type?.toLowerCase() === "exit",
   ).length;
+  const offlineGates = gates.filter((gate) => gate.active === false).length;
 
   return (
     <div className="space-y-4">
@@ -76,7 +77,7 @@ export default function GatesPage() {
           },
           {
             label: "Offline",
-            value: 0,
+            value: offlineGates,
           },
         ]}
       />

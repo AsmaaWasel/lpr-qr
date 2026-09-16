@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { QrCode, Loader2, CalendarDays } from "lucide-react";
+
 import { format } from "date-fns";
 
 import { Calendar } from "@/components/ui/calendar";
+
 import {
   Popover,
   PopoverContent,
@@ -51,26 +54,41 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
   // =====================================================
 
   const [residentId, setResidentId] = useState("");
+
   const [maxUses, setMaxUses] = useState(1);
 
   const [visitorFullName, setVisitorFullName] = useState("");
+
   const [visitorNationalId, setVisitorNationalId] = useState("");
+
   const [visitorPhoneNumber, setVisitorPhoneNumber] = useState("");
 
   const [startDate, setStartDate] = useState<Date | undefined>();
+
   const [expiryDate, setExpiryDate] = useState<Date | undefined>();
+
+  // =====================================================
+  // VALIDATION STATES
+  // =====================================================
+
+  const [phoneTouched, setPhoneTouched] = useState(false);
+
+  const [nationalIdTouched, setNationalIdTouched] = useState(false);
 
   // =====================================================
   // RESIDENT STATES
   // =====================================================
 
   const [residents, setResidents] = useState<Resident[]>([]);
+
   const [residentSearch, setResidentSearch] = useState("");
+
   const [selectedResident, setSelectedResident] = useState<Resident | null>(
     null,
   );
 
   const [showResidentDropdown, setShowResidentDropdown] = useState(false);
+
   const [loadingResidents, setLoadingResidents] = useState(false);
 
   // =====================================================
@@ -78,6 +96,7 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
   // =====================================================
 
   const today = new Date();
+
   today.setHours(0, 0, 0, 0);
 
   // =====================================================
@@ -118,6 +137,7 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
     setResidentSearch(value);
 
     setSelectedResident(null);
+
     setResidentId("");
 
     setShowResidentDropdown(value.trim().length > 0);
@@ -143,8 +163,11 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
 
   const handleClearResident = () => {
     setSelectedResident(null);
+
     setResidentId("");
+
     setResidentSearch("");
+
     setShowResidentDropdown(false);
   };
 
@@ -159,16 +182,210 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
   };
 
   // =====================================================
+  // PHONE VALIDATION
+  // =====================================================
+
+  const isPhoneValid = /^01\d{9}$/.test(visitorPhoneNumber);
+
+  const phoneError = (() => {
+    if (!phoneTouched) return "";
+
+    if (!visitorPhoneNumber) {
+      return "Phone number is required.";
+    }
+
+    if (!/^\d+$/.test(visitorPhoneNumber)) {
+      return "Phone number must contain numbers only.";
+    }
+
+    if (!visitorPhoneNumber.startsWith("01")) {
+      return "Phone number must start with 01.";
+    }
+
+    if (visitorPhoneNumber.length !== 11) {
+      return "Phone number must be exactly 11 digits.";
+    }
+
+    return "";
+  })();
+
+  // =====================================================
+  // NATIONAL ID VALIDATION
+  // =====================================================
+
+  const isNationalIdValid = /^\d{14}$/.test(visitorNationalId);
+
+  const nationalIdError = (() => {
+    if (!nationalIdTouched) return "";
+
+    if (!visitorNationalId) {
+      return "National ID is required.";
+    }
+
+    if (!/^\d+$/.test(visitorNationalId)) {
+      return "National ID must contain numbers only.";
+    }
+
+    if (visitorNationalId.length !== 14) {
+      return "National ID must be exactly 14 digits.";
+    }
+
+    return "";
+  })();
+
+  // =====================================================
+  // DATE HELPERS
+  // =====================================================
+
+  /**
+   * When selecting a date:
+   * - Keep the selected date
+   * - Preserve existing time if available
+   * - Otherwise use current time
+   */
+  const createDateWithTime = (selectedDate: Date, existingDate?: Date) => {
+    const newDate = new Date(selectedDate);
+
+    if (existingDate) {
+      newDate.setHours(
+        existingDate.getHours(),
+        existingDate.getMinutes(),
+        0,
+        0,
+      );
+    } else {
+      const now = new Date();
+
+      newDate.setHours(now.getHours(), now.getMinutes(), 0, 0);
+    }
+
+    return newDate;
+  };
+
+  // =====================================================
+  // START DATE
+  // =====================================================
+
+  const handleStartDateSelect = (date: Date | undefined) => {
+    if (!date) {
+      setStartDate(undefined);
+      return;
+    }
+
+    const newDate = createDateWithTime(date, startDate);
+
+    setStartDate(newDate);
+
+    if (expiryDate && expiryDate < newDate) {
+      setExpiryDate(undefined);
+    }
+  };
+
+  // =====================================================
+  // START TIME
+  // =====================================================
+
+  const handleStartTimeChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const value = event.target.value;
+
+    if (!value) return;
+
+    const [hours, minutes] = value.split(":").map(Number);
+
+    const newDate = startDate ? new Date(startDate) : new Date();
+
+    newDate.setHours(hours, minutes, 0, 0);
+
+    setStartDate(newDate);
+
+    if (expiryDate && expiryDate < newDate) {
+      setExpiryDate(undefined);
+    }
+  };
+
+  // =====================================================
+  // EXPIRY DATE
+  // =====================================================
+
+  const handleExpiryDateSelect = (date: Date | undefined) => {
+    if (!date) {
+      setExpiryDate(undefined);
+      return;
+    }
+
+    const newDate = createDateWithTime(date, expiryDate);
+
+    setExpiryDate(newDate);
+  };
+
+  // =====================================================
+  // EXPIRY TIME
+  // =====================================================
+
+  const handleExpiryTimeChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const value = event.target.value;
+
+    if (!value) return;
+
+    const [hours, minutes] = value.split(":").map(Number);
+
+    const newDate = expiryDate ? new Date(expiryDate) : new Date();
+
+    newDate.setHours(hours, minutes, 0, 0);
+
+    setExpiryDate(newDate);
+  };
+
+  // =====================================================
+  // DATE/TIME VALIDATION
+  // =====================================================
+
+  const isDateTimeValid = !!startDate && !!expiryDate && expiryDate > startDate;
+
+  // =====================================================
+  // FORM VALIDATION
+  // =====================================================
+
+  const isFormValid =
+    residentId.trim() !== "" &&
+    visitorFullName.trim() !== "" &&
+    isPhoneValid &&
+    isNationalIdValid &&
+    !!startDate &&
+    !!expiryDate &&
+    isDateTimeValid;
+
+  // =====================================================
   // SUBMIT
   // =====================================================
 
   const handleSubmit = () => {
+    setPhoneTouched(true);
+
+    setNationalIdTouched(true);
+
+    if (!residentId) return;
+
+    if (!visitorFullName.trim()) return;
+
+    if (!isPhoneValid) return;
+
+    if (!isNationalIdValid) return;
+
+    if (!startDate || !expiryDate) return;
+
+    if (expiryDate <= startDate) return;
+
     onGenerate({
       residentId,
       maxUses,
-      visitorFullName,
-      visitorNationalId,
-      visitorPhoneNumber,
+      visitorFullName: visitorFullName.trim(),
+      visitorNationalId: visitorNationalId.trim(),
+      visitorPhoneNumber: visitorPhoneNumber.trim(),
       startDate,
       expiryDate,
     });
@@ -180,9 +397,13 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
 
   const calendarClassNames = {
     months: "text-foreground",
+
     month: "space-y-4",
+
     caption: "flex justify-center pt-1 relative items-center text-foreground",
+
     caption_label: "text-foreground text-base font-semibold",
+
     nav: "space-x-1 flex items-center",
 
     button_previous:
@@ -192,6 +413,7 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
       "h-7 w-7 bg-transparent p-0 text-foreground hover:bg-muted rounded-md",
 
     month_grid: "w-full border-collapse",
+
     weekdays: "flex",
 
     weekday: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
@@ -286,7 +508,9 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
         p-6
       "
     >
-      {/* ERROR */}
+      {/* =====================================================
+          ERROR
+      ===================================================== */}
 
       {error && (
         <div
@@ -306,7 +530,9 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
         </div>
       )}
 
-      {/* FORM HEADER */}
+      {/* =====================================================
+          FORM HEADER
+      ===================================================== */}
 
       <div className="mb-6">
         <h2 className="text-foreground text-2xl font-extrabold">
@@ -318,9 +544,19 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
         </p>
       </div>
 
-      {/* FIELDS GRID */}
+      {/* =====================================================
+          FIELDS GRID
+      ===================================================== */}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div
+        className="
+          grid
+          grid-cols-1
+          md:grid-cols-2
+          lg:grid-cols-3
+          gap-4
+        "
+      >
         {/* =====================================================
             RESIDENT NAME
         ===================================================== */}
@@ -361,13 +597,13 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
                 type="button"
                 onClick={handleClearResident}
                 className="
-                  absolute
-                  right-3
-                  top-1/2
-                  -translate-y-1/2
-                  text-muted-foreground
-                  hover:text-foreground
-                "
+                    absolute
+                    right-3
+                    top-1/2
+                    -translate-y-1/2
+                    text-muted-foreground
+                    hover:text-foreground
+                  "
               >
                 ✕
               </button>
@@ -401,14 +637,14 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
                       type="button"
                       onClick={() => handleResidentSelect(resident)}
                       className="
-                        w-full
-                        px-4
-                        py-3
-                        text-left
-                        text-foreground
-                        transition
-                        hover:bg-secondary
-                      "
+                          w-full
+                          px-4
+                          py-3
+                          text-left
+                          text-foreground
+                          transition
+                          hover:bg-secondary
+                        "
                     >
                       <div className="font-semibold">{resident.full_name}</div>
 
@@ -608,11 +844,25 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
           <input
             type="text"
             inputMode="numeric"
+            maxLength={14}
             value={visitorNationalId}
-            onChange={(e) => setVisitorNationalId(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, "").slice(0, 14);
+
+              setVisitorNationalId(value);
+            }}
+            onBlur={() => setNationalIdTouched(true)}
             placeholder="National ID"
-            className={inputClassName}
+            className={`${inputClassName} ${
+              nationalIdError
+                ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
+                : ""
+            }`}
           />
+
+          {nationalIdError && (
+            <p className="mt-2 text-sm text-danger">{nationalIdError}</p>
+          )}
         </div>
 
         {/* =====================================================
@@ -626,20 +876,35 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
 
           <input
             type="tel"
+            inputMode="numeric"
+            maxLength={11}
             value={visitorPhoneNumber}
-            onChange={(e) => setVisitorPhoneNumber(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, "").slice(0, 11);
+
+              setVisitorPhoneNumber(value);
+            }}
+            onBlur={() => setPhoneTouched(true)}
             placeholder="Phone Number"
-            className={inputClassName}
+            className={`${inputClassName} ${
+              phoneError
+                ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
+                : ""
+            }`}
           />
+
+          {phoneError && (
+            <p className="mt-2 text-sm text-danger">{phoneError}</p>
+          )}
         </div>
 
         {/* =====================================================
-            START DATE
+            START DATE & TIME
         ===================================================== */}
 
         <div>
           <label className="block text-foreground text-lg font-medium mb-2">
-            Start Date
+            Start Date & Time
           </label>
 
           <Popover>
@@ -651,8 +916,8 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
                   }
                 >
                   {startDate
-                    ? format(startDate, "dd/MM/yyyy")
-                    : "Select start date"}
+                    ? format(startDate, "dd/MM/yyyy hh:mm a")
+                    : "Select start date & time"}
                 </span>
 
                 <CalendarDays size={20} className="text-brand" />
@@ -663,36 +928,47 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
               align="start"
               className="
                 w-auto
-                p-0
+                p-4
                 bg-card
                 border-border
                 text-foreground
               "
             >
+              {/* CALENDAR */}
+
               <Calendar
                 mode="single"
                 selected={startDate}
-                onSelect={(date) => {
-                  setStartDate(date);
-
-                  if (date && expiryDate && expiryDate < date) {
-                    setExpiryDate(undefined);
-                  }
-                }}
+                onSelect={handleStartDateSelect}
                 disabled={(date) => date < today}
                 classNames={calendarClassNames}
               />
+
+              {/* TIME */}
+
+              <div className="mt-4 border-t border-border pt-4">
+                <label className="block text-sm font-medium mb-2">
+                  Start Time
+                </label>
+
+                <input
+                  type="time"
+                  value={startDate ? format(startDate, "HH:mm") : ""}
+                  onChange={handleStartTimeChange}
+                  className={inputClassName}
+                />
+              </div>
             </PopoverContent>
           </Popover>
         </div>
 
         {/* =====================================================
-            EXPIRY DATE
+            EXPIRY DATE & TIME
         ===================================================== */}
 
         <div>
           <label className="block text-foreground text-lg font-medium mb-2">
-            Expiry Date
+            Expiry Date & Time
           </label>
 
           <Popover>
@@ -704,8 +980,8 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
                   }
                 >
                   {expiryDate
-                    ? format(expiryDate, "dd/MM/yyyy")
-                    : "Select expiry date"}
+                    ? format(expiryDate, "dd/MM/yyyy hh:mm a")
+                    : "Select expiry date & time"}
                 </span>
 
                 <CalendarDays size={20} className="text-brand" />
@@ -716,39 +992,83 @@ export default function QRForm({ onGenerate, loading, error }: QRFormProps) {
               align="start"
               className="
                 w-auto
-                p-0
+                p-4
                 bg-card
                 border-border
                 text-foreground
               "
             >
+              {/* CALENDAR */}
+
               <Calendar
                 mode="single"
                 selected={expiryDate}
-                onSelect={setExpiryDate}
+                onSelect={handleExpiryDateSelect}
                 disabled={(date) => {
-                  if (date < today) return true;
-
-                  if (startDate && date < startDate) {
+                  if (date < today) {
                     return true;
+                  }
+
+                  if (startDate) {
+                    const startDay = new Date(startDate);
+
+                    startDay.setHours(0, 0, 0, 0);
+
+                    if (date < startDay) {
+                      return true;
+                    }
                   }
 
                   return false;
                 }}
                 classNames={calendarClassNames}
               />
+
+              {/* TIME */}
+
+              <div className="mt-4 border-t border-border pt-4">
+                <label className="block text-sm font-medium mb-2">
+                  Expiry Time
+                </label>
+
+                <input
+                  type="time"
+                  value={expiryDate ? format(expiryDate, "HH:mm") : ""}
+                  min={
+                    startDate &&
+                    expiryDate &&
+                    startDate.toDateString() === expiryDate.toDateString()
+                      ? format(startDate, "HH:mm")
+                      : undefined
+                  }
+                  onChange={handleExpiryTimeChange}
+                  className={`${inputClassName} ${
+                    expiryDate && startDate && expiryDate <= startDate
+                      ? "border-red-500"
+                      : ""
+                  }`}
+                />
+
+                {expiryDate && startDate && expiryDate <= startDate && (
+                  <p className="mt-2 text-sm text-danger">
+                    Expiry date and time must be after the start date and time.
+                  </p>
+                )}
+              </div>
             </PopoverContent>
           </Popover>
         </div>
       </div>
 
-      {/* GENERATE BUTTON */}
+      {/* =====================================================
+          GENERATE BUTTON
+      ===================================================== */}
 
       <div className="flex justify-end mt-6">
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={loading}
+          disabled={loading || !isFormValid}
           className="
             flex
             items-center

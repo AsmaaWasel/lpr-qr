@@ -4,6 +4,7 @@ export type Gate = {
   desc: string;
   type: "ENTRY" | "EXIT";
   ip: string;
+  active: boolean;
   description: string;
   entries_today: string;
   exits_today: string;

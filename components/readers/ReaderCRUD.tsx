@@ -11,16 +11,24 @@ import {
   deleteCamera,
 } from "@/services/cameras";
 
-import CameraTable from "../cameras/CameraTable";
-
-import { CrudShell, QR_TABS } from "@/shared/ui/voom";
-
+import { CrudShell } from "@/shared/ui/voom";
 import { Camera, CameraFormData } from "@/modules/types/camera";
 
 import ReaderForm from "./ReaderForm";
 import ReaderTable from "./ReaderTable";
 
-export default function CameraCRUD() {
+type ReaderStats = {
+  totalDevices: number;
+  totalCameras: number;
+  totalQrReaders: number;
+  offline: number;
+};
+
+type Props = {
+  onStatsChange?: (stats: ReaderStats) => void;
+};
+
+export default function ReaderCRUD({ onStatsChange }: Props) {
   const [cameras, setCameras] = useState<Camera[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Camera | null>(null);
@@ -39,6 +47,44 @@ export default function CameraCRUD() {
 
   const selectedCamera = cameras.find((c) => c.id === selectedId) || null;
 
+  // =========================
+  // DRIVER CAMERAS
+  // =========================
+
+  const driverCameras = cameras.filter(
+    (camera) => camera.camera_type === "DRIVER",
+  );
+
+  // =========================
+  // STATS
+  // =========================
+
+  useEffect(() => {
+    // All DRIVER cameras
+    const totalDevices = driverCameras.length;
+
+    // DRIVER cameras with reader_type CAMERA
+    const totalCameras = driverCameras.filter(
+      (camera) => camera.reader_type === "CAMERA",
+    ).length;
+
+    // DRIVER cameras with reader_type QRREADER
+    const totalQrReaders = driverCameras.filter(
+      (camera) => camera.reader_type === "QRREADER",
+    ).length;
+
+    // DRIVER cameras that are inactive
+    const offline = driverCameras.filter(
+      (camera) => camera.is_active === false,
+    ).length;
+
+    onStatsChange?.({
+      totalDevices,
+      totalCameras,
+      totalQrReaders,
+      offline,
+    });
+  }, [cameras, onStatsChange]);
   // =========================
   // LOAD
   // =========================
@@ -60,10 +106,12 @@ export default function CameraCRUD() {
   // FILTERS
   // =========================
 
-  const filteredCameras = cameras.filter((cam) => {
+  const filteredCameras = driverCameras.filter((cam) => {
+    const searchValue = search.toLowerCase();
+
     return (
-      cam.location?.toLowerCase().includes(search.toLowerCase()) ||
-      cam.ip_address?.includes(search)
+      cam.location?.toLowerCase().includes(searchValue) ||
+      cam.ip_address?.includes(searchValue)
     );
   });
 

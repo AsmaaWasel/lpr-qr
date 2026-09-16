@@ -50,6 +50,7 @@ export const updateCamera = async (
     port?: number;
     gate_id?: number;
     notes?: string;
+    is_active?: boolean;
   },
 ) => {
   const res = await api.patch(`${API}/${id}`, data);

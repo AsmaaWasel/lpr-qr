@@ -11,7 +11,18 @@ import { Gate, GateFormData } from "@/modules/types/gate";
 
 import { createGate, deleteGate, getGates, updateGate } from "@/services/gate";
 
-import { CrudShell, StatRow } from "@/shared/ui/voom";
+import { CrudShell } from "@/shared/ui/voom";
+import ConfirmDialog from "../ConfirmDialog";
+
+type DialogState = {
+  open: boolean;
+  type: "confirm" | "success" | "error";
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  onConfirm?: () => void;
+};
 
 export default function GateCRUD() {
   // =========================
@@ -38,6 +49,24 @@ export default function GateCRUD() {
 
   const toast = useToast();
 
+  // =========================
+  // DIALOG
+  // =========================
+
+  const [dialog, setDialog] = useState<DialogState>({
+    open: false,
+    type: "confirm",
+    title: "",
+    message: "",
+  });
+
+  const closeDialog = () => {
+    setDialog((prev) => ({
+      ...prev,
+      open: false,
+    }));
+  };
+
   const selectedGate = gates.find((gate) => gate.id === selectedId) || null;
 
   // =========================
@@ -48,9 +77,10 @@ export default function GateCRUD() {
     const load = async () => {
       try {
         const data = await getGates();
-
         setGates(data);
-      } catch {
+      } catch (error) {
+        console.error("Load gates error:", error);
+
         toast.error("Failed to load gates");
       }
     };
@@ -69,7 +99,6 @@ export default function GateCRUD() {
       gate.name?.toLowerCase().includes(query) ||
       gate.type?.toLowerCase().includes(query) ||
       gate.ip?.toLowerCase().includes(query)
-      // gate.description?.toLowerCase().includes(query)
     );
   });
 
@@ -85,56 +114,177 @@ export default function GateCRUD() {
   );
 
   // =========================
-  // SUBMIT
+  // ACTIVE / INACTIVE
   // =========================
 
-  const handleSubmit = async (data: GateFormData) => {
+  const handleActiveChange = async (gateId: number, active: boolean) => {
+    try {
+      await updateGate(gateId, {
+        active,
+      });
+
+      setGates((prev) =>
+        prev.map((gate) =>
+          gate.id === gateId
+            ? {
+                ...gate,
+                active,
+              }
+            : gate,
+        ),
+      );
+
+      toast.success(
+        active
+          ? "Gate activated successfully"
+          : "Gate deactivated successfully",
+      );
+    } catch (error) {
+      console.error("Failed to update gate active status:", error);
+
+      toast.error("Failed to update gate status");
+
+      throw error;
+    }
+  };
+
+  // =========================
+  // CREATE / UPDATE
+  // =========================
+
+  const executeSubmit = async (data: GateFormData) => {
     try {
       if (editing) {
         await updateGate(editing.id, data);
 
-        toast.success("Gate updated successfully");
+        const refreshed = await getGates();
+
+        setGates(refreshed);
+
+        setOpen(false);
+        setEditing(null);
+        setSelectedId(null);
+
+        setDialog({
+          open: true,
+          type: "success",
+          title: "Gate Updated Successfully",
+          message: "The gate information has been updated successfully.",
+          confirmText: "OK",
+          onConfirm: closeDialog,
+        });
       } else {
         await createGate(data);
 
-        toast.success("Gate created successfully");
+        const refreshed = await getGates();
+
+        setGates(refreshed);
+
+        setOpen(false);
+        setEditing(null);
+        setSelectedId(null);
+
+        setDialog({
+          open: true,
+          type: "success",
+          title: "Gate Created Successfully",
+          message: "The new gate has been created successfully.",
+          confirmText: "OK",
+          onConfirm: closeDialog,
+        });
       }
-
-      const refreshed = await getGates();
-
-      setGates(refreshed);
-
-      setOpen(false);
-
-      setEditing(null);
-
-      setSelectedId(null);
     } catch (error) {
       console.error("Submit error:", error);
 
-      toast.error("Something went wrong");
+      setDialog({
+        open: true,
+        type: "error",
+        title: "Operation Failed",
+        message: "Something went wrong while saving the gate.",
+        confirmText: "OK",
+        onConfirm: closeDialog,
+      });
+
+      throw error;
     }
+  };
+
+  // =========================
+  // SUBMIT
+  // =========================
+
+  const handleSubmit = async (data: GateFormData) => {
+    const isEditing = !!editing;
+
+    setDialog({
+      open: true,
+      type: "confirm",
+      title: isEditing ? "Update Gate?" : "Create Gate?",
+      message: isEditing
+        ? "Are you sure you want to update this gate?"
+        : "Are you sure you want to create this gate?",
+      confirmText: isEditing ? "Update" : "Create",
+      cancelText: "Cancel",
+      onConfirm: () => {
+        closeDialog();
+        executeSubmit(data);
+      },
+    });
   };
 
   // =========================
   // DELETE
   // =========================
 
-  const handleDelete = async () => {
+  const executeDelete = async () => {
     if (!selectedGate) return;
 
     try {
       await deleteGate(selectedGate.id);
 
-      toast.success("Gate deleted successfully");
-
       const refreshed = await getGates();
+
       setGates(refreshed);
+
       setSelectedId(null);
+
+      setDialog({
+        open: true,
+        type: "success",
+        title: "Gate Deleted Successfully",
+        message: "The gate has been deleted successfully.",
+        confirmText: "OK",
+        onConfirm: closeDialog,
+      });
     } catch (error) {
       console.error("Delete error:", error);
-      toast.error("Failed to delete gate");
+
+      setDialog({
+        open: true,
+        type: "error",
+        title: "Delete Failed",
+        message: "Failed to delete the gate. Please try again.",
+        confirmText: "OK",
+        onConfirm: closeDialog,
+      });
     }
+  };
+
+  const handleDelete = () => {
+    if (!selectedGate) return;
+
+    setDialog({
+      open: true,
+      type: "confirm",
+      title: "Delete Gate?",
+      message: `Are you sure you want to delete "${selectedGate.name}"? This action cannot be undone.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      onConfirm: () => {
+        closeDialog();
+        executeDelete();
+      },
+    });
   };
 
   // =========================
@@ -154,7 +304,7 @@ export default function GateCRUD() {
             setSearch(value);
             setCurrentPage(1);
           }}
-          searchPlaceholder="Search by Gate Name , Type and IP"
+          searchPlaceholder="Search by Gate Name, Type and IP"
           addLabel="Add Gate"
           onAdd={() => {
             setEditing(null);
@@ -164,7 +314,6 @@ export default function GateCRUD() {
             if (!selectedGate) return;
 
             setEditing(selectedGate);
-
             setOpen(true);
           }}
           onDelete={handleDelete}
@@ -182,6 +331,7 @@ export default function GateCRUD() {
             onSelect={(id) =>
               setSelectedId((prev) => (prev === id ? null : id))
             }
+            onActiveChange={handleActiveChange}
           />
         </CrudShell>
       </div>
@@ -189,6 +339,7 @@ export default function GateCRUD() {
       {/* =========================
           GATE FORM
       ========================= */}
+
       {open && (
         <GateForm
           editing={editing}
@@ -199,6 +350,21 @@ export default function GateCRUD() {
           onSubmit={handleSubmit}
         />
       )}
+
+      {/* =========================
+          CONFIRM / SUCCESS / ERROR
+      ========================= */}
+
+      <ConfirmDialog
+        open={dialog.open}
+        type={dialog.type}
+        title={dialog.title}
+        message={dialog.message}
+        confirmText={dialog.confirmText}
+        cancelText={dialog.cancelText}
+        onConfirm={dialog.onConfirm}
+        onCancel={closeDialog}
+      />
     </>
   );
 }

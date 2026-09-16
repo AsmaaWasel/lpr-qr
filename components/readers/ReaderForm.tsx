@@ -49,6 +49,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
 
   const [form, setForm] = useState<ReaderFormData>({
     gate_id: editing?.gate_id ?? 0,
+    camera_type: "DRIVER",
     location: editing?.location ?? "",
     username: editing?.username ?? "",
     password: editing?.password ?? "",
@@ -342,8 +343,12 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
       return;
     }
 
-    const submitData: ReaderFormData = {
+    const submitData = {
       ...form,
+
+      // ثابت دائمًا
+      camera_type: "DRIVER",
+
       gate_id: selectedGate.id,
       location: selectedGate.name,
       port: Number(form.port),
@@ -351,7 +356,7 @@ export default function ReaderForm({ editing, onClose, onSubmit }: Props) {
 
     console.log("Submitting reader:", submitData);
 
-    await onSubmit(submitData);
+    await onSubmit(submitData as ReaderFormData);
   };
 
   // =====================================================

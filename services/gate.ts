@@ -29,14 +29,15 @@ export const createGate = async (data: {
 // =========================
 export const updateGate = async (
   id: number,
-  data: {
+  data: Partial<{
     name: string;
     desc: string;
     ip: string;
-  },
+    active: boolean;
+  }>,
 ) => {
-  const res = await api.patch(`${API}/${id}`, data);
-  return res.data;
+  const response = await api.patch(`/gates/${id}`, data);
+  return response.data;
 };
 
 // =========================

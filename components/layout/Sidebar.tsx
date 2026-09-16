@@ -1,8 +1,10 @@
+
 "use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import { useAuth } from "@/shared/context/AuthContext";
 
 import {
@@ -16,7 +18,8 @@ import {
   Building2,
 } from "lucide-react";
 
-const normalize = (p: string) => p.split("?")[0].replace(/\/$/, "");
+const normalize = (p: string) =>
+  p.split("?")[0].replace(/\/$/, "");
 
 export default function Sidebar() {
   const { user } = useAuth();
@@ -24,12 +27,21 @@ export default function Sidebar() {
 
   const current = normalize(pathname);
   const role = user?.role;
+
+  // =========================================================
+  // DEBUG AUTH
+  // =========================================================
   console.log("========== SIDEBAR AUTH ==========");
   console.log("USER:", user);
-  console.log("ROLE:", user?.role);
-  console.log("LOCAL STORAGE USER:", localStorage.getItem("user"));
-  console.log("LOCAL STORAGE ROLE:", localStorage.getItem("role"));
+  console.log("ROLE:", role);
   console.log("==================================");
+
+  // localStorage is browser-only.
+  // Never access it directly during render.
+  useEffect(() => {
+    console.log("LOCAL STORAGE USER:", localStorage.getItem("user"));
+    console.log("LOCAL STORAGE ROLE:", localStorage.getItem("role"));
+  }, []);
 
   // =========================================================
   // NAVIGATION BASED ON ROLE
@@ -207,7 +219,6 @@ export default function Sidebar() {
 
       <div className="flex flex-col items-center">
         {/* Logo Container */}
-
         <div
           className="
             flex
@@ -237,7 +248,6 @@ export default function Sidebar() {
         </div>
 
         {/* Brand */}
-
         <span
           className="
             mt-2
@@ -311,7 +321,6 @@ export default function Sidebar() {
               `}
             >
               {/* ICON */}
-
               <Icon
                 size={22}
                 strokeWidth={active ? 2.2 : 1.8}
@@ -329,7 +338,6 @@ export default function Sidebar() {
               />
 
               {/* TEXT */}
-
               <span
                 className={`
                   max-w-[82px]
@@ -372,10 +380,8 @@ export default function Sidebar() {
         "
       >
         {/* Status Indicator */}
-
         <div className="relative mb-2 flex h-7 w-7 items-center justify-center">
           {/* Outer pulse */}
-
           <span
             className="
               absolute
@@ -388,7 +394,6 @@ export default function Sidebar() {
           />
 
           {/* Main circle */}
-
           <span
             className="
               relative
@@ -402,7 +407,6 @@ export default function Sidebar() {
         </div>
 
         {/* Gates Count */}
-
         <span
           className="
             text-[15px]
@@ -415,7 +419,6 @@ export default function Sidebar() {
         </span>
 
         {/* Label */}
-
         <span
           className="
             mt-1.5
@@ -432,3 +435,4 @@ export default function Sidebar() {
     </aside>
   );
 }
+

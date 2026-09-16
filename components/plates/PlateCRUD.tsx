@@ -105,7 +105,10 @@ export default function PlateCRUD() {
       setSelectedId(null);
     } catch (error) {
       console.error("Submit error:", error);
-      toast.error("Something went wrong");
+
+      // مهم جدًا:
+      // نرمي الـ error تاني عشان PlateForm يمسك رسالة الـ backend
+      throw error;
     }
   };
 

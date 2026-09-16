@@ -192,50 +192,32 @@ export default function ResidentTable({
 
   const formatPlateNumbers = (resident: Resident) => {
     if (
-      Array.isArray(resident.plate_numbers) &&
-      resident.plate_numbers.length > 0
+      Array.isArray(resident.car_residents) &&
+      resident.car_residents.length > 0
     ) {
-      const plates = resident.plate_numbers
-        .map((plate) => {
-          if (
-            plate &&
-            typeof plate === "object" &&
-            "plate_number_full" in plate
-          ) {
-            let plateNumber = String(plate.plate_number_full ?? "").trim();
+      const plates = resident.car_residents
+        .map((carResident) => {
+          const plateNumber = carResident?.car?.plate_number_full;
 
-            const numbers = plateNumber.match(/^\d+/)?.[0] || "";
-            const letters = plateNumber.replace(/^\d+/, "");
-
-            if (letters) {
-              const spacedLetters = letters.split("").join(" ");
-              plateNumber = `${spacedLetters} ${numbers}`;
-            }
-
-            return plateNumber;
+          if (!plateNumber) {
+            return "";
           }
 
-          if (typeof plate === "string" || typeof plate === "number") {
-            let plateNumber = String(plate).trim();
+          let formatted = String(plateNumber).trim();
 
-            const numbers = plateNumber.match(/^\d+/)?.[0] || "";
-            const letters = plateNumber.replace(/^\d+/, "");
+          const numbers = formatted.match(/^\d+/)?.[0] || "";
+          const letters = formatted.replace(/^\d+/, "");
 
-            if (letters) {
-              const spacedLetters = letters.split("").join(" ");
-              plateNumber = `${spacedLetters} ${numbers}`;
-            }
-
-            return plateNumber;
+          if (letters) {
+            const spacedLetters = letters.split("").join(" ");
+            formatted = `${spacedLetters} ${numbers}`;
           }
 
-          return "";
+          return formatted;
         })
         .filter(Boolean);
 
-      if (plates.length > 0) {
-        return plates;
-      }
+      return plates;
     }
 
     return [];
@@ -440,7 +422,7 @@ export default function ResidentTable({
                 </th>
 
                 {/* ACTIONS */}
-                <th
+                {/* <th
                   className="
                     w-[70px]
                     px-6
@@ -453,7 +435,7 @@ export default function ResidentTable({
                   "
                 >
                   <span className="sr-only">Actions</span>
-                </th>
+                </th> */}
               </tr>
             </thead>
 
@@ -721,151 +703,6 @@ export default function ResidentTable({
                             </>
                           )}
                         </button>
-                      </td>
-
-                      {/* ACTIONS */}
-                      <td className="px-6 py-4">
-                        <div className="relative">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleMenu(resident.id);
-                            }}
-                            className="
-                              flex
-                              h-9
-                              w-9
-                              items-center
-                              justify-center
-                              rounded-xl
-                              text-muted-foreground
-                              transition-colors
-                              hover:bg-secondary
-                              hover:text-foreground
-                              dark:hover:bg-slate-700
-                            "
-                            aria-label="Open actions menu"
-                          >
-                            <MoreVertical size={17} />
-                          </button>
-
-                          {isMenuOpen && (
-                            <>
-                              {/* OVERLAY */}
-                              <div
-                                className="
-                                  fixed
-                                  inset-0
-                                  z-10
-                                "
-                                onClick={() => setOpenMenuId(null)}
-                              />
-
-                              {/* MENU */}
-                              <div
-                                className="
-                                  absolute
-                                  right-0
-                                  z-20
-                                  mt-1
-                                  w-44
-                                  origin-top-right
-                                  rounded-xl
-                                  border
-                                  border-border
-                                  bg-card
-                                  py-1
-                                  shadow-lg
-                                "
-                              >
-                                {onView && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      onView(resident);
-                                      setOpenMenuId(null);
-                                    }}
-                                    className="
-                                      flex
-                                      w-full
-                                      items-center
-                                      gap-2.5
-                                      px-4
-                                      py-2.5
-                                      text-sm
-                                      font-medium
-                                      text-foreground
-                                      transition-colors
-                                      hover:bg-secondary
-                                      dark:hover:bg-slate-700/50
-                                    "
-                                  >
-                                    <Eye size={15} />
-                                    View Details
-                                  </button>
-                                )}
-
-                                {onEdit && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      onEdit(resident);
-                                      setOpenMenuId(null);
-                                    }}
-                                    className="
-                                      flex
-                                      w-full
-                                      items-center
-                                      gap-2.5
-                                      px-4
-                                      py-2.5
-                                      text-sm
-                                      font-medium
-                                      text-foreground
-                                      transition-colors
-                                      hover:bg-secondary
-                                      dark:hover:bg-slate-700/50
-                                    "
-                                  >
-                                    <Pencil size={15} />
-                                    Edit
-                                  </button>
-                                )}
-
-                                {onDelete && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      onDelete(resident);
-                                      setOpenMenuId(null);
-                                    }}
-                                    className="
-                                      flex
-                                      w-full
-                                      items-center
-                                      gap-2.5
-                                      border-t
-                                      border-border
-                                      px-4
-                                      py-2.5
-                                      text-sm
-                                      font-medium
-                                      text-danger
-                                      transition-colors
-                                      hover:bg-danger-soft
-                                      dark:text-rose-400
-                                      dark:hover:bg-rose-500/10
-                                    "
-                                  >
-                                    <Trash2 size={15} />
-                                    Delete
-                                  </button>
-                                )}
-                              </div>
-                            </>
-                          )}
-                        </div>
                       </td>
                     </tr>
                   );

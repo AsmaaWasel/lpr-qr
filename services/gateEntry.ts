@@ -1,3 +1,4 @@
+// services/gateEntries.ts
 import api from "./api";
 
 export type Resident = {
@@ -8,7 +9,7 @@ export type Resident = {
 export type GateEntry = {
   id: number;
   entry_type: "ENTRY" | "EXIT";
-  entry_by: "NORMAL" | "QR" | "PLATE" | "MANUAL";
+  entry_by: "NORMAL" | "QR";
   entry_by_table_id: number | null;
   image_url: string | null;
   plate_number: string | null;
@@ -17,10 +18,6 @@ export type GateEntry = {
   created_at: string;
   resident: Resident | null;
 };
-
-// =========================
-// GET ALL GATE ENTRIES
-// =========================
 
 export const getGateEntries = async (): Promise<GateEntry[]> => {
   const res = await api.get<GateEntry[]>("/gate-entries/");

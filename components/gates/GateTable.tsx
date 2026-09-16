@@ -1,21 +1,58 @@
 "use client";
 
+import { useState } from "react";
 import { Gate } from "@/modules/types/gate";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 
 type Props = {
   data: Gate[];
   selectedId: number | null;
   onSelect: (id: number) => void;
+  onActiveChange?: (gateId: number, active: boolean) => Promise<void>;
 };
 
-export default function GatesTable({ data, selectedId, onSelect }: Props) {
+export default function GatesTable({
+  data,
+  selectedId,
+  onSelect,
+  onActiveChange,
+}: Props) {
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
+
+  // =====================================================
+  // TOGGLE ACTIVE
+  // =====================================================
+
+  const handleToggleActive = async (e: React.MouseEvent, gate: Gate) => {
+    e.stopPropagation();
+
+    if (!onActiveChange) return;
+
+    try {
+      setUpdatingId(gate.id);
+
+      const newActive = !gate.active;
+
+      await onActiveChange(gate.id, newActive);
+    } catch (error) {
+      console.error("Failed to update gate active status:", error);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   return (
     <div className="w-full bg-card shadow-sm">
-      {/* Table */}
+      {/* =====================================================
+          TABLE
+      ===================================================== */}
+
       <div className="w-full overflow-x-auto">
-        <table className="w-full min-w-[1100px] border-collapse">
-          {/* ================= HEADER ================= */}
+        <table className="w-full min-w-[1200px] border-collapse">
+          {/* =====================================================
+              HEADER
+          ===================================================== */}
+
           <thead>
             <tr
               className="
@@ -27,7 +64,8 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                 dark:bg-slate-800/40
               "
             >
-              {/* SELECT */}
+              {/* ================= SELECT ================= */}
+
               <th
                 className="
                   w-[55px]
@@ -43,7 +81,8 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                 <span className="sr-only">Select</span>
               </th>
 
-              {/* GATE NAME */}
+              {/* ================= GATE NAME ================= */}
+
               <th
                 className="
                   px-6
@@ -58,7 +97,8 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                 GATE NAME
               </th>
 
-              {/* TYPE */}
+              {/* ================= TYPE ================= */}
+
               <th
                 className="
                   px-6
@@ -73,7 +113,8 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                 TYPE
               </th>
 
-              {/* IP */}
+              {/* ================= IP ================= */}
+
               <th
                 className="
                   px-6
@@ -85,40 +126,11 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                   text-muted-foreground
                 "
               >
-                IP Address
+                IP ADDRESS
               </th>
 
-              {/* ENTRIES TODAY */}
-              <th
-                className="
-                  px-6
-                  py-4
-                  text-lg
-                  font-bold
-                  uppercase
-                  tracking-wide
-                  text-muted-foreground
-                "
-              >
-                ENTRIES TODAY
-              </th>
+              {/* ================= DESCRIPTION ================= */}
 
-              {/* EXITS TODAY */}
-              <th
-                className="
-                  px-6
-                  py-4
-                  text-lg
-                  font-bold
-                  uppercase
-                  tracking-wide
-                  text-muted-foreground
-                "
-              >
-                EXITS TODAY
-              </th>
-
-              {/* DESCRIPTION */}
               <th
                 className="
                   px-6
@@ -132,15 +144,34 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
               >
                 DESCRIPTION
               </th>
+
+              {/* ================= ACTIVE ================= */}
+
+              <th
+                className="
+                  px-6
+                  py-4
+                  text-lg
+                  font-bold
+                  uppercase
+                  tracking-wide
+                  text-muted-foreground
+                "
+              >
+                ACTIVE
+              </th>
             </tr>
           </thead>
 
-          {/* ================= BODY ================= */}
+          {/* =====================================================
+              BODY
+          ===================================================== */}
+
           <tbody>
             {data.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={6}
                   className="
                     px-6
                     py-12
@@ -155,6 +186,7 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
             ) : (
               data.map((gate) => {
                 const isSelected = selectedId === gate.id;
+                const isUpdating = updatingId === gate.id;
 
                 return (
                   <tr
@@ -173,7 +205,10 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                       }
                     `}
                   >
-                    {/* ================= SELECT ================= */}
+                    {/* =================================================
+                        SELECT
+                    ================================================= */}
+
                     <td className="px-6 py-4">
                       <button
                         type="button"
@@ -212,7 +247,10 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                       </button>
                     </td>
 
-                    {/* ================= GATE NAME ================= */}
+                    {/* =================================================
+                        GATE NAME
+                    ================================================= */}
+
                     <td className="px-6 py-4">
                       <p
                         className="
@@ -226,7 +264,10 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                       </p>
                     </td>
 
-                    {/* ================= TYPE ================= */}
+                    {/* =================================================
+                        TYPE
+                    ================================================= */}
+
                     <td className="px-6 py-4">
                       <span
                         className={`
@@ -257,7 +298,10 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                       </span>
                     </td>
 
-                    {/* ================= IP ================= */}
+                    {/* =================================================
+                        IP
+                    ================================================= */}
+
                     <td className="px-6 py-4">
                       <span
                         className="
@@ -271,53 +315,10 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                       </span>
                     </td>
 
-                    {/* ================= ENTRIES TODAY ================= */}
-                    <td className="px-6 py-4">
-                      <span
-                        className="
-                          inline-flex
-                          min-w-[45px]
-                          items-center
-                          justify-center
-                          rounded-full
-                          bg-emerald-50
-                          px-3
-                          py-1
-                          text-[16px]
-                          font-[600]
-                          text-emerald-600
-                          dark:bg-emerald-500/10
-                          dark:text-emerald-400
-                        "
-                      >
-                        {gate.entries_today ?? 0}
-                      </span>
-                    </td>
+                    {/* =================================================
+                        DESCRIPTION
+                    ================================================= */}
 
-                    {/* ================= EXITS TODAY ================= */}
-                    <td className="px-6 py-4">
-                      <span
-                        className="
-                          inline-flex
-                          min-w-[45px]
-                          items-center
-                          justify-center
-                          rounded-full
-                          bg-amber-50
-                          px-3
-                          py-1
-                          text-[16px]
-                          font-[600]
-                          text-amber-600
-                          dark:bg-amber-500/10
-                          dark:text-amber-400
-                        "
-                      >
-                        {gate.exits_today ?? 0}
-                      </span>
-                    </td>
-
-                    {/* ================= DESCRIPTION ================= */}
                     <td className="px-6 py-4">
                       <span
                         className="
@@ -332,6 +333,86 @@ export default function GatesTable({ data, selectedId, onSelect }: Props) {
                         title={gate.desc || "-"}
                       >
                         {gate.desc || "-"}
+                      </span>
+                    </td>
+
+                    {/* =================================================
+                        ACTIVE TOGGLE
+                    ================================================= */}
+
+                    <td className="px-6 py-4">
+                      <button
+                        type="button"
+                        disabled={isUpdating}
+                        onClick={(e) => handleToggleActive(e, gate)}
+                        className={`
+                          relative
+                          inline-flex
+                          h-7
+                          w-12
+                          shrink-0
+                          items-center
+                          rounded-full
+                          transition-colors
+                          duration-200
+                          focus:outline-none
+                          focus:ring-2
+                          focus:ring-brand
+                          focus:ring-offset-2
+                          dark:focus:ring-offset-slate-900
+                          ${
+                            gate.active
+                              ? "bg-emerald-500"
+                              : "bg-slate-300 dark:bg-slate-600"
+                          }
+                          ${
+                            isUpdating
+                              ? "cursor-not-allowed opacity-60"
+                              : "cursor-pointer"
+                          }
+                        `}
+                        aria-label={`Toggle ${gate.name} active status`}
+                        aria-pressed={gate.active}
+                      >
+                        {isUpdating ? (
+                          <span className="flex w-full items-center justify-center">
+                            <Loader2
+                              size={14}
+                              className="animate-spin text-white"
+                            />
+                          </span>
+                        ) : (
+                          <span
+                            className={`
+                              inline-block
+                              h-5
+                              w-5
+                              rounded-full
+                              bg-white
+                              shadow
+                              transition-transform
+                              duration-200
+                              ${gate.active ? "translate-x-6" : "translate-x-1"}
+                            `}
+                          />
+                        )}
+                      </button>
+
+                      {/* Status text */}
+
+                      <span
+                        className={`
+                          ml-3
+                          text-sm
+                          font-medium
+                          ${
+                            gate.active
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : "text-slate-500 dark:text-slate-400"
+                          }
+                        `}
+                      >
+                        {gate.active ? "Active" : "Inactive"}
                       </span>
                     </td>
                   </tr>

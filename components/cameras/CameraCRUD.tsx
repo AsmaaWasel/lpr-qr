@@ -1,5 +1,3 @@
-// CameraCRUD.tsx
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -14,12 +12,16 @@ import {
 } from "@/services/cameras";
 
 import CameraTable from "./CameraTable";
-import { CrudShell, StatRow } from "@/shared/ui/voom";
+import { CrudShell } from "@/shared/ui/voom";
 import CameraForm from "./CameraForm";
 
 import { Camera, CameraFormData } from "@/modules/types/camera";
 
 export default function CameraCRUD() {
+  // =========================
+  // DATA STATES
+  // =========================
+
   const [cameras, setCameras] = useState<Camera[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Camera | null>(null);
@@ -33,20 +35,25 @@ export default function CameraCRUD() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const pageSize = 10;
+
   const toast = useToast();
 
-  const selectedCamera = cameras.find((c) => c.id === selectedId) || null;
+  const selectedCamera =
+    cameras.find((camera) => camera.id === selectedId) || null;
 
   // =========================
-  // LOAD
+  // LOAD CAMERAS
   // =========================
 
   useEffect(() => {
     const load = async () => {
       try {
         const data = await getCameras();
+
         setCameras(data);
-      } catch {
+      } catch (error) {
+        console.error("Load cameras error:", error);
+
         toast.error("Failed to load cameras");
       }
     };
@@ -59,11 +66,17 @@ export default function CameraCRUD() {
   // =========================
 
   const filteredCameras = cameras.filter((cam) => {
+    const query = search.toLowerCase();
+
     return (
-      cam.location?.toLowerCase().includes(search.toLowerCase()) ||
-      cam.ip_address?.includes(search)
+      cam.location?.toLowerCase().includes(query) ||
+      cam.ip_address?.toLowerCase().includes(query)
     );
   });
+
+  // =========================
+  // PAGINATION
+  // =========================
 
   const totalPages = Math.ceil(filteredCameras.length / pageSize);
 
@@ -79,6 +92,44 @@ export default function CameraCRUD() {
   const totalDevices = cameras.length;
 
   // =========================
+  // ACTIVE / INACTIVE
+  // =========================
+
+  const handleActiveChange = async (cameraId: number, active: boolean) => {
+    try {
+      // Send new active value to backend
+      await updateCamera(cameraId, {
+        active,
+      });
+
+      // Update UI immediately
+      setCameras((prev) =>
+        prev.map((camera) =>
+          camera.id === cameraId
+            ? {
+                ...camera,
+                active,
+              }
+            : camera,
+        ),
+      );
+
+      toast.success(
+        active
+          ? "Camera activated successfully"
+          : "Camera deactivated successfully",
+      );
+    } catch (error) {
+      console.error("Failed to update camera active status:", error);
+
+      toast.error("Failed to update camera status");
+
+      // Let the table know that the request failed
+      throw error;
+    }
+  };
+
+  // =========================
   // SUBMIT
   // =========================
 
@@ -91,20 +142,24 @@ export default function CameraCRUD() {
 
       if (editing) {
         await updateCamera(editing.id, payload);
+
         toast.success("Camera updated successfully");
       } else {
         await createCamera(payload);
+
         toast.success("Camera created successfully");
       }
 
       const refreshed = await getCameras();
 
       setCameras(refreshed);
+
       setOpen(false);
       setEditing(null);
       setSelectedId(null);
     } catch (error) {
       console.error("Submit error:", error);
+
       toast.error("Something went wrong");
     }
   };
@@ -124,8 +179,11 @@ export default function CameraCRUD() {
       const refreshed = await getCameras();
 
       setCameras(refreshed);
+
       setSelectedId(null);
-    } catch {
+    } catch (error) {
+      console.error("Delete error:", error);
+
       toast.error("Failed to delete camera");
     }
   };
@@ -174,6 +232,7 @@ export default function CameraCRUD() {
             onSelect={(id) =>
               setSelectedId((prev) => (prev === id ? null : id))
             }
+            onActiveChange={handleActiveChange}
           />
         </CrudShell>
       </div>

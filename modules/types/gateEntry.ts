@@ -1,18 +1,30 @@
 // =========================
 // TYPES
 // =========================
-export type GateEntry = {
-  entry_type: "ENTRY" | "EXIT";
-  entry_by: string;
-  entry_by_table_id: number;
-  image_url: string;
-  plate_number: string;
-  resident_id: number;
-  gate_id: number;
+
+export type Resident = {
   id: number;
+  full_name: string;
+};
+
+export type GateEntry = {
+  id: number;
+
+  entry_type: "ENTRY" | "EXIT";
+  entry_by: "NORMAL" | "QR";
+
+  entry_by_table_id: number | null;
+
+  image_url: string | null;
+  plate_number: string | null;
+
+  resident_id: number | null;
+
+  gate_id: number;
+
   created_at: string;
-  entry_time: string;
-  status: "pending" | "rejected";
+
+  resident: Resident | null;
 };
 
 export type Plate = {

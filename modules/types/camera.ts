@@ -23,6 +23,7 @@ export type CameraFormData = {
   port: number;
   notes: string;
   reader_type: string;
+  camera_type: string;
   add_string_to_url: string;
 };
 

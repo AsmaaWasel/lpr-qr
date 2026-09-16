@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { X } from "lucide-react";
+import { AxiosError } from "axios";
 
 import { Gate, GateFormData } from "@/modules/types/gate";
 
@@ -93,17 +94,32 @@ export default function GateForm({ editing, onClose, onSubmit }: Props) {
         desc: desc.trim(),
         ip: ip.trim(),
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Gate save error:", error);
 
-      // Get error message from backend response
-      const backendMessage =
-        error?.response?.data?.detail ||
-        error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        error?.response?.data?.errors?.[0]?.message ||
-        error?.response?.data?.errors?.[0] ||
-        "Failed to save gate";
+      const axiosError = error as AxiosError<{
+        detail?: string;
+        message?: string;
+        error?: string;
+        errors?: Array<string | { message?: string }>;
+      }>;
+
+      const responseData = axiosError.response?.data;
+      const firstError = responseData?.errors?.[0];
+
+      let backendMessage = "Failed to save gate";
+
+      if (responseData?.detail) {
+        backendMessage = responseData.detail;
+      } else if (responseData?.message) {
+        backendMessage = responseData.message;
+      } else if (responseData?.error) {
+        backendMessage = responseData.error;
+      } else if (typeof firstError === "string") {
+        backendMessage = firstError;
+      } else if (firstError && "message" in firstError) {
+        backendMessage = firstError.message ?? "Failed to save gate";
+      }
 
       setErrors((prev) => ({
         ...prev,

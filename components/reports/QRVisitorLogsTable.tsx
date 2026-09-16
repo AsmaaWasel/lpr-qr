@@ -1,11 +1,11 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
+
 import {
   Car,
   User,
   Calendar,
-  Image as ImageIcon,
-  Hash,
   QrCode,
   LogIn,
   LogOut,
@@ -28,6 +28,82 @@ export default function QRVisitorLogsTable({
   onSelect,
   onImageClick,
 }: Props) {
+  // =========================
+  // PAGINATION
+  // =========================
+
+  const ITEMS_PER_PAGE = 10;
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
+
+  // Reset to first page whenever filters/data change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [data]);
+
+  // Prevent invalid page after data becomes smaller
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+
+    return data.slice(startIndex, endIndex);
+  }, [data, currentPage]);
+
+  // =========================
+  // PAGE NUMBERS
+  // =========================
+
+  const pageNumbers = useMemo(() => {
+    if (totalPages <= 1) {
+      return [];
+    }
+
+    const pages: (number | "...")[] = [];
+
+    // Show all pages if 7 or less
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+
+      return pages;
+    }
+
+    // Always show first page
+    pages.push(1);
+
+    // Left ellipsis
+    if (currentPage > 3) {
+      pages.push("...");
+    }
+
+    // Pages around current page
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    // Right ellipsis
+    if (currentPage < totalPages - 2) {
+      pages.push("...");
+    }
+
+    // Always show last page
+    pages.push(totalPages);
+
+    return pages;
+  }, [currentPage, totalPages]);
+
   // =========================
   // FORMAT DATE
   // =========================
@@ -134,10 +210,14 @@ export default function QRVisitorLogsTable({
   // =========================
 
   const getPhoneNumber = (resident: any) => {
-    if (!resident) return "-";
+    if (!resident) {
+      return "-";
+    }
+
     if (resident.phone_numbers && resident.phone_numbers.length > 0) {
       return resident.phone_numbers[0].phone_number;
     }
+
     return "-";
   };
 
@@ -245,21 +325,6 @@ export default function QRVisitorLogsTable({
                 Resident
               </th>
 
-              {/* Resident National ID */}
-              {/* <th
-                className="
-                  px-6
-                  py-4
-                  text-lg
-                  font-[600]
-                  uppercase
-                  tracking-wide
-                  text-[#7C93B4]
-                "
-              >
-                Resident National ID
-              </th> */}
-
               {/* Resident Phone */}
               <th
                 className="
@@ -360,7 +425,7 @@ export default function QRVisitorLogsTable({
             {data.length === 0 ? (
               <tr>
                 <td
-                  colSpan={12}
+                  colSpan={11}
                   className="
                     px-6
                     py-12
@@ -389,7 +454,7 @@ export default function QRVisitorLogsTable({
                 </td>
               </tr>
             ) : (
-              data.map((log) => {
+              paginatedData.map((log) => {
                 const isSelected = selectedId === log.id;
 
                 return (
@@ -402,6 +467,7 @@ export default function QRVisitorLogsTable({
                       border-border
                       transition
                       last:border-b-0
+
                       ${
                         isSelected
                           ? "bg-accent dark:bg-cyan-500/10"
@@ -506,6 +572,7 @@ export default function QRVisitorLogsTable({
                             text-[#29C5E8]
                           "
                         />
+
                         <span
                           className="
                             font-mono
@@ -533,6 +600,7 @@ export default function QRVisitorLogsTable({
                             text-[#29C5E8]
                           "
                         />
+
                         <span
                           className="
                             font-mono
@@ -577,33 +645,6 @@ export default function QRVisitorLogsTable({
                     </td>
 
                     {/* =========================
-                        RESIDENT NATIONAL ID
-                    ========================= */}
-
-                    {/* <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <IdCard
-                          className="
-                            h-4
-                            w-4
-                            text-[#29C5E8]
-                          "
-                        />
-                        <span
-                          className="
-                            font-mono
-                            text-[16px]
-                            font-[500]
-                            text-[#3B5473]
-                            dark:text-white
-                          "
-                        >
-                          {log.resident?.national_id || "-"}
-                        </span>
-                      </div>
-                    </td> */}
-
-                    {/* =========================
                         RESIDENT PHONE
                     ========================= */}
 
@@ -616,6 +657,7 @@ export default function QRVisitorLogsTable({
                             text-[#29C5E8]
                           "
                         />
+
                         <span
                           className="
                             font-mono
@@ -753,6 +795,158 @@ export default function QRVisitorLogsTable({
           </tbody>
         </table>
       </div>
+
+      {/* =========================
+          PAGINATION
+      ========================= */}
+
+      {data.length > 0 && totalPages > 1 && (
+        <div
+          className="
+            flex
+            flex-col
+            gap-4
+            border-t
+            border-border
+            px-6
+            py-4
+            sm:flex-row
+            sm:items-center
+            sm:justify-between
+          "
+        >
+          {/* Results Info */}
+
+          <div className="text-sm text-muted-foreground">
+            Showing{" "}
+            <span className="font-semibold text-foreground">
+              {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+            </span>{" "}
+            to{" "}
+            <span className="font-semibold text-foreground">
+              {Math.min(currentPage * ITEMS_PER_PAGE, data.length)}
+            </span>{" "}
+            of{" "}
+            <span className="font-semibold text-foreground">{data.length}</span>{" "}
+            entries
+          </div>
+
+          {/* Pagination Controls */}
+
+          <div className="flex items-center gap-1">
+            {/* Previous */}
+
+            <button
+              type="button"
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              disabled={currentPage === 1}
+              className="
+                flex
+                h-9
+                min-w-9
+                items-center
+                justify-center
+                rounded-lg
+                border
+                border-border
+                px-3
+                text-sm
+                font-medium
+                text-foreground
+                transition
+                hover:bg-secondary
+                disabled:cursor-not-allowed
+                disabled:opacity-40
+              "
+            >
+              Previous
+            </button>
+
+            {/* Page Numbers */}
+
+            {pageNumbers.map((page, index) => {
+              if (page === "...") {
+                return (
+                  <span
+                    key={`ellipsis-${index}`}
+                    className="
+                      flex
+                      h-9
+                      w-9
+                      items-center
+                      justify-center
+                      text-sm
+                      text-muted-foreground
+                    "
+                  >
+                    ...
+                  </span>
+                );
+              }
+
+              const isCurrent = currentPage === page;
+
+              return (
+                <button
+                  key={page}
+                  type="button"
+                  onClick={() => setCurrentPage(page)}
+                  className={`
+                    flex
+                    h-9
+                    w-9
+                    items-center
+                    justify-center
+                    rounded-lg
+                    border
+                    text-sm
+                    font-semibold
+                    transition
+
+                    ${
+                      isCurrent
+                        ? "border-brand bg-brand text-[#132f49]"
+                        : "border-border text-foreground hover:bg-secondary"
+                    }
+                  `}
+                >
+                  {page}
+                </button>
+              );
+            })}
+
+            {/* Next */}
+
+            <button
+              type="button"
+              onClick={() =>
+                setCurrentPage((page) => Math.min(totalPages, page + 1))
+              }
+              disabled={currentPage === totalPages}
+              className="
+                flex
+                h-9
+                min-w-9
+                items-center
+                justify-center
+                rounded-lg
+                border
+                border-border
+                px-3
+                text-sm
+                font-medium
+                text-foreground
+                transition
+                hover:bg-secondary
+                disabled:cursor-not-allowed
+                disabled:opacity-40
+              "
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

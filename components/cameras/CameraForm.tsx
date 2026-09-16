@@ -39,6 +39,7 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
     notes: editing?.notes ?? "",
     reader_type: editing?.reader_type ?? "CAMERA",
     add_string_to_url: editing?.add_string_to_url ?? "",
+    camera_type: "LPR",
   });
 
   /* ================= FETCH GATES ================= */
@@ -182,6 +183,7 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
 
     await onSubmit({
       ...form,
+      camera_type: "LPR",
       gate_id: selectedGate.id,
       location: selectedGate.name,
       username: form.username.trim(),

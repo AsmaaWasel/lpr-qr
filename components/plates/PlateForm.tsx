@@ -5,7 +5,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { getResidents } from "@/services/resident";
 
 type Props = {
-  onSubmit: (data: { plate_number_full: string; resident_id?: number }) => void;
+  onSubmit: (data: {
+    plate_number_full: string;
+    resident_id?: number;
+  }) => void | Promise<void>;
 
   editing?: {
     id: number;
@@ -46,14 +49,29 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
   })();
 
   const [form, setForm] = useState(initial);
+
   const [errors, setErrors] = useState<FormErrors>({});
+
+  // ================= BACKEND MESSAGE =================
+
+  const [backendMessage, setBackendMessage] = useState<string | null>(null);
+
+  const [backendMessageType, setBackendMessageType] = useState<
+    "success" | "error" | null
+  >(null);
+
+  const [saving, setSaving] = useState(false);
 
   // ================= RESIDENTS =================
 
   const [searchTerm, setSearchTerm] = useState("");
+
   const [residents, setResidents] = useState<Resident[]>([]);
+
   const [showDropdown, setShowDropdown] = useState(false);
+
   const [loadingResidents, setLoadingResidents] = useState(false);
+
   const [selectedResident, setSelectedResident] = useState<Resident | null>(
     null,
   );
@@ -84,6 +102,7 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
 
           if (found) {
             setSelectedResident(found);
+
             setSearchTerm(found.full_name);
 
             setForm((prev) => ({
@@ -144,6 +163,48 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
     };
   }, []);
 
+  // ================= EXTRACT BACKEND MESSAGE =================
+
+  const getBackendMessage = (error: any): string => {
+    const responseData = error?.response?.data;
+
+    // FastAPI:
+    // detail: [{ loc: [], msg: "...", type: "..." }]
+    if (Array.isArray(responseData?.detail)) {
+      return responseData.detail
+        .map((item: any) => item?.msg || item?.message || JSON.stringify(item))
+        .join(", ");
+    }
+
+    // FastAPI:
+    // detail: "..."
+    if (typeof responseData?.detail === "string") {
+      return responseData.detail;
+    }
+
+    // Other APIs:
+    if (typeof responseData?.message === "string") {
+      return responseData.message;
+    }
+
+    if (typeof responseData?.error === "string") {
+      return responseData.error;
+    }
+
+    // Sometimes backend returns:
+    // { data: { message: "..." } }
+    if (typeof responseData?.data?.message === "string") {
+      return responseData.data.message;
+    }
+
+    // Axios error
+    if (typeof error?.message === "string") {
+      return error.message;
+    }
+
+    return "Something went wrong. Please try again.";
+  };
+
   // ================= CHANGE FIELD =================
 
   const handleChange = (field: "numbers" | "letters", value: string) => {
@@ -171,6 +232,10 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
       ...prev,
       [field]: undefined,
     }));
+
+    // Clear backend message when user edits
+    setBackendMessage(null);
+    setBackendMessageType(null);
   };
 
   // ================= RESIDENT SEARCH =================
@@ -187,6 +252,14 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
     setSelectedResident(null);
 
     setShowDropdown(value.trim().length > 0);
+
+    setErrors((prev) => ({
+      ...prev,
+      resident_id: undefined,
+    }));
+
+    setBackendMessage(null);
+    setBackendMessageType(null);
   };
 
   // ================= SELECT RESIDENT =================
@@ -208,6 +281,9 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
       ...prev,
       resident_id: undefined,
     }));
+
+    setBackendMessage(null);
+    setBackendMessageType(null);
   };
 
   // ================= VALIDATION =================
@@ -227,29 +303,65 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
   };
 
   // ================= SAVE =================
+
   const handleSave = async () => {
     const validationErrors = validateForm();
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
+
+      setBackendMessage(null);
+      setBackendMessageType(null);
+
       return;
     }
 
-    const submitData: {
-      plate_number_full: string;
-      resident_id?: number;
-    } = {
-      plate_number_full:
-        form.numbers + form.letters.split("").reverse().join(""),
-    };
+    try {
+      setSaving(true);
 
-    if (form.resident_id) {
-      submitData.resident_id = form.resident_id;
+      // Clear old backend message
+      setBackendMessage(null);
+      setBackendMessageType(null);
+
+      const submitData: {
+        plate_number_full: string;
+        resident_id?: number;
+      } = {
+        plate_number_full:
+          form.numbers + form.letters.split("").reverse().join(""),
+      };
+
+      if (form.resident_id) {
+        submitData.resident_id = form.resident_id;
+      }
+
+      console.log("REQUEST DATA:", submitData);
+
+      await onSubmit(submitData);
+
+      // ================= SUCCESS =================
+
+      setBackendMessage(
+        editing ? "Plate updated successfully." : "Plate added successfully.",
+      );
+
+      setBackendMessageType("success");
+    } catch (error: any) {
+      // ================= BACKEND ERROR =================
+
+      console.error("PLATE SAVE ERROR:", error);
+
+      console.error("STATUS:", error?.response?.status);
+
+      console.error("DATA:", error?.response?.data);
+
+      const message = getBackendMessage(error);
+
+      setBackendMessage(message);
+      setBackendMessageType("error");
+    } finally {
+      setSaving(false);
     }
-
-    console.log("REQUEST DATA:", submitData);
-
-    await onSubmit(submitData);
   };
 
   // ================= PREVIEW =================
@@ -315,7 +427,7 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
       >
         {/* ================= HEADER ================= */}
 
-        <div className="mb-7 flex items-start justify-between">
+        <div className="mb-5 flex items-start justify-between">
           <div>
             <h2 className="text-2xl font-bold text-foreground">
               {editing ? "Edit Plate" : "Add Plate"}
@@ -349,6 +461,87 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
             ✕
           </button>
         </div>
+
+        {/* ================= BACKEND MESSAGE ================= */}
+
+        {backendMessage && (
+          <div
+            className={`
+              mb-6
+              flex
+              items-start
+              gap-3
+              rounded-xl
+              border
+              px-4
+              py-3.5
+              ${
+                backendMessageType === "error"
+                  ? `
+                    border-red-500/30
+                    bg-red-500/10
+                    text-red-600
+                    dark:text-red-400
+                  `
+                  : `
+                    border-emerald-500/30
+                    bg-emerald-500/10
+                    text-emerald-600
+                    dark:text-emerald-400
+                  `
+              }
+            `}
+          >
+            {/* Icon */}
+
+            <div
+              className={`
+                mt-0.5
+                flex
+                h-6
+                w-6
+                shrink-0
+                items-center
+                justify-center
+                rounded-full
+                text-sm
+                font-bold
+                ${
+                  backendMessageType === "error"
+                    ? "bg-red-500/15"
+                    : "bg-emerald-500/15"
+                }
+              `}
+            >
+              {backendMessageType === "error" ? "!" : "✓"}
+            </div>
+
+            {/* Message */}
+
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold">{backendMessage}</p>
+            </div>
+
+            {/* Close message */}
+
+            <button
+              type="button"
+              onClick={() => {
+                setBackendMessage(null);
+                setBackendMessageType(null);
+              }}
+              className="
+                shrink-0
+                text-sm
+                opacity-60
+                transition
+                hover:opacity-100
+              "
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {/* ================= FORM ================= */}
 
@@ -399,7 +592,7 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
                 </div>
               )}
 
-              {/* ================= DROPDOWN ================= */}
+              {/* DROPDOWN */}
 
               {showDropdown && filteredResidents.length > 0 && (
                 <div
@@ -478,7 +671,7 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
                 )}
             </div>
 
-            {/* ================= SELECTED RESIDENT ================= */}
+            {/* SELECTED RESIDENT */}
 
             {selectedResident && (
               <div
@@ -751,8 +944,11 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
                 {/* Screws */}
 
                 <div className="absolute left-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-slate-400/70" />
+
                 <div className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-slate-400/70" />
+
                 <div className="absolute bottom-1.5 left-1.5 h-1.5 w-1.5 rounded-full bg-slate-400/70" />
+
                 <div className="absolute bottom-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-slate-400/70" />
               </div>
             </div>
@@ -765,6 +961,7 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
           <button
             type="button"
             onClick={onClose}
+            disabled={saving}
             className="
               rounded-xl
               px-6
@@ -775,6 +972,8 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
               transition
               hover:bg-muted
               hover:text-foreground
+              disabled:cursor-not-allowed
+              disabled:opacity-50
             "
           >
             Cancel
@@ -783,6 +982,7 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
           <button
             type="button"
             onClick={handleSave}
+            disabled={saving}
             className="
               rounded-xl
               bg-[#132f49]
@@ -795,9 +995,11 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
               transition
               hover:bg-[#0b1f33]
               active:scale-[0.98]
+              disabled:cursor-not-allowed
+              disabled:opacity-60
             "
           >
-            {editing ? "Update Plate" : "Save Plate"}
+            {saving ? "Saving..." : editing ? "Update Plate" : "Save Plate"}
           </button>
         </div>
       </div>

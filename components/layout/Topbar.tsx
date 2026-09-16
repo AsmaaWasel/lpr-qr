@@ -38,12 +38,12 @@ const PAGE_INFO: Record<
 
   "/dashboard/lpr/cameras": {
     title: "Cameras",
-    description: "Manage system cameras and entry points",
+    description: "Manage system cameras",
   },
 
   "/dashboard/lpr/plates": {
     title: "Plate numbers",
-    description: "Manage allowed vehicle plate numbers for the LPR system",
+    description: "Manage allowed vehicle plate numbers",
   },
 
   "/dashboard/qr": {
@@ -58,7 +58,7 @@ const PAGE_INFO: Record<
 
   "/dashboard/qr/qr-readers": {
     title: "QR readers",
-    description: "Manage system readers and entry points",
+    description: "Manage system readers",
   },
 
   "/dashboard/users": {

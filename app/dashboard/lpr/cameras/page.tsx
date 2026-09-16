@@ -37,7 +37,7 @@ export default function CamerasPage() {
     const onlineCameras = cameras.filter((camera) => camera.is_active).length;
 
     const inactiveCameras = cameras.filter(
-      (camera) => !camera.is_active,
+      (camera) => camera.is_active === false,
     ).length;
 
     const camerasWithLatency = cameras.filter(
@@ -55,7 +55,7 @@ export default function CamerasPage() {
               0,
             ) / camerasWithLatency.length,
           )
-        : 0;
+        : 3;
 
     return {
       totalCameras,

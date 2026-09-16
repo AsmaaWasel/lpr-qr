@@ -1,20 +1,30 @@
 "use client";
 
-import {
-  PillTabs,
-  StatRow,
-  SectionCard,
-  LPR_TABS,
-  QR_TABS,
-} from "@/shared/ui/voom";
+import { useState } from "react";
+
+import { PillTabs, StatRow, SectionCard, QR_TABS } from "@/shared/ui/voom";
 
 import ReaderCRUD from "@/components/readers/ReaderCRUD";
 
+type ReaderStats = {
+  totalDevices: number;
+  totalCameras: number;
+  totalQrReaders: number;
+  offline: number;
+};
+
 export default function ReadersPage() {
+  const [stats, setStats] = useState<ReaderStats>({
+    totalDevices: 0,
+    totalCameras: 0,
+    totalQrReaders: 0,
+    offline: 0,
+  });
+
   return (
     <div className="space-y-4">
       {/* =========================
-          LPR TABS
+          QR TABS
       ========================= */}
 
       <PillTabs tabs={QR_TABS} activeValue="/dashboard/qr/qr-readers" />
@@ -27,29 +37,29 @@ export default function ReadersPage() {
         items={[
           {
             label: "TOTAL DEVICES",
-            value: 0,
+            value: stats.totalDevices,
           },
           {
             label: "TOTAL CAMERAS",
-            value: 0,
+            value: stats.totalCameras,
           },
           {
             label: "TOTAL QR READERS",
-            value: 0,
+            value: stats.totalQrReaders,
           },
           {
             label: "OFFLINE",
-            value: 0,
+            value: stats.offline,
           },
         ]}
       />
 
       {/* =========================
-          CAMERAS CRUD
+          READERS CRUD
       ========================= */}
 
       <SectionCard>
-        <ReaderCRUD />
+        <ReaderCRUD onStatsChange={setStats} />
       </SectionCard>
     </div>
   );
