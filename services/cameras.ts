@@ -66,3 +66,12 @@ export const deleteCamera = async (id: number) => {
 
   return res.data;
 };
+// =========================
+// GET UNASSIGNED CAMERAS
+// =========================
+
+export const getUnassignedCameras = async () => {
+  const res = await api.get(`${API}?unassigned_only=true`);
+
+  return res.data.data ?? res.data ?? [];
+};

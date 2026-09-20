@@ -16,7 +16,6 @@ type Props = {
 };
 
 type FormErrors = {
-  gate_id?: string;
   username?: string;
   password?: string;
   ip_address?: string;
@@ -30,7 +29,7 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
   const [errors, setErrors] = useState<FormErrors>({});
 
   const [form, setForm] = useState<CameraFormData>({
-    gate_id: editing?.gate_id ?? 0,
+    gate_id: editing?.gate_id ?? null,
     location: editing?.location ?? "",
     username: editing?.username ?? "",
     password: editing?.password ?? "",
@@ -68,8 +67,7 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
       [key]: value,
     }));
 
-    // Remove error for the field being edited
-    if (errors[key as keyof FormErrors]) {
+    if (key in errors) {
       setErrors((prev) => ({
         ...prev,
         [key]: undefined,
@@ -80,32 +78,34 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
   /* ================= GATE CHANGE ================= */
 
   const handleGateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const gateId = Number(e.target.value);
+    const value = e.target.value;
+
+    // No Gate selected
+    if (!value) {
+      setForm((prev) => ({
+        ...prev,
+        gate_id: null,
+        location: "",
+      }));
+
+      return;
+    }
+
+    const gateId = Number(value);
+
     const selectedGate = gates.find((gate) => gate.id === gateId);
 
     setForm((prev) => ({
       ...prev,
       gate_id: gateId,
-      location: selectedGate?.name || "",
+      location: selectedGate?.name ?? "",
     }));
-
-    if (errors.gate_id) {
-      setErrors((prev) => ({
-        ...prev,
-        gate_id: undefined,
-      }));
-    }
   };
 
   /* ================= VALIDATION ================= */
 
   const validateForm = (): FormErrors => {
     const newErrors: FormErrors = {};
-
-    // Gate
-    if (!form.gate_id) {
-      newErrors.gate_id = "Please select a gate";
-    }
 
     // Username
     if (!form.username?.trim()) {
@@ -117,7 +117,6 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
     }
 
     // Password
-    // Required in both Add and Edit
     if (!form.password?.trim()) {
       newErrors.password = "Password is required";
     } else if (form.password.length < 3) {
@@ -172,24 +171,31 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
       return;
     }
 
-    const selectedGate = gates.find((gate) => gate.id === form.gate_id);
-
-    if (!selectedGate) {
-      setErrors({
-        gate_id: "Please select a valid gate",
-      });
-      return;
-    }
+    const selectedGate = form.gate_id
+      ? gates.find((gate) => gate.id === form.gate_id)
+      : undefined;
 
     await onSubmit({
       ...form,
+
+      // Always LPR
       camera_type: "LPR",
-      gate_id: selectedGate.id,
-      location: selectedGate.name,
+
+      // Gate is optional
+      gate_id: selectedGate?.id ?? null,
+
+      // If Gate is selected use its name,
+      // otherwise keep the existing location
+      location: selectedGate?.name ?? form.location?.trim() ?? "",
+
       username: form.username.trim(),
+
       ip_address: form.ip_address.trim(),
+
       port: Number(form.port),
+
       add_string_to_url: form.add_string_to_url?.trim() || "",
+
       notes: form.notes?.trim() || "",
     });
   };
@@ -250,6 +256,7 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
         onMouseDown={(e) => e.stopPropagation()}
       >
         {/* HEADER */}
+
         <div className="mb-7 flex items-start justify-between">
           <div>
             <h2 className="text-2xl font-bold text-foreground">
@@ -286,19 +293,19 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
         </div>
 
         {/* FORM */}
+
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {/* Gate */}
+
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
               Gate
             </label>
 
             <select
-              value={form.gate_id || ""}
+              value={form.gate_id ?? ""}
               onChange={handleGateChange}
-              className={`${inputClassName} ${
-                errors.gate_id ? "border-red-500 focus:border-red-500" : ""
-              }`}
+              className={inputClassName}
             >
               <option value="">Select gate</option>
 
@@ -308,13 +315,10 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
                 </option>
               ))}
             </select>
-
-            {errors.gate_id && (
-              <p className={errorClassName}>{errors.gate_id}</p>
-            )}
           </div>
 
           {/* Username */}
+
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
               Username
@@ -336,6 +340,7 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
           </div>
 
           {/* Password */}
+
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
               Password
@@ -357,6 +362,7 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
           </div>
 
           {/* IP Address */}
+
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
               IP Address
@@ -378,6 +384,7 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
           </div>
 
           {/* Port */}
+
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
               Port
@@ -404,6 +411,7 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
           </div>
 
           {/* Add subURL */}
+
           <div className="space-y-1.5">
             <label className="block text-base font-semibold text-foreground">
               Add subURL
@@ -429,6 +437,7 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
           </div>
 
           {/* Notes */}
+
           <div className="space-y-1.5 md:col-span-2">
             <label className="block text-base font-semibold text-foreground">
               Notes
@@ -453,6 +462,7 @@ export default function CameraForm({ editing, onClose, onSubmit }: Props) {
         </div>
 
         {/* ACTIONS */}
+
         <div className="mt-7 flex justify-end gap-3 border-t border-border pt-5">
           <button
             type="button"

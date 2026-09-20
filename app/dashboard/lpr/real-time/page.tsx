@@ -6,6 +6,7 @@ import Image from "next/image";
 
 import { getPlates } from "@/services/plate";
 import { getGateEntry, getGates } from "@/services/gate";
+import { openGate, closeGate } from "@/services/access-control";
 
 import GateMap from "@/components/real-time/GateMap";
 import TrafficSettings from "@/components/real-time/TrafficSettings";
@@ -14,6 +15,7 @@ import GatesTable from "@/components/real-time/GatesTable";
 
 import { GateData, GateEntry } from "@/modules/types/gateEntry";
 import { PillTabs } from "@/shared/ui/voom";
+import Gate from "@/modules/sharedComponents/gate-entries/Gate";
 
 // =====================================================
 // TYPES
@@ -441,6 +443,74 @@ export default function LiveDemoPage() {
     },
     [],
   );
+
+  // =====================================================
+  // MANUAL OPEN GATE
+  // =====================================================
+
+  const handleManualOpenGate = async () => {
+    if (!selectedGate) return;
+
+    try {
+      setGateLoading(true);
+
+      await openGate(selectedGate.id);
+
+      setGateOpen(true);
+
+      updateGateStatus(selectedGate.id, true, "open");
+
+      setLogs((prev) => [
+        {
+          message: `Gate ${selectedGate.name} opened manually`,
+          queueCount: selectedGate.queueCount || 0,
+          timeDate: formatTimeDate(),
+          gateName: selectedGate.name,
+          level: getCongestionLevel(selectedGate.queueCount || 0),
+          isOpen: true,
+        },
+        ...prev,
+      ]);
+    } catch (error) {
+      console.error("Error opening gate manually:", error);
+    } finally {
+      setGateLoading(false);
+    }
+  };
+
+  // =====================================================
+  // MANUAL CLOSE GATE
+  // =====================================================
+
+  const handleManualCloseGate = async () => {
+    if (!selectedGate) return;
+
+    try {
+      setGateLoading(true);
+
+      await closeGate(selectedGate.id);
+
+      setGateOpen(false);
+
+      updateGateStatus(selectedGate.id, false, "closed");
+
+      setLogs((prev) => [
+        {
+          message: `Gate ${selectedGate.name} closed manually`,
+          queueCount: selectedGate.queueCount || 0,
+          timeDate: formatTimeDate(),
+          gateName: selectedGate.name,
+          level: getCongestionLevel(selectedGate.queueCount || 0),
+          isOpen: false,
+        },
+        ...prev,
+      ]);
+    } catch (error) {
+      console.error("Error closing gate manually:", error);
+    } finally {
+      setGateLoading(false);
+    }
+  };
 
   // =====================================================
   // WEBSOCKET EVENT HANDLER
@@ -1634,40 +1704,151 @@ export default function LiveDemoPage() {
         </div>
 
         {/* =================================================
-            FULL WIDTH HEAT MAP  (singleArm = true)
+            MAP (LEFT) + MANUAL CONTROL (RIGHT)
         ================================================= */}
 
-        <div className="w-full mt-6">
-          <GateMap
-            open={mapOpen}
-            onClose={() => {
-              setMapOpen(false);
-              setUploadError(null);
-            }}
-            gates={gates}
-            mapImage={mapImage}
-            gatePositions={gatePositions}
-            getCongestionLevelByEntryCount={getCongestionLevelByEntryCount}
-            getLevelTextColor={getLevelTextColor}
-            onGateSelect={handleGateSelect}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onDragEnd={handleDragEnd}
-            onPointerDown={handleGatePointerDown}
-            onPointerMove={handleGatePointerMove}
-            onPointerUp={handlePointerUp}
-            mapRef={mapRef}
-            isDragging={isDragging}
-            draggedGate={draggedGate}
-            dragPosition={dragPosition}
-            uploadingImage={uploadingImage}
-            uploadError={uploadError}
-            fileInputRef={fileInputRef}
-            onImageUpload={handleImageUpload}
-            onRemoveImage={removeImage}
-            singleArm // ✅ ذراع واحد فقط
-          />
+        <div className="w-full mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* LEFT: HEAT MAP */}
+
+          <div className="lg:col-span-8">
+            <GateMap
+              open={mapOpen}
+              onClose={() => {
+                setMapOpen(false);
+                setUploadError(null);
+              }}
+              gates={gates}
+              mapImage={mapImage}
+              gatePositions={gatePositions}
+              getCongestionLevelByEntryCount={getCongestionLevelByEntryCount}
+              getLevelTextColor={getLevelTextColor}
+              onGateSelect={handleGateSelect}
+              onDragStart={handleDragStart}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              onDragEnd={handleDragEnd}
+              onPointerDown={handleGatePointerDown}
+              onPointerMove={handleGatePointerMove}
+              onPointerUp={handlePointerUp}
+              mapRef={mapRef}
+              isDragging={isDragging}
+              draggedGate={draggedGate}
+              dragPosition={dragPosition}
+              uploadingImage={uploadingImage}
+              uploadError={uploadError}
+              fileInputRef={fileInputRef}
+              onImageUpload={handleImageUpload}
+              onRemoveImage={removeImage}
+              singleArm // ✅ ذراع واحد فقط
+            />
+          </div>
+
+          {/* RIGHT: MANUAL CONTROL BOX */}
+
+          <div className="lg:col-span-4">
+            <div className="rounded-2xl border border-border bg-background/50 p-5 h-full flex flex-col">
+              {/* TITLE */}
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Gate Control</h3>
+
+                <span
+                  className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                    gateOpen
+                      ? "bg-ok/15 text-ok border border-emerald-500/30"
+                      : "bg-rose-500/15 text-rose-400 border border-rose-500/30"
+                  }`}
+                >
+                  {gateOpen ? "OPEN" : "CLOSED"}
+                </span>
+              </div>
+
+              {/* SELECTED GATE INFO */}
+              <div className="mt-4">
+                <p className="text-xs text-muted-foreground">Selected Gate</p>
+
+                <h4 className="text-xl font-bold">
+                  {selectedGate?.name || "No Gate Selected"}
+                </h4>
+
+                <p className="text-sm text-muted-foreground">
+                  {selectedGate?.desc || "Select a gate to control"}
+                </p>
+
+                {selectedGate && (
+                  <div className="flex items-center gap-3 mt-2 text-sm">
+                    <span>
+                      <span className="text-muted-foreground">Traffic: </span>
+
+                      <span
+                        className={`font-semibold ${getLevelTextColor(
+                          getCongestionLevelByEntryCount(
+                            selectedGate.entryCount || 0,
+                          ),
+                        )}`}
+                      >
+                        {getCongestionLevelByEntryCount(
+                          selectedGate.entryCount || 0,
+                        ).toUpperCase()}
+                      </span>
+                    </span>
+
+                    <span>
+                      <span className="text-muted-foreground">Entries: </span>
+
+                      <span className="font-semibold">
+                        {selectedGate.entryCount || 0}
+                      </span>
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* GATE ANIMATION */}
+              <div className="rounded-xl bg-secondary/40 border border-border p-4 flex flex-col items-center mb-4">
+                {/* Gate moved slightly down */}
+                <div className="mt-23">
+                  <Gate open={gateOpen} size="md" />
+                </div>
+
+                <p className="text-xs text-muted-foreground mt-3">
+                  {gateOpen ? "Gate is OPEN" : "Gate is CLOSED"}
+                </p>
+              </div>
+
+              {/* MANUAL CONTROLS */}
+              <div className="mt-auto flex flex-col gap-3">
+                <p className="text-xs text-muted-foreground text-center">
+                  Manual Control
+                </p>
+
+                <div className="flex gap-3">
+                  {/* OPEN */}
+                  <button
+                    type="button"
+                    disabled={!selectedGate || gateLoading}
+                    onClick={handleManualOpenGate}
+                    className="flex-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 py-3 px-4 rounded-xl hover:bg-emerald-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-2"
+                  >
+                    <span>🔓</span>
+
+                    {gateLoading ? "..." : "Open"}
+                  </button>
+
+                  {/* CLOSE */}
+                  <button
+                    type="button"
+                    disabled={!selectedGate || gateLoading}
+                    onClick={handleManualCloseGate}
+                    className="flex-1 bg-rose-500/20 text-rose-400 border border-rose-500/30 py-3 px-4 rounded-xl hover:bg-rose-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-2"
+                  >
+                    <span>🔒</span>
+
+                    {gateLoading ? "..." : "Close"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* =================================================

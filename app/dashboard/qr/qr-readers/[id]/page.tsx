@@ -5,7 +5,7 @@ import Hls from "hls.js";
 import api from "@/services/api";
 import { useParams } from "next/navigation";
 
-const STREAM_URL = "http://localhost:8888/cam1/index.m3u8";
+const STREAM_URL = "http://localhost:8888/cam2/index.m3u8";
 
 export default function CameraStreamPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
