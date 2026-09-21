@@ -7,6 +7,7 @@ import {
   HiOutlineCheckCircle,
   HiOutlineXCircle,
 } from "react-icons/hi";
+import { DoorOpen } from "lucide-react";
 
 type GatePosition = {
   x: number;
@@ -303,7 +304,7 @@ export default function LiveDemoGrid({
                   >
                     {/* Gate */}
                     // eslint-disable-next-line react/jsx-no-undef
-                    <GateIcon open={isOpen} size="sm" />
+                    <DoorOpen className={isOpen ? "text-emerald-400" : "text-muted-foreground"} size={22} />
 
                     {/* Name */}
                     <span className="text-[10px] text-muted-foreground mt-1 font-medium whitespace-nowrap">
@@ -486,7 +487,7 @@ export default function LiveDemoGrid({
 
           {/* Gate Status */}
           <div className="bg-slate-800/30 rounded-xl p-4 flex flex-col items-center border border-border">
-            <GateIcon open={gateOpen} size="md" />
+            <DoorOpen className={gateOpen ? "text-emerald-400" : "text-muted-foreground"} size={28} />
 
             <div className="mt-3 text-center">
               {status === "idle" && (

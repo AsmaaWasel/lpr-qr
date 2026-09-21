@@ -10,6 +10,7 @@ type Props = {
   data: Camera[];
   selectedId: number | null;
   onSelect: (id: number) => void;
+  onActiveChange?: (cameraId: number, active: boolean) => Promise<void>;
 };
 
 export default function CameraTable({ data, selectedId, onSelect }: Props) {

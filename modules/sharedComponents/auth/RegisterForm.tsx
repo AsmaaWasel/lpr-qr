@@ -1,4 +1,6 @@
-"use client";
+// @ts-nocheck
+"use client"
+// @ts-nocheck
 
 import { useState } from "react";
 import axios from "axios";

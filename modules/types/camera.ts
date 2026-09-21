@@ -1,7 +1,7 @@
 export type Camera = {
   id: number;
   url: string;
-  gate_id?: number;
+  gate_id?: number | null;
   location?: string;
   username?: string;
   password?: string;
@@ -17,7 +17,7 @@ export type Camera = {
 };
 
 export type CameraFormData = {
-  gate_id: number;
+  gate_id: number | null;
   location: string;
   username: string;
   password: string;

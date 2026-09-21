@@ -9,7 +9,7 @@ import { HiOutlineOfficeBuilding } from "react-icons/hi";
 export type GateItem = {
   id: number;
   name: string;
-  desc: string;
+  desc?: string | null;
   x?: number;
   y?: number;
   isOpen?: boolean;

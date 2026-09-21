@@ -1,4 +1,7 @@
 export type User = {
+  name?: string;
+  sub_department_id?: number;
+  sub_department?: { name?: string };
   id: number;
   username: string;
   email: string;

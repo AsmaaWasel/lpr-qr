@@ -6,7 +6,7 @@ export type Plate = {
 export type Gate = {
   id: number;
   name: string;
-  desc: string;
+  desc?: string;
   x?: number;
   y?: number;
   isOpen?: boolean;

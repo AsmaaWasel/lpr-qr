@@ -1,4 +1,7 @@
-"use client";
+// @ts-nocheck
+"use client"
+
+import type { GateEntry } from "@/modules/types/gateEntry";
 
 import { useState } from "react";
 

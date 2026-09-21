@@ -17,6 +17,11 @@ export const adminLogin = async (email: string, password: string) => {
   return response.data;
 };
 
+export const adminRegister = async (username: string, email: string, password: string) => {
+  const response = await api.post("/auth/register", { username, email, password });
+  return response.data;
+};
+
 // =========================
 // RESIDENT LOGIN
 // =========================

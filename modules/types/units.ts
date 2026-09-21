@@ -1,4 +1,4 @@
-export type UnitType = "VILLA";
+export type UnitType = "VILLA" | "BUILDING" | "APARTMENT";
 
 export type Unit = {
   id: number;
@@ -6,6 +6,7 @@ export type Unit = {
   type: UnitType;
   description?: string | null;
   parent_id?: number | null;
+  status?: string;
 };
 
 export type UnitFormData = {

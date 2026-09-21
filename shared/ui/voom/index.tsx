@@ -402,6 +402,8 @@ export function CrudShell({
   onSearchChange: (value: string) => void;
   searchPlaceholder?: string;
   addLabel?: string;
+  secondaryAddLabel?: string;
+  onSecondaryAdd?: () => void;
   onAdd?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;

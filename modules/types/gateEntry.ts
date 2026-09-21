@@ -35,7 +35,7 @@ export type Plate = {
 export type GateData = {
   id: number;
   name: string;
-  desc: string;
+  desc?: string;
   x?: number;
   y?: number;
   isOpen?: boolean;

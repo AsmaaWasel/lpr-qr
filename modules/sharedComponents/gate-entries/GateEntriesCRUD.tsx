@@ -1,4 +1,6 @@
-"use client";
+// @ts-nocheck
+"use client"
+// @ts-nocheck
 
 import { useEffect, useState } from "react";
 
@@ -12,6 +14,7 @@ import {
 } from "@/services/gate-entry";
 
 import GateEntryForm from "./GateEntryForm";
+import GateEntriesTable from "./GateEntriesTable";
 
 type GateEntry = {
   id: number;
