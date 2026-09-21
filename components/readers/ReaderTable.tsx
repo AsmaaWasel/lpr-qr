@@ -397,85 +397,88 @@ export default function ReaderTable({
                         </span>
                       </td>
 
-                      {/* ================= ACTIVE ================= */}
+                      {/* ================= ACTIVE (CIRCLE + TEXT) ================= */}
                       <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          <button
-                            type="button"
-                            disabled={isUpdating}
-                            onClick={(e) => handleToggleActive(e, camera)}
-                            className={`
-                              relative
-                              inline-flex
-                              h-7
-                              w-12
-                              shrink-0
-                              items-center
-                              rounded-full
-                              transition-colors
-                              duration-200
-                              focus:outline-none
-                              focus:ring-2
-                              focus:ring-brand
-                              focus:ring-offset-2
-                              dark:focus:ring-offset-slate-900
-                              ${
-                                camera.is_active
-                                  ? "bg-emerald-500"
-                                  : "bg-slate-300 dark:bg-slate-600"
-                              }
-                              ${
-                                isUpdating
-                                  ? "cursor-not-allowed opacity-60"
-                                  : "cursor-pointer"
-                              }
-                            `}
-                            aria-label={`Toggle reader ${camera.id} active status`}
-                            aria-pressed={camera.is_active}
-                          >
-                            {isUpdating ? (
-                              <span className="flex w-full items-center justify-center">
-                                <Loader2
-                                  size={14}
-                                  className="animate-spin text-white"
-                                />
-                              </span>
-                            ) : (
+                        <button
+                          type="button"
+                          disabled={isUpdating}
+                          onClick={(e) => handleToggleActive(e, camera)}
+                          className={`
+                            flex
+                            items-center
+                            gap-2
+                            ${
+                              isUpdating
+                                ? "cursor-not-allowed opacity-60"
+                                : "cursor-pointer"
+                            }
+                          `}
+                          aria-label={`Toggle reader ${camera.id} active status`}
+                          aria-pressed={camera.is_active}
+                          title={
+                            camera.is_active
+                              ? "Click to deactivate"
+                              : "Click to activate"
+                          }
+                        >
+                          {isUpdating ? (
+                            <Loader2
+                              size={14}
+                              className="animate-spin text-muted-foreground"
+                            />
+                          ) : (
+                            <>
+                              {/* الدايرة */}
                               <span
                                 className={`
-                                  inline-block
-                                  h-5
-                                  w-5
+                                  relative
+                                  flex
+                                  h-3
+                                  w-3
                                   rounded-full
-                                  bg-white
-                                  shadow
-                                  transition-transform
-                                  duration-200
                                   ${
                                     camera.is_active
-                                      ? "translate-x-6"
-                                      : "translate-x-1"
+                                      ? "bg-emerald-500"
+                                      : "bg-red-500"
                                   }
                                 `}
-                              />
-                            )}
-                          </button>
+                              >
+                                {/* هالة animate-ping */}
+                                <span
+                                  className={`
+                                    absolute
+                                    inline-flex
+                                    h-full
+                                    w-full
+                                    rounded-full
+                                    opacity-60
+                                    animate-ping
+                                    ${
+                                      camera.is_active
+                                        ? "bg-emerald-500"
+                                        : "bg-red-500"
+                                    }
+                                  `}
+                                />
+                              </span>
 
-                          <span
-                            className={`
-                              ml-3
-                              text-sm
-                              font-medium
-                              ${
-                                camera.is_active
-                                  ? "text-emerald-600 dark:text-emerald-400"
-                                  : "text-slate-500 dark:text-slate-400"
-                              }
-                            `}
-                          >
-                            {camera.is_active ? "Active" : "Inactive"}
-                          </span>
-                        </div>
+                              {/* النص */}
+                              <span
+                                className={`
+                                  text-[16px]
+                                  font-[600]
+                                  ${
+                                    camera.is_active
+                                      ? "text-emerald-600 dark:text-emerald-400"
+                                      : "text-red-600 dark:text-red-400"
+                                  }
+                                `}
+                              >
+                                {camera.is_active ? "Active" : "Inactive"}
+                              </span>
+                            </>
+                          )}
+                        </button>
                       </td>
 
                       {/* ================= ACTION ================= */}

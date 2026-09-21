@@ -70,14 +70,14 @@ export default function ResidentsPage() {
             label: "Total Residents",
             value: totalResidents,
           },
-          {
-            label: "ALLOWED",
-            value: allowedResidents,
-          },
-          {
-            label: "NOT ALLOWED",
-            value: notAllowedResidents,
-          },
+          // {
+          //   label: "ALLOWED",
+          //   value: allowedResidents,
+          // },
+          // {
+          //   label: "NOT ALLOWED",
+          //   value: notAllowedResidents,
+          // },
           {
             label: "WITH CREDENTIALS",
             value: residentsWithCredentials,

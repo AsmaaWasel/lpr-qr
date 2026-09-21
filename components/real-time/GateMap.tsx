@@ -401,8 +401,8 @@ export default function GateMap({
       {/* ===================================================== */}
 
       {open && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-secondary rounded-2xl border border-border max-w-lg w-full p-6 shadow-2xl">
+        <div className="fixed inset-0 flex items-start justify-end p-6 z-50 pointer-events-none">
+          <div className="bg-secondary rounded-2xl border border-border max-w-lg w-full p-6 shadow-2xl pointer-events-auto">
             {/* HEADER */}
 
             <div className="flex items-center justify-between mb-6">

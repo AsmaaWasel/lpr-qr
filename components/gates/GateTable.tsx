@@ -1,58 +1,25 @@
 "use client";
 
-import { useState } from "react";
 import { Gate } from "@/modules/types/gate";
-import { Check, Loader2 } from "lucide-react";
+import { Check } from "lucide-react";
 
 type Props = {
   data: Gate[];
   selectedId: number | null;
   onSelect: (id: number) => void;
-  onActiveChange?: (gateId: number, active: boolean) => Promise<void>;
 };
 
-export default function GatesTable({
-  data,
-  selectedId,
-  onSelect,
-  onActiveChange,
-}: Props) {
-  const [updatingId, setUpdatingId] = useState<number | null>(null);
-
-  // =====================================================
-  // TOGGLE ACTIVE
-  // =====================================================
-
-  const handleToggleActive = async (e: React.MouseEvent, gate: Gate) => {
-    e.stopPropagation();
-
-    if (!onActiveChange) return;
-
-    try {
-      setUpdatingId(gate.id);
-
-      const newActive = !gate.active;
-
-      await onActiveChange(gate.id, newActive);
-    } catch (error) {
-      console.error("Failed to update gate active status:", error);
-    } finally {
-      setUpdatingId(null);
-    }
-  };
-
+export default function GatesTable({ data, selectedId, onSelect }: Props) {
   return (
     <div className="w-full bg-card shadow-sm">
       {/* =====================================================
           TABLE
       ===================================================== */}
-
       <div className="w-full overflow-x-auto">
         <table className="w-full min-w-[1200px] border-collapse">
           {/* =====================================================
               HEADER
           ===================================================== */}
-
           <thead>
             <tr
               className="
@@ -65,7 +32,6 @@ export default function GatesTable({
               "
             >
               {/* ================= SELECT ================= */}
-
               <th
                 className="
                   w-[55px]
@@ -82,7 +48,6 @@ export default function GatesTable({
               </th>
 
               {/* ================= GATE NAME ================= */}
-
               <th
                 className="
                   px-6
@@ -98,7 +63,6 @@ export default function GatesTable({
               </th>
 
               {/* ================= TYPE ================= */}
-
               <th
                 className="
                   px-6
@@ -114,7 +78,6 @@ export default function GatesTable({
               </th>
 
               {/* ================= IP ================= */}
-
               <th
                 className="
                   px-6
@@ -130,7 +93,6 @@ export default function GatesTable({
               </th>
 
               {/* ================= DESCRIPTION ================= */}
-
               <th
                 className="
                   px-6
@@ -146,7 +108,6 @@ export default function GatesTable({
               </th>
 
               {/* ================= ACTIVE ================= */}
-
               <th
                 className="
                   px-6
@@ -166,7 +127,6 @@ export default function GatesTable({
           {/* =====================================================
               BODY
           ===================================================== */}
-
           <tbody>
             {data.length === 0 ? (
               <tr>
@@ -186,7 +146,6 @@ export default function GatesTable({
             ) : (
               data.map((gate) => {
                 const isSelected = selectedId === gate.id;
-                const isUpdating = updatingId === gate.id;
 
                 return (
                   <tr
@@ -208,7 +167,6 @@ export default function GatesTable({
                     {/* =================================================
                         SELECT
                     ================================================= */}
-
                     <td className="px-6 py-4">
                       <button
                         type="button"
@@ -250,7 +208,6 @@ export default function GatesTable({
                     {/* =================================================
                         GATE NAME
                     ================================================= */}
-
                     <td className="px-6 py-4">
                       <p
                         className="
@@ -267,7 +224,6 @@ export default function GatesTable({
                     {/* =================================================
                         TYPE
                     ================================================= */}
-
                     <td className="px-6 py-4">
                       <span
                         className={`
@@ -301,7 +257,6 @@ export default function GatesTable({
                     {/* =================================================
                         IP
                     ================================================= */}
-
                     <td className="px-6 py-4">
                       <span
                         className="
@@ -318,7 +273,6 @@ export default function GatesTable({
                     {/* =================================================
                         DESCRIPTION
                     ================================================= */}
-
                     <td className="px-6 py-4">
                       <span
                         className="
@@ -337,83 +291,51 @@ export default function GatesTable({
                     </td>
 
                     {/* =================================================
-                        ACTIVE TOGGLE
+                        ACTIVE STATUS (CIRCLE)
                     ================================================= */}
-
                     <td className="px-6 py-4">
-                      <button
-                        type="button"
-                        disabled={isUpdating}
-                        onClick={(e) => handleToggleActive(e, gate)}
-                        className={`
-                          relative
-                          inline-flex
-                          h-7
-                          w-12
-                          shrink-0
-                          items-center
-                          rounded-full
-                          transition-colors
-                          duration-200
-                          focus:outline-none
-                          focus:ring-2
-                          focus:ring-brand
-                          focus:ring-offset-2
-                          dark:focus:ring-offset-slate-900
-                          ${
-                            gate.active
-                              ? "bg-emerald-500"
-                              : "bg-slate-300 dark:bg-slate-600"
-                          }
-                          ${
-                            isUpdating
-                              ? "cursor-not-allowed opacity-60"
-                              : "cursor-pointer"
-                          }
-                        `}
-                        aria-label={`Toggle ${gate.name} active status`}
-                        aria-pressed={gate.active}
-                      >
-                        {isUpdating ? (
-                          <span className="flex w-full items-center justify-center">
-                            <Loader2
-                              size={14}
-                              className="animate-spin text-white"
-                            />
-                          </span>
-                        ) : (
+                      <div className="flex items-center gap-2">
+                        {/* الدايرة */}
+                        <span
+                          className={`
+                            relative
+                            flex
+                            h-3
+                            w-3
+                            rounded-full
+                            ${gate.active ? "bg-emerald-500" : "bg-red-500"}
+                          `}
+                        >
+                          {/* هالة animate-ping لو عايزة */}
                           <span
                             className={`
-                              inline-block
-                              h-5
-                              w-5
+                              absolute
+                              inline-flex
+                              h-full
+                              w-full
                               rounded-full
-                              bg-white
-                              shadow
-                              transition-transform
-                              duration-200
-                              ${gate.active ? "translate-x-6" : "translate-x-1"}
+                              opacity-60
+                              animate-ping
+                              ${gate.active ? "bg-emerald-500" : "bg-red-500"}
                             `}
                           />
-                        )}
-                      </button>
+                        </span>
 
-                      {/* Status text */}
-
-                      <span
-                        className={`
-                          ml-3
-                          text-sm
-                          font-medium
-                          ${
-                            gate.active
-                              ? "text-emerald-600 dark:text-emerald-400"
-                              : "text-slate-500 dark:text-slate-400"
-                          }
-                        `}
-                      >
-                        {gate.active ? "Active" : "Inactive"}
-                      </span>
+                        {/* النص */}
+                        <span
+                          className={`
+                            text-[16px]
+                            font-[600]
+                            ${
+                              gate.active
+                                ? "text-emerald-600 dark:text-emerald-400"
+                                : "text-red-600 dark:text-red-400"
+                            }
+                          `}
+                        >
+                          {gate.active ? "Active" : "Inactive"}
+                        </span>
+                      </div>
                     </td>
                   </tr>
                 );

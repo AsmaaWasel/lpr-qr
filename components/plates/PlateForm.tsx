@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { getResidents } from "@/services/resident";
+import { getUsers } from "@/services/user";
 
 type Props = {
   onSubmit: (data: {
@@ -19,11 +20,12 @@ type Props = {
   onClose: () => void;
 };
 
-type Resident = {
+type Person = {
   id: number;
-  full_name: string;
-  phone_number: string;
-  type: string;
+  full_name?: string;
+  username?: string;
+  phone_number?: string;
+  type: "resident" | "user";
   national_id?: number;
 };
 
@@ -62,59 +64,84 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
 
   const [saving, setSaving] = useState(false);
 
-  // ================= RESIDENTS =================
+  // ================= RESIDENTS + USERS =================
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [residents, setResidents] = useState<Resident[]>([]);
+  const [people, setPeople] = useState<Person[]>([]);
 
   const [showDropdown, setShowDropdown] = useState(false);
 
   const [loadingResidents, setLoadingResidents] = useState(false);
 
-  const [selectedResident, setSelectedResident] = useState<Resident | null>(
-    null,
-  );
+  const [selectedResident, setSelectedResident] = useState<Person | null>(null);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // ================= FETCH RESIDENTS =================
+  // ================= FETCH RESIDENTS + USERS =================
 
   useEffect(() => {
     let cancelled = false;
 
-    const loadResidents = async () => {
+    const loadPeople = async () => {
       try {
         setLoadingResidents(true);
 
-        const data = await getResidents(0, 100);
+        const [residentsData, usersData] = await Promise.all([
+          getResidents(0, 100),
+          getUsers(),
+        ]);
 
         if (cancelled) return;
 
-        setResidents(data);
+        // ================= RESIDENTS =================
+
+        const residents: Person[] = Array.isArray(residentsData)
+          ? residentsData.map((resident: any) => ({
+              ...resident,
+              type: "resident" as const,
+            }))
+          : [];
+
+        // ================= USERS =================
+
+        const users: Person[] = Array.isArray(usersData)
+          ? usersData.map((user: any) => ({
+              ...user,
+              type: "user" as const,
+            }))
+          : [];
+
+        // ================= MERGE =================
+
+        const mergedPeople = [...residents, ...users];
+
+        setPeople(mergedPeople);
 
         // ================= EDIT MODE =================
 
         if (editing?.resident_id) {
-          const found = data.find(
-            (resident: Resident) => resident.id === editing.resident_id,
+          const found = mergedPeople.find(
+            (person) => person.id === editing.resident_id,
           );
 
           if (found) {
             setSelectedResident(found);
 
-            setSearchTerm(found.full_name);
+            setSearchTerm(
+              found.full_name || found.username || found.phone_number || "",
+            );
 
             setForm((prev) => ({
               ...prev,
               resident_id: found.id,
-              resident_name: found.full_name,
+              resident_name: found.full_name || found.username || "",
             }));
           }
         }
       } catch (error) {
         if (!cancelled) {
-          console.error("Error loading residents:", error);
+          console.error("Error loading residents/users:", error);
         }
       } finally {
         if (!cancelled) {
@@ -123,26 +150,34 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
       }
     };
 
-    loadResidents();
+    loadPeople();
 
     return () => {
       cancelled = true;
     };
   }, [editing?.resident_id]);
 
-  // ================= FILTER RESIDENTS =================
+  // ================= FILTER RESIDENTS + USERS =================
 
-  const filteredResidents = useMemo(() => {
+  const filteredPeople = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
 
     if (!search) {
-      return residents;
+      return people;
     }
 
-    return residents.filter((resident) =>
-      resident.full_name.toLowerCase().includes(search),
-    );
-  }, [residents, searchTerm]);
+    return people.filter((person) => {
+      const name = person.full_name?.toLowerCase() || "";
+      const username = person.username?.toLowerCase() || "";
+      const phone = person.phone_number?.toLowerCase() || "";
+
+      return (
+        name.includes(search) ||
+        username.includes(search) ||
+        phone.includes(search)
+      );
+    });
+  }, [people, searchTerm]);
 
   // ================= CLOSE DROPDOWN =================
 
@@ -238,7 +273,7 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
     setBackendMessageType(null);
   };
 
-  // ================= RESIDENT SEARCH =================
+  // ================= PERSON SEARCH =================
 
   const handleResidentSearch = (value: string) => {
     setSearchTerm(value);
@@ -262,17 +297,20 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
     setBackendMessageType(null);
   };
 
-  // ================= SELECT RESIDENT =================
+  // ================= SELECT PERSON =================
 
-  const handleResidentSelect = (resident: Resident) => {
-    setSelectedResident(resident);
+  const handleResidentSelect = (person: Person) => {
+    setSelectedResident(person);
 
-    setSearchTerm(resident.full_name);
+    const displayName =
+      person.full_name || person.username || person.phone_number || "";
+
+    setSearchTerm(displayName);
 
     setForm((prev) => ({
       ...prev,
-      resident_id: resident.id,
-      resident_name: resident.full_name,
+      resident_id: person.id,
+      resident_name: person.full_name || person.username || "",
     }));
 
     setShowDropdown(false);
@@ -546,17 +584,17 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
         {/* ================= FORM ================= */}
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          {/* ================= RESIDENT ================= */}
+          {/* ================= RESIDENT / USER ================= */}
 
           <div ref={dropdownRef} className="relative space-y-1.5 md:col-span-2">
             <label className="block text-base font-semibold text-foreground">
-              Resident
+              Resident / User
             </label>
 
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search for resident..."
+                placeholder="Search by name, username or phone number..."
                 value={searchTerm}
                 onChange={(e) => handleResidentSearch(e.target.value)}
                 onFocus={() => {
@@ -594,7 +632,7 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
 
               {/* DROPDOWN */}
 
-              {showDropdown && filteredResidents.length > 0 && (
+              {showDropdown && filteredPeople.length > 0 && (
                 <div
                   className="
                       absolute
@@ -611,11 +649,11 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
                       shadow-2xl
                     "
                 >
-                  {filteredResidents.map((resident) => (
+                  {filteredPeople.map((person) => (
                     <button
-                      key={resident.id}
+                      key={`${person.type}-${person.id}`}
                       type="button"
-                      onClick={() => handleResidentSelect(resident)}
+                      onClick={() => handleResidentSelect(person)}
                       className="
                           w-full
                           px-4
@@ -626,15 +664,25 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
                           hover:bg-muted
                         "
                     >
-                      <div className="font-medium">{resident.full_name}</div>
-
-                      <div className="mt-0.5 text-sm text-muted-foreground">
-                        ID: {resident.id}
+                      <div className="font-medium">
+                        {person.full_name || person.username || "Unnamed"}
                       </div>
 
-                      {resident.phone_number && (
+                      {person.username && person.full_name && (
+                        <div className="mt-0.5 text-sm text-muted-foreground">
+                          @{person.username}
+                        </div>
+                      )}
+
+                      <div className="mt-0.5 text-xs text-muted-foreground">
+                        {person.type === "resident" ? "Resident" : "User"}
+                        {" · "}
+                        ID: {person.id}
+                      </div>
+
+                      {person.phone_number && (
                         <div className="mt-0.5 text-xs text-muted-foreground">
-                          {resident.phone_number}
+                          {person.phone_number}
                         </div>
                       )}
                     </button>
@@ -647,7 +695,7 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
               {showDropdown &&
                 searchTerm.trim() &&
                 !loadingResidents &&
-                filteredResidents.length === 0 && (
+                filteredPeople.length === 0 && (
                   <div
                     className="
                       absolute
@@ -666,12 +714,12 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
                       shadow-2xl
                     "
                   >
-                    No residents found
+                    No residents or users found
                   </div>
                 )}
             </div>
 
-            {/* SELECTED RESIDENT */}
+            {/* SELECTED PERSON */}
 
             {selectedResident && (
               <div
@@ -693,11 +741,15 @@ export default function PlateForm({ editing, onClose, onSubmit }: Props) {
                 <span>✓ Selected:</span>
 
                 <span className="font-semibold">
-                  {selectedResident.full_name}
+                  {selectedResident.full_name ||
+                    selectedResident.username ||
+                    selectedResident.phone_number}
                 </span>
 
                 <span className="text-muted-foreground">
-                  (ID: {selectedResident.id})
+                  ({selectedResident.type === "resident" ? "Resident" : "User"}
+                  {" · "}
+                  ID: {selectedResident.id})
                 </span>
 
                 <button

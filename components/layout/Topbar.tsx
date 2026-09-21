@@ -113,6 +113,7 @@ export default function Header() {
   const isDark = resolvedTheme === "dark";
 
   const [role, setRole] = useState<string>("");
+  const [currentTime, setCurrentTime] = useState<string>("");
 
   // =========================
   // GET ROLE FROM LOCAL STORAGE
@@ -149,6 +150,30 @@ export default function Header() {
     } catch (error) {
       console.error("Failed to read user role:", error);
     }
+  }, []);
+
+  // =========================
+  // LIVE CLOCK (تحديث الوقت تلقائيًا)
+  // =========================
+
+  useEffect(() => {
+    const updateTime = () => {
+      setCurrentTime(
+        new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      );
+    };
+
+    // أول تحديث فوري
+    updateTime();
+
+    // تحديث كل ثانية (60000 = كل دقيقة)
+    const interval = setInterval(updateTime, 1000);
+
+    // تنظيف الـ interval عند unmount
+    return () => clearInterval(interval);
   }, []);
 
   // =========================
@@ -299,7 +324,7 @@ export default function Header() {
       <div className="flex items-center gap-2 md:gap-2.5">
         {/* ================= FAULT ================= */}
 
-        <div
+        {/* <div
           className="
             hidden
             h-9
@@ -341,7 +366,7 @@ export default function Header() {
           </span>
 
           <span className="text-[14px] font-[600] text-[#D64B68]">Fault</span>
-        </div>
+        </div> */}
 
         {/* ================= TIME ================= */}
 
@@ -386,12 +411,7 @@ export default function Header() {
             />
           </span>
 
-          <span>
-            {new Date().toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </span>
+          <span>{currentTime || "--:--"}</span>
         </div>
 
         {/* ================= THEME ================= */}

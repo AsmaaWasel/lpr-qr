@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { Share2, QrCode, Copy, Check, RotateCcw, Loader2 } from "lucide-react";
+import { Share2, QrCode, Download, RotateCcw, Loader2 } from "lucide-react";
 
 import { QRFormData } from "./Qrform";
+
+import { getResidents } from "@/services/resident";
 
 // =====================================================
 // TYPES
@@ -20,6 +22,15 @@ export type QRResponse = {
   visitor_national_id?: string;
   visitor_phone_number?: string;
   visitor_full_name?: string;
+};
+
+type Resident = {
+  id: number;
+  full_name: string;
+  phone_number: string;
+  type: string;
+  national_id?: number;
+  building_number?: string | number;
 };
 
 type QRDisplayProps = {
@@ -39,7 +50,41 @@ export default function QRDisplay({
   formData,
   onReset,
 }: QRDisplayProps) {
-  const [copied, setCopied] = useState(false);
+  const [resident, setResident] = useState<Resident | null>(null);
+  const [loadingResident, setLoadingResident] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+
+  // =====================================================
+  // GET RESIDENT DATA
+  // =====================================================
+
+  useEffect(() => {
+    const fetchResident = async () => {
+      if (!qrData?.resident_id) {
+        setResident(null);
+        return;
+      }
+
+      try {
+        setLoadingResident(true);
+
+        const residents = await getResidents(0, 100);
+
+        const foundResident = residents.find(
+          (item: Resident) => Number(item.id) === Number(qrData.resident_id),
+        );
+
+        setResident(foundResident ?? null);
+      } catch (error) {
+        console.error("Failed to fetch resident:", error);
+        setResident(null);
+      } finally {
+        setLoadingResident(false);
+      }
+    };
+
+    fetchResident();
+  }, [qrData?.resident_id]);
 
   // =====================================================
   // QR IMAGE URL
@@ -61,7 +106,6 @@ export default function QRDisplay({
     const imageUrl = getQrImageUrl();
 
     try {
-      // تحميل صورة الـ QR من الـ backend
       const response = await fetch(imageUrl);
 
       if (!response.ok) {
@@ -70,15 +114,10 @@ export default function QRDisplay({
 
       const blob = await response.blob();
 
-      // تحويل الصورة إلى File
       const file = new File([blob], "qr-code.png", {
         type: blob.type || "image/png",
       });
 
-      // مشاركة الصورة فقط
-      // لا يوجد text
-      // لا يوجد title
-      // لا يوجد URL
       if (
         navigator.share &&
         navigator.canShare &&
@@ -93,7 +132,6 @@ export default function QRDisplay({
         return;
       }
 
-      // المتصفح لا يدعم مشاركة الملفات
       console.error("This browser/device does not support sharing images.");
     } catch (error) {
       console.error("Share error:", error);
@@ -101,26 +139,58 @@ export default function QRDisplay({
   };
 
   // =====================================================
-  // COPY IMAGE URL
+  // DOWNLOAD QR IMAGE
   // =====================================================
 
-  const handleCopy = async () => {
+  const handleDownload = async () => {
     if (!qrData) return;
 
     const imageUrl = getQrImageUrl();
 
     try {
-      await navigator.clipboard.writeText(imageUrl);
+      setDownloading(true);
 
-      setCopied(true);
+      const response = await fetch(imageUrl);
 
-      setTimeout(() => {
-        setCopied(false);
-      }, 2000);
+      if (!response.ok) {
+        throw new Error("Failed to fetch QR image");
+      }
+
+      const blob = await response.blob();
+
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+
+      link.href = blobUrl;
+      link.download = "qr-code.png";
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      document.body.removeChild(link);
+
+      window.URL.revokeObjectURL(blobUrl);
     } catch (error) {
-      console.error("Copy error:", error);
+      console.error("Download error:", error);
+    } finally {
+      setDownloading(false);
     }
   };
+
+  // =====================================================
+  // RESIDENT NAME
+  // =====================================================
+
+  const residentName = resident?.full_name || "-";
+
+  // =====================================================
+  // BUILDING NUMBER
+  // =====================================================
+
+  const buildingNumber =
+    qrData?.building_number || resident?.building_number || "-";
 
   // =====================================================
   // RENDER
@@ -129,17 +199,17 @@ export default function QRDisplay({
   return (
     <div
       className="
-        w-full
+        flex
         min-h-[300px]
+        w-full
+        items-center
+        justify-center
+        overflow-hidden
         rounded-2xl
         border
         border-border
         bg-[#132f49]
         p-4
-        flex
-        items-center
-        justify-center
-        overflow-hidden
       "
     >
       {!qrData ? (
@@ -224,7 +294,9 @@ export default function QRDisplay({
           {/* ============================================= */}
 
           <div className="w-full min-w-0 flex-1">
+            {/* =========================================== */}
             {/* QR INFO */}
+            {/* =========================================== */}
 
             <div className="mb-3 grid grid-cols-2 gap-2">
               {/* Building */}
@@ -245,7 +317,11 @@ export default function QRDisplay({
                 </p>
 
                 <p className="mt-1 truncate text-center text-xs font-bold text-white">
-                  {qrData.building_number ?? "-"}
+                  {loadingResident ? (
+                    <Loader2 size={13} className="mx-auto animate-spin" />
+                  ) : (
+                    buildingNumber
+                  )}
                 </p>
               </div>
 
@@ -267,7 +343,11 @@ export default function QRDisplay({
                 </p>
 
                 <p className="mt-1 truncate text-center text-xs font-bold text-white">
-                  {qrData.resident_id ?? formData.residentId ?? "-"}
+                  {loadingResident ? (
+                    <Loader2 size={13} className="mx-auto animate-spin" />
+                  ) : (
+                    residentName
+                  )}
                 </p>
               </div>
 
@@ -289,7 +369,7 @@ export default function QRDisplay({
                 </p>
 
                 <p className="mt-1 truncate text-center text-xs font-bold text-white">
-                  {qrData.visitor_full_name ?? formData.visitorFullName ?? "-"}
+                  {qrData.visitor_full_name || formData.visitorFullName || "-"}
                 </p>
               </div>
 
@@ -321,7 +401,7 @@ export default function QRDisplay({
             {/* =========================================== */}
 
             <div className="flex flex-wrap items-center gap-2">
-              {/* Share QR Image */}
+              {/* Share */}
 
               <button
                 type="button"
@@ -346,11 +426,12 @@ export default function QRDisplay({
                 Share
               </button>
 
-              {/* Copy */}
+              {/* Download */}
 
               <button
                 type="button"
-                onClick={handleCopy}
+                onClick={handleDownload}
+                disabled={downloading}
                 className="
                   flex
                   items-center
@@ -368,15 +449,17 @@ export default function QRDisplay({
                   transition
                   hover:bg-white/30
                   active:scale-[0.98]
+                  disabled:cursor-not-allowed
+                  disabled:opacity-60
                 "
               >
-                {copied ? (
-                  <Check size={13} className="text-green-400" />
+                {downloading ? (
+                  <Loader2 size={13} className="animate-spin" />
                 ) : (
-                  <Copy size={13} />
+                  <Download size={13} />
                 )}
 
-                {copied ? "Copied!" : "Copy"}
+                {downloading ? "Downloading..." : "Download"}
               </button>
 
               {/* New QR */}

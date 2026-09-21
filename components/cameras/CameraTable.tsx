@@ -1,67 +1,32 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 
 import { Camera } from "@/modules/types/camera";
 
-import { Check, ExternalLink, Loader2 } from "lucide-react";
+import { Check, ExternalLink } from "lucide-react";
 
 type Props = {
   data: Camera[];
   selectedId: number | null;
   onSelect: (id: number) => void;
-
-  onActiveChange?: (cameraId: number, active: boolean) => Promise<void>;
 };
 
-export default function CameraTable({
-  data,
-  selectedId,
-  onSelect,
-  onActiveChange,
-}: Props) {
-  const [updatingId, setUpdatingId] = useState<number | null>(null);
-
+export default function CameraTable({ data, selectedId, onSelect }: Props) {
   // =========================
   // FILTER LPR CAMERAS ONLY
   // =========================
-
   const lprCameras = data.filter(
     (camera) => camera.camera_type?.toUpperCase() === "LPR",
   );
 
-  // =========================
-  // TOGGLE ACTIVE
-  // =========================
-
-  const handleToggleActive = async (e: React.MouseEvent, camera: Camera) => {
-    e.stopPropagation();
-
-    if (!onActiveChange) return;
-
-    try {
-      setUpdatingId(camera.id);
-
-      const newActive = !camera.active;
-
-      await onActiveChange(camera.id, newActive);
-    } catch (error) {
-      console.error("Failed to update camera status:", error);
-    } finally {
-      setUpdatingId(null);
-    }
-  };
-
   return (
     <div className="w-full">
       {/* ================= TABLE ================= */}
-
       <div className="overflow-hidden bg-card shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1250px]">
             {/* ================= HEADER ================= */}
-
             <thead>
               <tr
                 className="
@@ -74,7 +39,6 @@ export default function CameraTable({
                 "
               >
                 {/* ================= SELECT ================= */}
-
                 <th
                   className="
                     w-[55px]
@@ -91,7 +55,6 @@ export default function CameraTable({
                 </th>
 
                 {/* ================= LOCATION ================= */}
-
                 <th
                   className="
                     px-6
@@ -107,7 +70,6 @@ export default function CameraTable({
                 </th>
 
                 {/* ================= IP ================= */}
-
                 <th
                   className="
                     px-6
@@ -123,7 +85,6 @@ export default function CameraTable({
                 </th>
 
                 {/* ================= PORT ================= */}
-
                 <th
                   className="
                     px-6
@@ -139,7 +100,6 @@ export default function CameraTable({
                 </th>
 
                 {/* ================= URL ================= */}
-
                 <th
                   className="
                     px-6
@@ -155,7 +115,6 @@ export default function CameraTable({
                 </th>
 
                 {/* ================= ACTIVE ================= */}
-
                 <th
                   className="
                     px-6
@@ -171,7 +130,6 @@ export default function CameraTable({
                 </th>
 
                 {/* ================= ACTION ================= */}
-
                 <th
                   className="
                     px-6
@@ -189,7 +147,6 @@ export default function CameraTable({
             </thead>
 
             {/* ================= BODY ================= */}
-
             <tbody>
               {lprCameras.length === 0 ? (
                 <tr>
@@ -210,8 +167,6 @@ export default function CameraTable({
                 lprCameras.map((camera) => {
                   const isSelected = selectedId === camera.id;
 
-                  const isUpdating = updatingId === camera.id;
-
                   return (
                     <tr
                       key={camera.id}
@@ -230,13 +185,11 @@ export default function CameraTable({
                       `}
                     >
                       {/* ================= SELECT ================= */}
-
                       <td className="px-6 py-4">
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-
                             onSelect(camera.id);
                           }}
                           className={`
@@ -271,13 +224,11 @@ export default function CameraTable({
                       </td>
 
                       {/* ================= LOCATION ================= */}
-
                       <td className="px-6 py-4">
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-
                             onSelect(camera.id);
                           }}
                           className="
@@ -296,7 +247,6 @@ export default function CameraTable({
                       </td>
 
                       {/* ================= IP ================= */}
-
                       <td className="px-6 py-4">
                         <span
                           className="
@@ -311,7 +261,6 @@ export default function CameraTable({
                       </td>
 
                       {/* ================= PORT ================= */}
-
                       <td className="px-6 py-4">
                         <span
                           className="
@@ -331,7 +280,6 @@ export default function CameraTable({
                       </td>
 
                       {/* ================= URL ================= */}
-
                       <td className="px-6 py-4">
                         <span
                           className="
@@ -348,80 +296,48 @@ export default function CameraTable({
                         </span>
                       </td>
 
-                      {/* ================= ACTIVE ================= */}
-
+                      {/* ================= ACTIVE (CIRCLE + TEXT) ================= */}
                       <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          <button
-                            type="button"
-                            disabled={isUpdating}
-                            onClick={(e) => handleToggleActive(e, camera)}
-                            className={`
-                              relative
-                              inline-flex
-                              h-7
-                              w-12
-                              shrink-0
-                              items-center
-                              rounded-full
-                              transition-colors
-                              duration-200
-                              focus:outline-none
-                              focus:ring-2
-                              focus:ring-brand
-                              focus:ring-offset-2
-                              dark:focus:ring-offset-slate-900
-                              ${
-                                camera.active
-                                  ? "bg-emerald-500"
-                                  : "bg-slate-300 dark:bg-slate-600"
-                              }
-                              ${
-                                isUpdating
-                                  ? "cursor-not-allowed opacity-60"
-                                  : "cursor-pointer"
-                              }
-                            `}
-                            aria-label={`Toggle camera ${camera.id} active status`}
-                            aria-pressed={camera.active}
-                          >
-                            {isUpdating ? (
-                              <span className="flex w-full items-center justify-center">
-                                <Loader2
-                                  size={14}
-                                  className="animate-spin text-white"
-                                />
-                              </span>
-                            ) : (
-                              <span
-                                className={`
-                                  inline-block
-                                  h-5
-                                  w-5
-                                  rounded-full
-                                  bg-white
-                                  shadow
-                                  transition-transform
-                                  duration-200
-                                  ${
-                                    camera.active
-                                      ? "translate-x-6"
-                                      : "translate-x-1"
-                                  }
-                                `}
-                              />
-                            )}
-                          </button>
-
+                        <div className="flex items-center gap-2">
+                          {/* الدايرة */}
                           <span
                             className={`
-                              ml-3
-                              text-sm
-                              font-medium
+                              relative
+                              flex
+                              h-3
+                              w-3
+                              rounded-full
+                              ${camera.active ? "bg-emerald-500" : "bg-red-500"}
+                            `}
+                          >
+                            {/* هالة animate-ping */}
+                            <span
+                              className={`
+                                absolute
+                                inline-flex
+                                h-full
+                                w-full
+                                rounded-full
+                                opacity-60
+                                animate-ping
+                                ${
+                                  camera.active
+                                    ? "bg-emerald-500"
+                                    : "bg-red-500"
+                                }
+                              `}
+                            />
+                          </span>
+
+                          {/* النص */}
+                          <span
+                            className={`
+                              text-[16px]
+                              font-[600]
                               ${
                                 camera.active
                                   ? "text-emerald-600 dark:text-emerald-400"
-                                  : "text-slate-500 dark:text-slate-400"
+                                  : "text-red-600 dark:text-red-400"
                               }
                             `}
                           >
@@ -431,7 +347,6 @@ export default function CameraTable({
                       </td>
 
                       {/* ================= OPEN CAMERA LINK ================= */}
-
                       <td className="px-6 py-4">
                         <Link
                           href={`/dashboard/lpr/cameras/${camera.id}`}

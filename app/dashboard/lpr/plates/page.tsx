@@ -77,18 +77,18 @@ export default function PlatesPage() {
             label: "Total Plates",
             value: totalPlates,
           },
-          {
-            label: "INSIDE NOW",
-            value: insideNow,
-          },
-          {
-            label: "OUTSIDE",
-            value: outsideNow,
-          },
-          {
-            label: "ENTERED TODAY",
-            value: enteredToday,
-          },
+          // {
+          //   label: "INSIDE NOW",
+          //   value: insideNow,
+          // },
+          // {
+          //   label: "OUTSIDE",
+          //   value: outsideNow,
+          // },
+          // {
+          //   label: "ENTERED TODAY",
+          //   value: enteredToday,
+          // },
         ]}
       />
 

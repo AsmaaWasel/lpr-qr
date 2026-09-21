@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import DepartmentTable from "./DepartmentTable";
 import DepartmentForm from "./DepartmentForm";
+import SubDepartmentForm from "./SubDepartmentForm";
 
 import { useToast } from "@/shared/hooks/use-toast";
 
@@ -16,6 +17,8 @@ import {
   updateDepartment,
 } from "@/services/departments";
 
+import { createSubDepartment } from "@/services/subDepartments";
+
 import { CrudShell } from "@/shared/ui/voom";
 
 export default function DepartmentCRUD() {
@@ -24,8 +27,13 @@ export default function DepartmentCRUD() {
   // =========================
 
   const [departments, setDepartments] = useState<Department[]>([]);
+
   const [open, setOpen] = useState(false);
+
+  const [subDepartmentOpen, setSubDepartmentOpen] = useState(false);
+
   const [editing, setEditing] = useState<Department | null>(null);
+
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   // =========================
@@ -33,6 +41,7 @@ export default function DepartmentCRUD() {
   // =========================
 
   const [search, setSearch] = useState("");
+
   const [currentPage, setCurrentPage] = useState(1);
 
   const pageSize = 10;
@@ -87,7 +96,36 @@ export default function DepartmentCRUD() {
   );
 
   // =========================
-  // SUBMIT
+  // ADD DEPARTMENT
+  // =========================
+
+  const handleAdd = () => {
+    setEditing(null);
+    setOpen(true);
+  };
+
+  // =========================
+  // ADD SUB DEPARTMENT
+  // =========================
+
+  const handleAddSubDepartment = () => {
+    setSubDepartmentOpen(true);
+  };
+
+  // =========================
+  // EDIT DEPARTMENT
+  // =========================
+
+  const handleEdit = () => {
+    if (!selectedDepartment) return;
+
+    setEditing(selectedDepartment);
+
+    setOpen(true);
+  };
+
+  // =========================
+  // SUBMIT DEPARTMENT
   // =========================
 
   const handleSubmit = async (data: DepartmentFormData) => {
@@ -107,7 +145,9 @@ export default function DepartmentCRUD() {
       setDepartments(refreshed);
 
       setOpen(false);
+
       setEditing(null);
+
       setSelectedId(null);
     } catch (error) {
       console.error("Submit error:", error);
@@ -117,7 +157,35 @@ export default function DepartmentCRUD() {
   };
 
   // =========================
-  // DELETE
+  // SUBMIT SUB DEPARTMENT
+  // =========================
+
+  const handleSubDepartmentSubmit = async (data: {
+    name: string;
+    description?: string;
+    department_id: number;
+  }) => {
+    try {
+      await createSubDepartment(data);
+
+      toast.success("Sub Department created successfully");
+
+      setSubDepartmentOpen(false);
+
+      // Refresh departments in case the table
+      // needs the latest department structure.
+      const refreshed = await getDepartments();
+
+      setDepartments(refreshed);
+    } catch (error) {
+      console.error("Sub Department submit error:", error);
+
+      toast.error("Failed to create sub department");
+    }
+  };
+
+  // =========================
+  // DELETE DEPARTMENT
   // =========================
 
   const handleDelete = async () => {
@@ -134,7 +202,6 @@ export default function DepartmentCRUD() {
 
       setSelectedId(null);
 
-      // لو الصفحة الحالية بقت فاضية بعد الحذف
       if (paginatedDepartments.length === 1 && currentPage > 1) {
         setCurrentPage((page) => Math.max(1, page - 1));
       }
@@ -152,10 +219,6 @@ export default function DepartmentCRUD() {
   return (
     <>
       <div className="space-y-4">
-        {/* =========================
-            DEPARTMENT CRUD
-        ========================== */}
-
         <CrudShell
           search={search}
           onSearchChange={(value) => {
@@ -163,19 +226,33 @@ export default function DepartmentCRUD() {
             setCurrentPage(1);
           }}
           searchPlaceholder="Search by name or description..."
-          addLabel="Add Department"
-          onAdd={() => {
-            setEditing(null);
-            setOpen(true);
-          }}
-          onEdit={() => {
-            if (!selectedDepartment) return;
+          // =========================
+          // ADD DEPARTMENT
+          // =========================
 
-            setEditing(selectedDepartment);
-            setOpen(true);
-          }}
+          addLabel="Add Department"
+          onAdd={handleAdd}
+          // =========================
+          // ADD SUB DEPARTMENT
+          // =========================
+
+          secondaryAddLabel="Add Sub Department"
+          onSecondaryAdd={handleAddSubDepartment}
+          // =========================
+          // EDIT
+          // =========================
+
+          onEdit={handleEdit}
+          // =========================
+          // DELETE
+          // =========================
+
           onDelete={handleDelete}
           hasSelected={!!selectedDepartment}
+          // =========================
+          // PAGINATION
+          // =========================
+
           currentPage={currentPage}
           totalPages={totalPages}
           totalItems={filteredDepartments.length}
@@ -197,7 +274,7 @@ export default function DepartmentCRUD() {
 
       {/* =========================
           DEPARTMENT FORM
-      ========================== */}
+      ========================= */}
 
       {open && (
         <DepartmentForm
@@ -207,6 +284,21 @@ export default function DepartmentCRUD() {
             setEditing(null);
           }}
           onSubmit={handleSubmit}
+        />
+      )}
+
+      {/* =========================
+          SUB DEPARTMENT FORM
+      ========================= */}
+
+      {subDepartmentOpen && (
+        <SubDepartmentForm
+          editing={null}
+          departments={departments}
+          onClose={() => {
+            setSubDepartmentOpen(false);
+          }}
+          onSubmit={handleSubDepartmentSubmit}
         />
       )}
     </>

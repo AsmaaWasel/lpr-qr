@@ -2,10 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-import Link from "next/link";
-
-import { Camera, ArrowUpRight } from "lucide-react";
-
 import {
   XAxis,
   YAxis,
@@ -21,6 +17,7 @@ import { GateEntry, getGateEntries } from "@/services/gateEntry";
 
 export default function DashboardHome() {
   const [gateEntries, setGateEntries] = useState<GateEntry[]>([]);
+
   const [hourlyTrafficData, setHourlyTrafficData] = useState<
     {
       time: string;
@@ -76,7 +73,10 @@ export default function DashboardHome() {
 
     const now = new Date();
 
-    // Start of today
+    // =====================================================
+    // START OF TODAY
+    // =====================================================
+
     const startOfToday = new Date(
       now.getFullYear(),
       now.getMonth(),
@@ -87,7 +87,10 @@ export default function DashboardHome() {
       0,
     );
 
-    // End of today
+    // =====================================================
+    // END OF TODAY
+    // =====================================================
+
     const endOfToday = new Date(
       now.getFullYear(),
       now.getMonth(),
@@ -130,6 +133,7 @@ export default function DashboardHome() {
       }
     > = {};
 
+    // Always create all 24 hours
     for (let hour = 0; hour < 24; hour++) {
       hourlyMap[hour] = {
         Cars: 0,
@@ -161,20 +165,20 @@ export default function DashboardHome() {
     // CREATE CHART DATA
     // =====================================================
 
-    const chartData = Object.entries(hourlyMap)
-      .map(([hour, values]) => {
-        const hourNumber = Number(hour);
+    // Keep all 24 hours so the chart is distributed
+    // across the full horizontal axis.
+    const chartData = Object.entries(hourlyMap).map(([hour, values]) => {
+      const hourNumber = Number(hour);
 
-        const formattedHour = `${hourNumber.toString().padStart(2, "0")}:00`;
+      const formattedHour = `${hourNumber.toString().padStart(2, "0")}:00`;
 
-        return {
-          time: formattedHour,
-          Cars: values.Cars,
-          Residents: values.Residents,
-          total: values.Cars + values.Residents,
-        };
-      })
-      .filter((item) => item.total > 0);
+      return {
+        time: formattedHour,
+        Cars: values.Cars,
+        Residents: values.Residents,
+        total: values.Cars + values.Residents,
+      };
+    });
 
     setHourlyTrafficData(
       chartData.map(({ time, Cars, Residents }) => ({
@@ -188,43 +192,40 @@ export default function DashboardHome() {
     // CALCULATE PEAK HOUR
     // =====================================================
 
-    if (chartData.length > 0) {
-      const peak = chartData.reduce((max, current) => {
-        return current.Cars + current.Residents > max.Cars + max.Residents
-          ? current
-          : max;
-      });
+    const peak = chartData.reduce((max, current) => {
+      return current.Cars + current.Residents > max.Cars + max.Residents
+        ? current
+        : max;
+    }, chartData[0]);
 
-      setPeakHourTraffic(peak.Cars + peak.Residents);
-    } else {
-      setPeakHourTraffic(0);
-    }
+    setPeakHourTraffic(peak ? peak.Cars + peak.Residents : 0);
   }, [gateEntries]);
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-transparent px-4 py-6 text-foreground md:px-6 md:py-8">
+      {" "}
       <div className="relative z-10 w-full space-y-8">
         {/* =====================================================
-            STATS
-        ===================================================== */}
+        STATS
+    ===================================================== */}
 
         <DashboardStatsCards />
 
         {/* =====================================================
-            MAIN GRID
-        ===================================================== */}
+        MAIN GRID
+    ===================================================== */}
 
-        <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid w-full grid-cols-1 gap-6">
           {/* =====================================================
-              TRAFFIC CHART
-          ===================================================== */}
+          TRAFFIC DISTRIBUTION
+      ===================================================== */}
 
-          <div className="rounded-2xl border border-border bg-white p-6 lg:col-span-2">
+          <div className="w-full rounded-2xl border border-border bg-white p-6 dark:bg-slate-900">
             {/* Header */}
 
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
-                <h3 className="text-[20px] font-[700]">
+                <h3 className="text-[20px] font-[700] text-[#0B1B30] dark:text-white">
                   Traffic Distribution Velocity
                 </h3>
 
@@ -236,24 +237,26 @@ export default function DashboardHome() {
 
               {/* Legend */}
 
-              <div className="flex items-center gap-4 text-[16px]">
-                <div className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-brand" />
-                  Cars
+              <div className="flex items-center gap-5 text-[15px]">
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-brand" />
+                  <span className="text-[#0B1B30] dark:text-white">Cars</span>
                 </div>
 
-                <div className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-indigo-500" />
-                  Residents
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-indigo-500" />
+                  <span className="text-[#0B1B30] dark:text-white">
+                    Residents
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* =====================================================
-                CHART
-            ===================================================== */}
+            CHART
+        ===================================================== */}
 
-            <div className="h-[260px] w-full">
+            <div className="h-[320px] w-full">
               {hourlyTrafficData.length === 0 ? (
                 <div className="flex h-full items-center justify-center text-sm text-[#7C93B4]">
                   No traffic data available for today
@@ -264,12 +267,14 @@ export default function DashboardHome() {
                     data={hourlyTrafficData}
                     margin={{
                       top: 10,
-                      right: 10,
-                      left: -20,
+                      right: 20,
+                      left: 0,
                       bottom: 0,
                     }}
                   >
-                    {/* Gradients */}
+                    {/* =================================================
+                    GRADIENTS
+                ================================================= */}
 
                     <defs>
                       <linearGradient
@@ -313,7 +318,9 @@ export default function DashboardHome() {
                       </linearGradient>
                     </defs>
 
-                    {/* Grid */}
+                    {/* =================================================
+                    GRID
+                ================================================= */}
 
                     <CartesianGrid
                       strokeDasharray="3 3"
@@ -321,7 +328,9 @@ export default function DashboardHome() {
                       vertical={false}
                     />
 
-                    {/* X Axis */}
+                    {/* =================================================
+                    X AXIS
+                ================================================= */}
 
                     <XAxis
                       dataKey="time"
@@ -329,9 +338,12 @@ export default function DashboardHome() {
                       fontSize={11}
                       tickLine={false}
                       axisLine={false}
+                      interval={1}
                     />
 
-                    {/* Y Axis */}
+                    {/* =================================================
+                    Y AXIS
+                ================================================= */}
 
                     <YAxis
                       stroke="#64748b"
@@ -341,7 +353,9 @@ export default function DashboardHome() {
                       allowDecimals={false}
                     />
 
-                    {/* Tooltip */}
+                    {/* =================================================
+                    TOOLTIP
+                ================================================= */}
 
                     <Tooltip
                       contentStyle={{
@@ -352,7 +366,9 @@ export default function DashboardHome() {
                       }}
                     />
 
-                    {/* Cars */}
+                    {/* =================================================
+                    CARS
+                ================================================= */}
 
                     <Area
                       type="monotone"
@@ -364,7 +380,9 @@ export default function DashboardHome() {
                       fill="url(#colorCars)"
                     />
 
-                    {/* Residents */}
+                    {/* =================================================
+                    RESIDENTS
+                ================================================= */}
 
                     <Area
                       type="monotone"
@@ -379,119 +397,6 @@ export default function DashboardHome() {
                 </ResponsiveContainer>
               )}
             </div>
-          </div>
-
-          {/* =====================================================
-              AI VISION CARD
-          ===================================================== */}
-
-          <div
-            className="flex flex-col justify-between rounded-2xl border border-border p-6"
-            style={{
-              background: "linear-gradient(165deg, #16324F, #0B1B30)",
-            }}
-          >
-            <div>
-              {/* Header */}
-
-              <div className="mb-4 flex items-center justify-between">
-                <Camera className="h-7 w-7 text-brand" />
-
-                <span className="rounded-md border border-sky-500/20 bg-sky-500/10 px-2 py-0.5 text-[14px] font-bold uppercase tracking-widest text-brand">
-                  HEURISTIC FEED
-                </span>
-              </div>
-
-              {/* Title */}
-
-              <h3 className="text-[20px] font-[700] text-white">
-                Live AI Gateway Stream
-              </h3>
-
-              <p className="mt-2 text-xs leading-relaxed text-slate-400">
-                Our vision node processes license plates and human verification
-                layers in less than <b>180ms</b>. Everything is archived
-                securely inside the system.
-              </p>
-
-              {/* =====================================================
-                  LIVE CAMERA PREVIEW
-              ===================================================== */}
-
-              <div className="mt-5 overflow-hidden rounded-xl border border-white/10 bg-black/20">
-                {/* Camera Header */}
-
-                <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    {/* Red Live Indicator */}
-
-                    <span className="relative flex h-2.5 w-2.5">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
-
-                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
-                    </span>
-
-                    <span className="text-[11px] font-bold tracking-wider text-white">
-                      CAM-01 · LIVE
-                    </span>
-                  </div>
-
-                  <span className="text-[9px] uppercase tracking-widest text-slate-400">
-                    AI VISION
-                  </span>
-                </div>
-
-                {/* Camera View */}
-
-                <div className="relative flex h-[120px] items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 to-slate-950">
-                  {/* Scan Lines */}
-
-                  <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_50%,rgba(255,255,255,0.15)_50%)] bg-[length:100%_4px] opacity-10" />
-
-                  {/* Detection Box */}
-
-                  <div className="relative rounded-md border border-cyan-400/60 px-6 py-3">
-                    <div className="absolute -left-1 -top-1 h-2 w-2 border-l-2 border-t-2 border-cyan-400" />
-
-                    <div className="absolute -right-1 -top-1 h-2 w-2 border-r-2 border-t-2 border-cyan-400" />
-
-                    <div className="absolute -bottom-1 -left-1 h-2 w-2 border-b-2 border-l-2 border-cyan-400" />
-
-                    <div className="absolute -bottom-1 -right-1 h-2 w-2 border-b-2 border-r-2 border-cyan-400" />
-
-                    <span className="text-[15px] font-bold tracking-[0.25em] text-white">
-                      ا ب خ 12398
-                    </span>
-                  </div>
-
-                  {/* Scanning Line */}
-
-                  <div className="absolute left-0 right-0 top-1/2 h-px bg-cyan-400/60 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
-                </div>
-
-                {/* Camera Status */}
-
-                <div className="flex items-center justify-between px-4 py-2.5">
-                  <span className="text-[9px] text-slate-400">
-                    LICENSE PLATE DETECTED
-                  </span>
-
-                  <span className="text-[9px] font-bold text-emerald-400">
-                    180ms
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Launch Button */}
-
-            <Link
-              href="/dashboard/live-vision"
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-strong py-3.5 text-xs font-bold uppercase tracking-wider text-foreground shadow-lg shadow-sky-600/10 transition-all hover:bg-brand"
-            >
-              Launch Live Vision View
-              <ArrowUpRight className="h-4 w-4" />
-            </Link>
           </div>
         </div>
       </div>

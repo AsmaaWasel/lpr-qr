@@ -234,7 +234,7 @@ export default function LoginPage() {
                 xl:text-5xl
               "
             >
-              Compound Gates fully managed from one dashboard
+              All Gates Controlled from one dashboard
             </h2>
 
             {/* Features */}

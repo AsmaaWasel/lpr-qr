@@ -407,7 +407,7 @@ export default function ResidentTable({
                 </th>
 
                 {/* STATUS */}
-                <th
+                {/* <th
                   className="
                     px-6
                     py-4
@@ -419,7 +419,7 @@ export default function ResidentTable({
                   "
                 >
                   STATUS
-                </th>
+                </th> */}
 
                 {/* ACTIONS */}
                 {/* <th
@@ -647,7 +647,7 @@ export default function ResidentTable({
                       </td>
 
                       {/* STATUS */}
-                      <td className="px-6 py-4">
+                      {/* <td className="px-6 py-4">
                         <button
                           type="button"
                           onClick={(e) => {
@@ -703,7 +703,7 @@ export default function ResidentTable({
                             </>
                           )}
                         </button>
-                      </td>
+                      </td> */}
                     </tr>
                   );
                 })
