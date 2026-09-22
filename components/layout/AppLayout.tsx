@@ -1,9 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   return (
     <div
       className="
@@ -16,7 +19,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           SIDEBAR
       ====================================================== */}
 
-      <Sidebar />
+      <Sidebar open={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
 
       {/* =====================================================
           MAIN CONTENT
@@ -26,6 +29,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         className="
           min-h-screen
 
+          w-full
           lg:pl-[144px]
           lg:pr-4
           lg:py-4
@@ -35,7 +39,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             TOPBAR
         ==================================================== */}
 
-        <Topbar />
+        <Topbar onMenuClick={() => setMobileNavOpen((open) => !open)} />
 
         {/* ===================================================
             PAGE CONTENT
