@@ -9,6 +9,7 @@ import {
 } from "react";
 
 import { adminLogin, residentLogin } from "@/services/auth";
+import { DEMO_USER } from "@/data/demo";
 
 // =========================
 // TYPES
@@ -89,6 +90,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // =========================
 
   useEffect(() => {
+    if (process.env.NEXT_PUBLIC_DEMO_MODE !== "false") {
+      setUser(DEMO_USER);
+      localStorage.setItem("user", JSON.stringify(DEMO_USER));
+      localStorage.setItem("role", DEMO_USER.role);
+      setLoading(false);
+      return;
+    }
+
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("token");
 
@@ -209,6 +218,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // =========================
 
   const logout = () => {
+    if (process.env.NEXT_PUBLIC_DEMO_MODE !== "false") {
+      setUser(DEMO_USER);
+      return;
+    }
+
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("role");

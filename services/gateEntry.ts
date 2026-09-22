@@ -1,5 +1,8 @@
 // services/gateEntries.ts
 import api from "./api";
+import { demoGateEntries } from "@/data/demo";
+
+const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE !== "false";
 
 export type Resident = {
   id: number;
@@ -20,6 +23,10 @@ export type GateEntry = {
 };
 
 export const getGateEntries = async (): Promise<GateEntry[]> => {
+  if (DEMO_MODE) {
+    return demoGateEntries;
+  }
+
   const res = await api.get<GateEntry[]>("/gate-entries/");
   return res.data;
 };
