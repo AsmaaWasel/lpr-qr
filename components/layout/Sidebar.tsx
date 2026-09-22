@@ -16,12 +16,19 @@ import {
   BarChart3,
   Folder,
   Building2,
+  X,
 } from "lucide-react";
 
 const normalize = (p: string) =>
   p.split("?")[0].replace(/\/$/, "");
 
-export default function Sidebar() {
+export default function Sidebar({
+  open = false,
+  onClose,
+}: {
+  open?: boolean;
+  onClose?: () => void;
+}) {
   const { user } = useAuth();
   const pathname = usePathname();
 
@@ -195,24 +202,26 @@ export default function Sidebar() {
   };
 
   return (
-    <aside
-      className="
-        fixed
-        left-4
-        top-4
-        bottom-4
-        z-50
-        hidden
-        w-[112px]
-        flex-col
-        items-center
-        rounded-[25px]
-        bg-card
-        py-5
-        shadow-sm
-        lg:flex
-      "
-    >
+    <>
+      {/* Mobile backdrop */}
+      <button
+        type="button"
+        aria-label="Close navigation"
+        onClick={onClose}
+        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity lg:hidden ${open ? "opacity-100" : "pointer-events-none opacity-0"}`}
+      />
+
+      <aside
+        className={`fixed left-0 top-0 bottom-0 z-50 flex w-[280px] flex-col items-center rounded-r-[25px] bg-card py-5 shadow-2xl transition-transform duration-300 lg:left-4 lg:top-4 lg:bottom-4 lg:w-[112px] lg:rounded-[25px] lg:shadow-sm ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+      >
+        <button
+          type="button"
+          aria-label="Close navigation"
+          onClick={onClose}
+          className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-foreground lg:hidden"
+        >
+          <X size={18} />
+        </button>
       {/* =====================================================
           LOGO
       ====================================================== */}
@@ -293,6 +302,7 @@ export default function Sidebar() {
               key={item.id}
               href={item.href}
               title={item.label}
+              onClick={onClose}
               className={`
                 group
                 flex
@@ -432,7 +442,8 @@ export default function Sidebar() {
           Online Gates
         </span>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }
 
