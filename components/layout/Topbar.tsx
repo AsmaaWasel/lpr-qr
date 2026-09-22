@@ -1,6 +1,6 @@
 "use client";
 
-import { Moon, Sun, Globe2 } from "lucide-react";
+import { Moon, Sun, Globe2, Menu } from "lucide-react";
 import { useTheme } from "next-themes";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/shared/context/AuthContext";
@@ -102,7 +102,7 @@ const PAGE_INFO: Record<
   },
 };
 
-export default function Header() {
+export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const { resolvedTheme, setTheme } = useTheme();
   const { user, logout } = useAuth();
 
@@ -292,9 +292,19 @@ export default function Header() {
     >
       {/* ================= PAGE TITLE ================= */}
 
-      <div>
+      <div className="flex min-w-0 items-center gap-3">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          aria-label="Open navigation"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-foreground transition hover:bg-surface-hover lg:hidden"
+        >
+          <Menu size={21} />
+        </button>
         <h1
           className="
+            max-w-[52vw]
+            truncate
             text-[18px]
             font-[700]
             leading-tight
@@ -309,8 +319,12 @@ export default function Header() {
         <p
           className="
             mt-0.5
+            hidden
+            max-w-[58vw]
+            truncate
             text-[15px]
             font-[600]
+            sm:block
             leading-relaxed
             text-[#7C93B4]
           "
@@ -321,7 +335,7 @@ export default function Header() {
 
       {/* ================= RIGHT ACTIONS ================= */}
 
-      <div className="flex items-center gap-2 md:gap-2.5">
+      <div className="flex shrink-0 items-center gap-2 md:gap-2.5">
         {/* ================= FAULT ================= */}
 
         {/* <div
