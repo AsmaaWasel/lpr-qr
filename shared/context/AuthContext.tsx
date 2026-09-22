@@ -90,46 +90,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // =========================
 
   useEffect(() => {
-    if (true) {
-      setUser(DEMO_USER);
-      localStorage.setItem("user", JSON.stringify(DEMO_USER));
-      localStorage.setItem("role", DEMO_USER.role);
-      setLoading(false);
-      return;
-    }
-
-    const storedUser = localStorage.getItem("user");
-    const storedToken = localStorage.getItem("token");
-
-    if (storedUser && storedToken) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-
-        // نقرأ الـ role الحقيقي من الـ JWT
-        const role = getRoleFromToken(storedToken);
-
-        const loggedUser: User = {
-          ...parsedUser,
-          role,
-        };
-
-        setUser(loggedUser);
-
-        // نحدث localStorage لو كان فيه role قديم
-        localStorage.setItem("user", JSON.stringify(loggedUser));
-
-        localStorage.setItem("role", role);
-      } catch (error) {
-        console.error("Failed to load user:", error);
-
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-        localStorage.removeItem("role");
-
-        setUser(null);
-      }
-    }
-
+    setUser(DEMO_USER);
+    localStorage.setItem("user", JSON.stringify(DEMO_USER));
+    localStorage.setItem("role", DEMO_USER.role);
     setLoading(false);
   }, []);
 
