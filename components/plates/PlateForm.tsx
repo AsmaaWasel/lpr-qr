@@ -1,0 +1,1060 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+
+import { getResidents } from "@/services/resident";
+import { getUsers } from "@/services/user";
+
+type Props = {
+  onSubmit: (data: {
+    plate_number_full: string;
+    resident_id?: number;
+  }) => void | Promise<void>;
+
+  editing?: {
+    id: number;
+    plate_number_full: string;
+    resident_id: number | null;
+  } | null;
+
+  onClose: () => void;
+};
+
+type Person = {
+  id: number;
+  full_name?: string;
+  username?: string;
+  phone_number?: string;
+  type: "resident" | "user";
+  national_id?: number;
+};
+
+type FormErrors = {
+  letters?: string;
+  numbers?: string;
+  resident_id?: string;
+};
+
+export default function PlateForm({ editing, onClose, onSubmit }: Props) {
+  // ================= INITIAL FORM =================
+
+  const initial = (() => {
+    const plate = editing?.plate_number_full ?? "";
+    const cleaned = plate.replace(/\s/g, "");
+
+    return {
+      numbers: cleaned.match(/^\d+/)?.[0] || "",
+      letters: cleaned.replace(/^\d+/, ""),
+      resident_id: editing?.resident_id ?? undefined,
+      resident_name: "",
+    };
+  })();
+
+  const [form, setForm] = useState(initial);
+
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  // ================= BACKEND MESSAGE =================
+
+  const [backendMessage, setBackendMessage] = useState<string | null>(null);
+
+  const [backendMessageType, setBackendMessageType] = useState<
+    "success" | "error" | null
+  >(null);
+
+  const [saving, setSaving] = useState(false);
+
+  // ================= RESIDENTS + USERS =================
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const [people, setPeople] = useState<Person[]>([]);
+
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const [loadingResidents, setLoadingResidents] = useState(false);
+
+  const [selectedResident, setSelectedResident] = useState<Person | null>(null);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // ================= FETCH RESIDENTS + USERS =================
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadPeople = async () => {
+      try {
+        setLoadingResidents(true);
+
+        const [residentsData, usersData] = await Promise.all([
+          getResidents(0, 100),
+          getUsers(),
+        ]);
+
+        if (cancelled) return;
+
+        // ================= RESIDENTS =================
+
+        const residents: Person[] = Array.isArray(residentsData)
+          ? residentsData.map((resident: any) => ({
+              ...resident,
+              type: "resident" as const,
+            }))
+          : [];
+
+        // ================= USERS =================
+
+        const users: Person[] = Array.isArray(usersData)
+          ? usersData.map((user: any) => ({
+              ...user,
+              type: "user" as const,
+            }))
+          : [];
+
+        // ================= MERGE =================
+
+        const mergedPeople = [...residents, ...users];
+
+        setPeople(mergedPeople);
+
+        // ================= EDIT MODE =================
+
+        if (editing?.resident_id) {
+          const found = mergedPeople.find(
+            (person) => person.id === editing.resident_id,
+          );
+
+          if (found) {
+            setSelectedResident(found);
+
+            setSearchTerm(
+              found.full_name || found.username || found.phone_number || "",
+            );
+
+            setForm((prev) => ({
+              ...prev,
+              resident_id: found.id,
+              resident_name: found.full_name || found.username || "",
+            }));
+          }
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Error loading residents/users:", error);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingResidents(false);
+        }
+      }
+    };
+
+    loadPeople();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [editing?.resident_id]);
+
+  // ================= FILTER RESIDENTS + USERS =================
+
+  const filteredPeople = useMemo(() => {
+    const search = searchTerm.trim().toLowerCase();
+
+    if (!search) {
+      return people;
+    }
+
+    return people.filter((person) => {
+      const name = person.full_name?.toLowerCase() || "";
+      const username = person.username?.toLowerCase() || "";
+      const phone = person.phone_number?.toLowerCase() || "";
+
+      return (
+        name.includes(search) ||
+        username.includes(search) ||
+        phone.includes(search)
+      );
+    });
+  }, [people, searchTerm]);
+
+  // ================= CLOSE DROPDOWN =================
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // ================= EXTRACT BACKEND MESSAGE =================
+
+  const getBackendMessage = (error: any): string => {
+    const responseData = error?.response?.data;
+
+    // FastAPI:
+    // detail: [{ loc: [], msg: "...", type: "..." }]
+    if (Array.isArray(responseData?.detail)) {
+      return responseData.detail
+        .map((item: any) => item?.msg || item?.message || JSON.stringify(item))
+        .join(", ");
+    }
+
+    // FastAPI:
+    // detail: "..."
+    if (typeof responseData?.detail === "string") {
+      return responseData.detail;
+    }
+
+    // Other APIs:
+    if (typeof responseData?.message === "string") {
+      return responseData.message;
+    }
+
+    if (typeof responseData?.error === "string") {
+      return responseData.error;
+    }
+
+    // Sometimes backend returns:
+    // { data: { message: "..." } }
+    if (typeof responseData?.data?.message === "string") {
+      return responseData.data.message;
+    }
+
+    // Axios error
+    if (typeof error?.message === "string") {
+      return error.message;
+    }
+
+    return "Something went wrong. Please try again.";
+  };
+
+  // ================= CHANGE FIELD =================
+
+  const handleChange = (field: "numbers" | "letters", value: string) => {
+    if (field === "numbers") {
+      const cleaned = value.replace(/\D/g, "");
+
+      setForm((prev) => ({
+        ...prev,
+        numbers: cleaned,
+      }));
+    }
+
+    if (field === "letters") {
+      const cleaned = value
+        .replace(/\s/g, "")
+        .replace(/[^A-Za-z\u0600-\u06FF]/g, "");
+
+      setForm((prev) => ({
+        ...prev,
+        letters: cleaned,
+      }));
+    }
+
+    setErrors((prev) => ({
+      ...prev,
+      [field]: undefined,
+    }));
+
+    // Clear backend message when user edits
+    setBackendMessage(null);
+    setBackendMessageType(null);
+  };
+
+  // ================= PERSON SEARCH =================
+
+  const handleResidentSearch = (value: string) => {
+    setSearchTerm(value);
+
+    setForm((prev) => ({
+      ...prev,
+      resident_id: undefined,
+      resident_name: value,
+    }));
+
+    setSelectedResident(null);
+
+    setShowDropdown(value.trim().length > 0);
+
+    setErrors((prev) => ({
+      ...prev,
+      resident_id: undefined,
+    }));
+
+    setBackendMessage(null);
+    setBackendMessageType(null);
+  };
+
+  // ================= SELECT PERSON =================
+
+  const handleResidentSelect = (person: Person) => {
+    setSelectedResident(person);
+
+    const displayName =
+      person.full_name || person.username || person.phone_number || "";
+
+    setSearchTerm(displayName);
+
+    setForm((prev) => ({
+      ...prev,
+      resident_id: person.id,
+      resident_name: person.full_name || person.username || "",
+    }));
+
+    setShowDropdown(false);
+
+    setErrors((prev) => ({
+      ...prev,
+      resident_id: undefined,
+    }));
+
+    setBackendMessage(null);
+    setBackendMessageType(null);
+  };
+
+  // ================= VALIDATION =================
+
+  const validateForm = (): FormErrors => {
+    const newErrors: FormErrors = {};
+
+    if (!form.numbers.trim()) {
+      newErrors.numbers = "Plate numbers are required";
+    }
+
+    if (!form.letters.trim()) {
+      newErrors.letters = "Plate letters are required";
+    }
+
+    return newErrors;
+  };
+
+  // ================= SAVE =================
+
+  const handleSave = async () => {
+    const validationErrors = validateForm();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+
+      setBackendMessage(null);
+      setBackendMessageType(null);
+
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      // Clear old backend message
+      setBackendMessage(null);
+      setBackendMessageType(null);
+
+      const submitData: {
+        plate_number_full: string;
+        resident_id?: number;
+      } = {
+        plate_number_full:
+          form.numbers + form.letters.split("").reverse().join(""),
+      };
+
+      if (form.resident_id) {
+        submitData.resident_id = form.resident_id;
+      }
+
+      console.log("REQUEST DATA:", submitData);
+
+      await onSubmit(submitData);
+
+      // ================= SUCCESS =================
+
+      setBackendMessage(
+        editing ? "Plate updated successfully." : "Plate added successfully.",
+      );
+
+      setBackendMessageType("success");
+    } catch (error: any) {
+      // ================= BACKEND ERROR =================
+
+      console.error("PLATE SAVE ERROR:", error);
+
+      console.error("STATUS:", error?.response?.status);
+
+      console.error("DATA:", error?.response?.data);
+
+      const message = getBackendMessage(error);
+
+      setBackendMessage(message);
+      setBackendMessageType("error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ================= PREVIEW =================
+
+  const previewLetters = form.letters
+    ? form.letters.split("").join(" ")
+    : "س ج ط";
+
+  // ================= STYLES =================
+
+  const inputClassName = `
+    w-full
+    h-12
+    rounded-xl
+    border
+    border-border
+    bg-background
+    px-4
+    text-base
+    font-medium
+    text-foreground
+    outline-none
+    transition
+    placeholder:text-muted-foreground
+    focus:ring-2
+    focus:ring-[#132f49]/10
+    focus:border-[#132f49]
+    dark:focus:ring-white/10
+    dark:focus:border-white/30
+  `;
+
+  const errorClassName = "mt-1 text-sm font-medium text-red-500";
+
+  return (
+    <div
+      className="
+        fixed
+        inset-0
+        z-50
+        flex
+        items-center
+        justify-center
+        bg-black/50
+        p-4
+        backdrop-blur-sm
+      "
+      onMouseDown={onClose}
+    >
+      <div
+        className="
+          w-full
+          max-w-4xl
+          max-h-[90vh]
+          overflow-y-auto
+          rounded-2xl
+          border
+          border-border
+          bg-card
+          p-7
+          shadow-2xl
+        "
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        {/* ================= HEADER ================= */}
+
+        <div className="mb-5 flex items-start justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">
+              {editing ? "Edit Plate" : "Add Plate"}
+            </h2>
+
+            <p className="mt-1 text-sm font-medium text-muted-foreground">
+              {editing
+                ? "Update vehicle plate information"
+                : "Add a new vehicle plate and assign it to a resident"}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="
+              flex
+              h-10
+              w-10
+              items-center
+              justify-center
+              rounded-xl
+              bg-muted
+              text-lg
+              text-muted-foreground
+              transition
+              hover:bg-secondary
+              hover:text-foreground
+            "
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* ================= BACKEND MESSAGE ================= */}
+
+        {backendMessage && (
+          <div
+            className={`
+              mb-6
+              flex
+              items-start
+              gap-3
+              rounded-xl
+              border
+              px-4
+              py-3.5
+              ${
+                backendMessageType === "error"
+                  ? `
+                    border-red-500/30
+                    bg-red-500/10
+                    text-red-600
+                    dark:text-red-400
+                  `
+                  : `
+                    border-emerald-500/30
+                    bg-emerald-500/10
+                    text-emerald-600
+                    dark:text-emerald-400
+                  `
+              }
+            `}
+          >
+            {/* Icon */}
+
+            <div
+              className={`
+                mt-0.5
+                flex
+                h-6
+                w-6
+                shrink-0
+                items-center
+                justify-center
+                rounded-full
+                text-sm
+                font-bold
+                ${
+                  backendMessageType === "error"
+                    ? "bg-red-500/15"
+                    : "bg-emerald-500/15"
+                }
+              `}
+            >
+              {backendMessageType === "error" ? "!" : "✓"}
+            </div>
+
+            {/* Message */}
+
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold">{backendMessage}</p>
+            </div>
+
+            {/* Close message */}
+
+            <button
+              type="button"
+              onClick={() => {
+                setBackendMessage(null);
+                setBackendMessageType(null);
+              }}
+              className="
+                shrink-0
+                text-sm
+                opacity-60
+                transition
+                hover:opacity-100
+              "
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* ================= FORM ================= */}
+
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          {/* ================= RESIDENT / USER ================= */}
+
+          <div ref={dropdownRef} className="relative space-y-1.5 md:col-span-2">
+            <label className="block text-base font-semibold text-foreground">
+              Resident / User
+            </label>
+
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search by name, username or phone number..."
+                value={searchTerm}
+                onChange={(e) => handleResidentSearch(e.target.value)}
+                onFocus={() => {
+                  if (searchTerm.trim()) {
+                    setShowDropdown(true);
+                  }
+                }}
+                className={`
+                  ${inputClassName}
+                  ${
+                    errors.resident_id
+                      ? "border-red-500 focus:border-red-500"
+                      : ""
+                  }
+                `}
+              />
+
+              {/* LOADING */}
+
+              {loadingResidents && (
+                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                  <div
+                    className="
+                      h-5
+                      w-5
+                      animate-spin
+                      rounded-full
+                      border-2
+                      border-[#132f49]
+                      border-t-transparent
+                    "
+                  />
+                </div>
+              )}
+
+              {/* DROPDOWN */}
+
+              {showDropdown && filteredPeople.length > 0 && (
+                <div
+                  className="
+                      absolute
+                      left-0
+                      right-0
+                      z-50
+                      mt-1
+                      max-h-60
+                      overflow-y-auto
+                      rounded-xl
+                      border
+                      border-border
+                      bg-card
+                      shadow-2xl
+                    "
+                >
+                  {filteredPeople.map((person) => (
+                    <button
+                      key={`${person.type}-${person.id}`}
+                      type="button"
+                      onClick={() => handleResidentSelect(person)}
+                      className="
+                          w-full
+                          px-4
+                          py-3
+                          text-left
+                          text-foreground
+                          transition
+                          hover:bg-muted
+                        "
+                    >
+                      <div className="font-medium">
+                        {person.full_name || person.username || "Unnamed"}
+                      </div>
+
+                      {person.username && person.full_name && (
+                        <div className="mt-0.5 text-sm text-muted-foreground">
+                          @{person.username}
+                        </div>
+                      )}
+
+                      <div className="mt-0.5 text-xs text-muted-foreground">
+                        {person.type === "resident" ? "Resident" : "User"}
+                        {" · "}
+                        ID: {person.id}
+                      </div>
+
+                      {person.phone_number && (
+                        <div className="mt-0.5 text-xs text-muted-foreground">
+                          {person.phone_number}
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* NO RESULTS */}
+
+              {showDropdown &&
+                searchTerm.trim() &&
+                !loadingResidents &&
+                filteredPeople.length === 0 && (
+                  <div
+                    className="
+                      absolute
+                      left-0
+                      right-0
+                      z-50
+                      mt-1
+                      rounded-xl
+                      border
+                      border-border
+                      bg-card
+                      px-4
+                      py-3
+                      text-sm
+                      text-muted-foreground
+                      shadow-2xl
+                    "
+                  >
+                    No residents or users found
+                  </div>
+                )}
+            </div>
+
+            {/* SELECTED PERSON */}
+
+            {selectedResident && (
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-2
+                  rounded-xl
+                  border
+                  border-emerald-500/20
+                  bg-emerald-500/10
+                  px-3
+                  py-2.5
+                  text-sm
+                  text-emerald-600
+                  dark:text-emerald-400
+                "
+              >
+                <span>✓ Selected:</span>
+
+                <span className="font-semibold">
+                  {selectedResident.full_name ||
+                    selectedResident.username ||
+                    selectedResident.phone_number}
+                </span>
+
+                <span className="text-muted-foreground">
+                  ({selectedResident.type === "resident" ? "Resident" : "User"}
+                  {" · "}
+                  ID: {selectedResident.id})
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedResident(null);
+                    setSearchTerm("");
+
+                    setForm((prev) => ({
+                      ...prev,
+                      resident_id: undefined,
+                      resident_name: "",
+                    }));
+                  }}
+                  className="
+                    ml-auto
+                    text-muted-foreground
+                    hover:text-foreground
+                  "
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {errors.resident_id && (
+              <p className={errorClassName}>{errors.resident_id}</p>
+            )}
+          </div>
+
+          {/* ================= PLATE LETTERS ================= */}
+
+          <div className="space-y-1.5">
+            <label className="block text-base font-semibold text-foreground">
+              Plate Letters
+            </label>
+
+            <input
+              type="text"
+              dir="rtl"
+              value={form.letters.split("").join(" ")}
+              onChange={(e) => handleChange("letters", e.target.value)}
+              placeholder="ط ج س"
+              className={`
+                ${inputClassName}
+                ${errors.letters ? "border-red-500 focus:border-red-500" : ""}
+              `}
+            />
+
+            {errors.letters && (
+              <p className={errorClassName}>{errors.letters}</p>
+            )}
+          </div>
+
+          {/* ================= PLATE NUMBERS ================= */}
+
+          <div className="space-y-1.5">
+            <label className="block text-base font-semibold text-foreground">
+              Plate Numbers
+            </label>
+
+            <input
+              type="text"
+              dir="ltr"
+              inputMode="numeric"
+              value={form.numbers}
+              onChange={(e) => handleChange("numbers", e.target.value)}
+              placeholder="2594"
+              className={`
+                ${inputClassName}
+                ${errors.numbers ? "border-red-500 focus:border-red-500" : ""}
+              `}
+            />
+
+            {errors.numbers && (
+              <p className={errorClassName}>{errors.numbers}</p>
+            )}
+          </div>
+
+          {/* ================= PREVIEW ================= */}
+
+          <div
+            className="
+              md:col-span-2
+              rounded-2xl
+              border
+              border-border
+              bg-muted/30
+              p-5
+            "
+          >
+            <div className="mb-4">
+              <h3 className="text-base font-bold text-foreground">
+                Live Plate Preview
+              </h3>
+
+              <p className="mt-1 text-sm text-muted-foreground">
+                Preview how the vehicle plate will look
+              </p>
+            </div>
+
+            <div className="flex justify-center">
+              <div
+                className="
+                  relative
+                  w-full
+                  max-w-2xl
+                  overflow-hidden
+                  rounded-[10px]
+                  border-[3px]
+                  border-black
+                  bg-[#0057A8]
+                  shadow-[0_8px_20px_rgba(0,0,0,0.25)]
+                "
+                style={{
+                  aspectRatio: "4.7 / 1",
+                }}
+              >
+                <div className="flex h-full flex-col">
+                  {/* Egypt Bar */}
+
+                  <div
+                    className="
+                      flex
+                      h-[34%]
+                      w-full
+                      items-center
+                      justify-center
+                      gap-2
+                      border-b-[3px]
+                      border-black
+                      bg-[#0057A8]
+                    "
+                  >
+                    <span
+                      dir="rtl"
+                      className="
+                        text-base
+                        font-black
+                        leading-none
+                        text-white
+                      "
+                    >
+                      مصر
+                    </span>
+
+                    <div
+                      className="
+                        h-3
+                        w-6
+                        shrink-0
+                        rounded-[1px]
+                        shadow-sm
+                      "
+                      style={{
+                        background:
+                          "linear-gradient(to bottom,#CE1126 33%,white 33%,white 66%,black 66%)",
+                      }}
+                    />
+
+                    <span
+                      className="
+                        text-xs
+                        font-bold
+                        tracking-widest
+                        leading-none
+                        text-white
+                      "
+                    >
+                      EGYPT
+                    </span>
+                  </div>
+
+                  {/* Plate Content */}
+
+                  <div className="flex flex-1 items-stretch bg-white">
+                    {/* Numbers */}
+
+                    <div
+                      className="
+                        flex
+                        flex-1
+                        items-center
+                        justify-center
+                        border-r-[3px]
+                        border-black
+                      "
+                    >
+                      <span
+                        dir="ltr"
+                        className="
+                          text-[clamp(28px,5vw,52px)]
+                          font-black
+                          leading-none
+                          tracking-wider
+                          text-black
+                        "
+                      >
+                        {form.numbers || "2594"}
+                      </span>
+                    </div>
+
+                    {/* Letters */}
+
+                    <div
+                      className="
+                        flex
+                        flex-1
+                        items-center
+                        justify-center
+                      "
+                    >
+                      <span
+                        dir="rtl"
+                        className="
+                          text-[clamp(28px,5vw,52px)]
+                          font-black
+                          leading-none
+                          tracking-wider
+                          text-black
+                        "
+                      >
+                        {previewLetters}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Metal Strip */}
+
+                <div
+                  className="
+                    absolute
+                    bottom-0
+                    left-0
+                    h-1.5
+                    w-full
+                  "
+                  style={{
+                    background: "linear-gradient(90deg,#777,#ddd,#777)",
+                  }}
+                />
+
+                {/* Screws */}
+
+                <div className="absolute left-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-slate-400/70" />
+
+                <div className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-slate-400/70" />
+
+                <div className="absolute bottom-1.5 left-1.5 h-1.5 w-1.5 rounded-full bg-slate-400/70" />
+
+                <div className="absolute bottom-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-slate-400/70" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ================= ACTIONS ================= */}
+
+        <div className="mt-7 flex justify-end gap-3 border-t border-border pt-5">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className="
+              rounded-xl
+              px-6
+              py-3
+              text-base
+              font-semibold
+              text-muted-foreground
+              transition
+              hover:bg-muted
+              hover:text-foreground
+              disabled:cursor-not-allowed
+              disabled:opacity-50
+            "
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className="
+              rounded-xl
+              bg-[#132f49]
+              px-7
+              py-3
+              text-base
+              font-semibold
+              text-white
+              shadow-sm
+              transition
+              hover:bg-[#0b1f33]
+              active:scale-[0.98]
+              disabled:cursor-not-allowed
+              disabled:opacity-60
+            "
+          >
+            {saving ? "Saving..." : editing ? "Update Plate" : "Save Plate"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
