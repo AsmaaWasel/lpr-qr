@@ -8,7 +8,6 @@ import {
   ReactNode,
 } from "react";
 
-import { adminLogin, residentLogin } from "@/services/auth";
 import { DEMO_USER } from "@/data/demo";
 
 // =========================
@@ -101,78 +100,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // =========================
 
   const login = async (
-    email: string,
-    password: string,
+    _email: string,
+    _password: string,
   ): Promise<LoginResponse> => {
-    let data;
-    let type: "superAdmin" | "admin" | "resident";
-
-    try {
-      // =========================
-      // ADMIN / SUPER ADMIN LOGIN
-      // =========================
-
-      data = await adminLogin(email, password);
-
-      const token = data.access_token;
-
-      // نحدد الـ role من الـ JWT
-      type = getRoleFromToken(token);
-    } catch (adminError) {
-      // =========================
-      // RESIDENT LOGIN
-      // =========================
-
-      data = await residentLogin(email, password);
-
-      const token = data.access_token;
-
-      type = getRoleFromToken(token);
-
-      // لو resident endpoint بيرجع resident بشكل طبيعي
-      if (type !== "resident") {
-        type = "resident";
-      }
-    }
-
-    // =========================
-    // SAVE TOKEN
-    // =========================
-
-    localStorage.setItem("token", data.access_token);
-
-    // =========================
-    // SAVE ROLE
-    // =========================
-
-    localStorage.setItem("role", type);
-
-    // =========================
-    // CREATE USER
-    // =========================
-
-    const loggedUser: User = {
-      ...(data.user ?? data),
-      role: type,
-    };
-
-    // =========================
-    // SAVE USER
-    // =========================
-
-    localStorage.setItem("user", JSON.stringify(loggedUser));
-
-    setUser(loggedUser);
-
-    console.log("========== LOGIN RESULT ==========");
-    console.log("TYPE:", type);
-    console.log("USER:", loggedUser);
-    console.log("TOKEN ROLE:", getRoleFromToken(data.access_token));
-    console.log("===================================");
-
+    setUser(DEMO_USER);
     return {
-      type,
-      user: loggedUser,
+      type: DEMO_USER.role,
+      user: DEMO_USER,
     };
   };
 
