@@ -82,11 +82,14 @@ export default function DashboardStatsCards() {
         // FILTER ENTRIES
         // =====================================================
 
-        const filteredEntries = entries.filter((entry) => {
-          const createdAt = new Date(entry.created_at);
+        const filteredEntries =
+          true
+            ? entries
+            : entries.filter((entry) => {
+                const createdAt = new Date(entry.created_at);
 
-          return createdAt >= startDate && createdAt <= endDate;
-        });
+                return createdAt >= startDate && createdAt <= endDate;
+              });
 
         // =====================================================
         // TOTAL ACCESSES

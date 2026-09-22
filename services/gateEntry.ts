@@ -2,7 +2,7 @@
 import api from "./api";
 import { demoGateEntries } from "@/data/demo";
 
-const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE !== "false";
+const DEMO_MODE = true;
 
 export type Resident = {
   id: number;

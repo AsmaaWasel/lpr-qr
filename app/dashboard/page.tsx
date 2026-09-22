@@ -110,6 +110,10 @@ export default function DashboardHome() {
         return false;
       }
 
+      if (true) {
+        return true;
+      }
+
       const createdAt = new Date(entry.created_at);
 
       return createdAt >= startOfToday && createdAt <= endOfToday;

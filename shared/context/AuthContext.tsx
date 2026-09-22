@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // =========================
 
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_DEMO_MODE !== "false") {
+    if (true) {
       setUser(DEMO_USER);
       localStorage.setItem("user", JSON.stringify(DEMO_USER));
       localStorage.setItem("role", DEMO_USER.role);
